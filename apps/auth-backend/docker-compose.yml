@@ -1,10 +1,11 @@
 version: "3.8"
 
 services:
-  auth-backend:
+  # Development service with live reloading
+  auth-backend-dev:
     build:
       context: ../.. # Root of the monorepo
-      dockerfile: apps/auth-backend/Dockerfile.server
+      dockerfile: apps/auth-backend/Dockerfile.dev
     ports:
       - "1234:1234"
     volumes:
@@ -14,4 +15,16 @@ services:
       - /app/apps/auth-backend/node_modules
     environment:
       - NODE_ENV=development
+    restart: unless-stopped
+
+  # Production-ready service
+  auth-backend:
+    build:
+      context: ../.. # Root of the monorepo
+      dockerfile: apps/auth-backend/Dockerfile.server
+      target: production
+    ports:
+      - "1234:1234"
+    environment:
+      - NODE_ENV=production
     restart: unless-stopped
