@@ -8,7 +8,7 @@ import { corsMiddleware } from "@/middlewares";
 import { dbMiddleware } from "@/middlewares/dbMiddleware";
 import { usersRoutes } from "@/routes/users-routes";
 import type { CustomEnv } from "@/types";
-import { getEnv, validateEnv } from "@/utils/env";
+import { getEnv, validateEnv } from "@/utils";
 
 const app = new Hono<CustomEnv>();
 
