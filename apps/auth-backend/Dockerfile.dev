@@ -23,5 +23,5 @@ WORKDIR /app/apps/auth-backend
 # Expose the port the app runs on
 EXPOSE 1234
 
-# Command to run the app in development mode with hot reloading
-CMD ["bun", "run", "dev"] 
+# Command to directly run the app with hot reloading
+CMD ["bun", "run", "--hot", "index.ts"] 
