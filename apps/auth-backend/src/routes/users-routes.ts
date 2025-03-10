@@ -58,7 +58,11 @@ usersRoutes.get("/:id", zValidator("param", idParamSchema), async (c) => {
       .where(eq(usersTable.id, id));
 
     if (results.length === 0) {
-      return c.json({ error: "User not found" }, 404);
+      const errorResponse = createApiErrorResponse(
+        "NOT_FOUND",
+        "User not found"
+      );
+      return c.json(errorResponse, 404);
     }
 
     return c.json(results[0] as UserDetail);
