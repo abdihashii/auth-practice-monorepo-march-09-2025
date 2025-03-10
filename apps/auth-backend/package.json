@@ -4,7 +4,14 @@
   "type": "module",
   "scripts": {
     "clean": "rm -rf node_modules",
-    "dev": "bun --watch index.ts"
+    "dev": "pnpm run dev:docker",
+    "dev:docker": "docker compose -f docker-compose.yml up auth-backend-dev auth-backend-db",
+    "dev:db": "docker compose -f docker-compose.yml up auth-backend-db -d",
+    "dev:local": "pnpm run dev:db && bun run --hot index.ts",
+    "dev:local:watch": "pnpm run dev:db && bun run --watch index.ts",
+    "start": "bun run index.ts",
+    "stop:db": "docker compose -f docker-compose.yml down auth-backend-db",
+    "db:restart": "docker compose -f docker-compose.yml restart auth-backend-db"
   },
   "devDependencies": {
     "@types/bun": "^1.2.4"
