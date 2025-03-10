@@ -7,6 +7,7 @@
   "scripts": {
     "clean": "rm -rf node_modules pnpm-lock.yaml && pnpm -r clean",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:backend": "pnpm --filter auth-backend run dev:docker",
     "deploy:backend": "fly deploy --config ./apps/auth-backend/fly.toml --dockerfile ./apps/auth-backend/Dockerfile.prod"
   },
   "keywords": [],
