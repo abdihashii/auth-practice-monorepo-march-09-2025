@@ -3,15 +3,24 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "clean": "rm -rf node_modules",
-    "dev": "pnpm run dev:docker",
-    "dev:docker": "docker compose -f docker-compose.yml up auth-backend-dev auth-backend-db",
-    "dev:db": "docker compose -f docker-compose.yml up auth-backend-db -d",
-    "dev:local": "pnpm run dev:db && bun run --hot index.ts",
-    "dev:local:watch": "pnpm run dev:db && bun run --watch index.ts",
+    "// dev": "Quick start: Runs DB in Docker and app locally (hot reloading)",
+    "dev": "pnpm run dev:local",
+    "// dev:docker": "Run both DB and API in Docker containers",
+    "dev:docker": "docker compose up",
+    "// dev:local": "Run API locally with hot reload, DB in Docker",
+    "dev:local": "pnpm run db:start && bun run --hot index.ts",
+    "// db:start": "Start Postgres DB in Docker (detached)",
+    "db:start": "docker compose -f docker-compose.yml up auth-backend-db -d",
+    "// db:stop": "Stop the Postgres DB container",
+    "db:stop": "docker compose -f docker-compose.yml down auth-backend-db",
+    "// db:restart": "Restart the Postgres DB container",
+    "db:restart": "docker compose -f docker-compose.yml restart auth-backend-db",
+    "// start": "Start the server in production mode",
     "start": "bun run index.ts",
-    "stop:db": "docker compose -f docker-compose.yml down auth-backend-db",
-    "db:restart": "docker compose -f docker-compose.yml restart auth-backend-db"
+    "// start:docker": "Start the server in production mode in Docker",
+    "start:docker": "docker compose -f docker-compose.yml up auth-backend",
+    "// clean": "Remove node_modules folder",
+    "clean": "rm -rf node_modules"
   },
   "devDependencies": {
     "@types/bun": "^1.2.4"
