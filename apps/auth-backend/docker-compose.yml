@@ -27,7 +27,7 @@ services:
       dockerfile: apps/auth-backend/Dockerfile.dev
     container_name: auth-backend-dev
     ports:
-      - "1234:1234"
+      - "8000:8000"
     volumes:
       # For development, mount the source code
       - ../../apps/auth-backend:/app/apps/auth-backend
@@ -48,7 +48,7 @@ services:
       target: production
     container_name: auth-backend
     ports:
-      - "1234:1234"
+      - "8000:8000"
     environment:
       - NODE_ENV=production
     restart: unless-stopped
