@@ -5,9 +5,10 @@ import { Hono } from "hono";
 import { dbConnect } from "@/db";
 import { usersTable } from "@/db/schema";
 import { corsMiddleware } from "@/middlewares";
+import type { CustomEnv } from "@/types";
 import { getEnv, validateEnv } from "@/utils/env";
 
-const app = new Hono();
+const app = new Hono<CustomEnv>();
 
 // Use the cors middleware
 app.use("*", corsMiddleware);
