@@ -2,10 +2,6 @@ import { Hono } from "hono";
 
 const app = new Hono();
 
-app.get("/", (c) => {
-  return c.text("Hello, from auth-backend 🚀");
-});
-
 app.get("/health", (c) => {
   return c.json({
     status: "ok",
