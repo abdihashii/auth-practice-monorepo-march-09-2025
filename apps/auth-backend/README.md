@@ -1,105 +1,69 @@
 # Auth Backend Service
 
-A Hono-based authentication backend service built with Bun.
+A lightweight authentication service built with Bun and Hono.
 
-## Development
+## Prerequisites
 
-### Development Options
+- [Bun](https://bun.sh/) (latest version)
+- [Docker](https://www.docker.com/) and Docker Compose
+- [pnpm](https://pnpm.io/) (package manager)
 
-You have multiple ways to run the service:
-
-1. **Docker Development (recommended for full isolation):**
-
-   ```bash
-   pnpm run dev
-   # or
-   pnpm run dev:docker
-   ```
-
-   This will start both the database and the server in Docker containers.
-
-2. **Local Development with Docker Database:**
-
-   ```bash
-   # Using Hot Module Replacement (HMR) - only reloads changed modules
-   pnpm run dev:local
-
-   # Using watch mode - completely restarts the server on changes
-   pnpm run dev:local:watch
-   ```
-
-   Both options will start the database in Docker and run the server locally with automatic reloading.
-
-   - `--hot` (HMR): Faster feedback, preserves application state between reloads
-   - `--watch`: Full restart, ensures clean state but slightly slower feedback
-
-3. **Database Only:**
-
-   ```bash
-   pnpm run dev:db
-   ```
-
-   This will start only the database in Docker.
-
-4. **Managing the Database:**
-
-   ```bash
-   # Stop the database container
-   pnpm run stop:db
-
-   # Restart the database container
-   pnpm run db:restart
-   ```
-
-### Without Docker
-
-To run the service entirely without Docker:
+## Quick Start
 
 ```bash
-# From the root of the monorepo
+# Install dependencies
 pnpm install
-# Navigate to auth-backend
-cd apps/auth-backend
-# Start the database in Docker first
-pnpm run dev:db
-# Then start the server locally
-pnpm run start
+
+# Start development server (database in Docker + local API with hot reload)
+pnpm run dev
 ```
 
-### Production Mode
+Server will be available at: http://localhost:1234
 
-To run the service in production mode:
+## Development Options
+
+| Command               | Description                                                       |
+| --------------------- | ----------------------------------------------------------------- |
+| `pnpm run dev`        | **Recommended:** Database in Docker + API locally with hot reload |
+| `pnpm run dev:docker` | Run everything in Docker (DB + API)                               |
+
+## Database Commands
+
+| Command               | Description                  |
+| --------------------- | ---------------------------- |
+| `pnpm run db:start`   | Start PostgreSQL in Docker   |
+| `pnpm run db:stop`    | Stop PostgreSQL container    |
+| `pnpm run db:restart` | Restart PostgreSQL container |
+
+## Production
 
 ```bash
-# From the auth-backend directory
-docker-compose up auth-backend
+# Run locally in production mode
+pnpm run start
+
+# Run in Docker for production
+pnpm run start:docker
 ```
 
-### Deploying to Cloud Providers
+## Architecture
 
-The production Dockerfile (`Dockerfile.server`) is designed to be self-contained and can be deployed to any cloud provider that supports Docker:
+- **Database:** PostgreSQL running in Docker
+- **API Server:** Bun + Hono
+- **Container Setup:** Supports both development and production
 
-1. Build the Docker image:
+## Environment Configuration
 
-   ```bash
-   docker build -t auth-backend:latest -f apps/auth-backend/Dockerfile.server ../..
-   ```
+The database is configured with:
 
-2. Push to your container registry:
+- Database name: `auth-backend-db`
+- Username: `postgres`
+- Password: `postgres`
+- Port: `5432`
 
-   ```bash
-   docker tag auth-backend:latest your-registry/auth-backend:latest
-   docker push your-registry/auth-backend:latest
-   ```
+## Troubleshooting
 
-3. Deploy using your cloud provider's container service (AWS ECS, Google Cloud Run, Azure Container Instances, etc.)
+If you encounter issues:
 
-The service will be available at http://localhost:1234 when running locally.
-
-## API Endpoints
-
-- `GET /health`: Health check endpoint
-
-## Environment Variables
-
-No environment variables are required for basic functionality.
+1. Ensure Docker is running
+2. Try restarting the database: `pnpm run db:restart`
+3. For a fresh start: `docker compose down && pnpm run dev`
