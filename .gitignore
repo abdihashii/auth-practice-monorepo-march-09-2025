@@ -1,0 +1,12 @@
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+node_modules
+pnpm-lock.yaml
+pnpm-debug.log
+npm-debug.log
+bun-debug.log
+bun-debug.log.2

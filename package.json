@@ -1,0 +1,17 @@
+{
+  "name": "auth-practice-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Authentication practice monorepo using pnpm workspaces",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rm -rf node_modules pnpm-lock.yaml && pnpm -r clean",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}

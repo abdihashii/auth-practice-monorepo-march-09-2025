@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  auth-backend:
+    build:
+      context: ../.. # Root of the monorepo
+      dockerfile: apps/auth-backend/Dockerfile.server
+    ports:
+      - "1234:1234"
+    volumes:
+      # For development, mount the source code
+      - ../../apps/auth-backend:/app/apps/auth-backend
+      # Exclude node_modules from being overwritten by the mount
+      - /app/apps/auth-backend/node_modules
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped

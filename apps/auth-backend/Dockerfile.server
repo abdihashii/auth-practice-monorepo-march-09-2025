@@ -1,0 +1,29 @@
+# Use the latest Bun image as base
+FROM oven/bun:latest as base
+
+# Install pnpm using Bun instead of npm
+RUN bun install -g pnpm
+
+# Set working directory for the app
+WORKDIR /app
+
+# Copy package.json files for workspace from the root of the monorepo
+COPY package.json pnpm-workspace.yaml* ./
+
+# Copy the package.json for the auth-backend package
+COPY apps/auth-backend/package.json ./apps/auth-backend/
+
+# Install dependencies
+RUN pnpm install
+
+# Copy the rest of the app (respect .dockerignore if present)
+COPY . .
+
+# Set working directory to the auth-backend package
+WORKDIR /app/apps/auth-backend
+
+# Expose the port the app runs on
+EXPOSE 1234
+
+# Command to run the app
+CMD ["bun", "run", "dev"]

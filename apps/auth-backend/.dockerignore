@@ -1,0 +1,25 @@
+# MacOS
+.DS_Store
+
+# Node
+node_modules
+npm-debug.log
+pnpm-debug.log
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Git
+.git
+.github
+
+# VSCode
+.vscode
+
+# Markdown
+*.md
+!README.md 
