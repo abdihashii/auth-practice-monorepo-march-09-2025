@@ -10,7 +10,7 @@ import {
 } from "@/constants";
 import { usersTable } from "@/db/schema";
 import type { CustomEnv, UserDetail, UserListItem } from "@/types";
-import { createApiErrorResponse, createSelectObject } from "@/utils";
+import { createApiResponse, createSelectObject } from "@/utils";
 import { idParamSchema } from "@/validation";
 
 export const usersRoutes = new Hono<CustomEnv>();
@@ -26,16 +26,26 @@ usersRoutes.get("/", async (c) => {
     // Only select the necessary columns based on default list columns
     const users = await db.select(selectObj).from(usersTable);
 
-    return c.json({
-      users: users as UserListItem[],
-    });
+    // Return standardized response using the unified utility
+    return c.json(
+      createApiResponse({
+        data: users as UserListItem[],
+      }),
+      200
+    );
   } catch (error) {
     console.error("Error fetching users:", error);
-    const errorResponse = createApiErrorResponse(
-      "INTERNAL_SERVER_ERROR",
-      "Failed to retrieve users"
+
+    // Return error response using the unified utility
+    return c.json(
+      createApiResponse({
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to retrieve users",
+        },
+      }),
+      500
     );
-    return c.json(errorResponse, 500);
   }
 });
 
@@ -58,20 +68,37 @@ usersRoutes.get("/:id", zValidator("param", idParamSchema), async (c) => {
       .where(eq(usersTable.id, id));
 
     if (results.length === 0) {
-      const errorResponse = createApiErrorResponse(
-        "NOT_FOUND",
-        "User not found"
+      // Return not found error using the unified utility
+      return c.json(
+        createApiResponse({
+          error: {
+            code: "NOT_FOUND",
+            message: "User not found",
+          },
+        }),
+        404
       );
-      return c.json(errorResponse, 404);
     }
 
-    return c.json(results[0] as UserDetail);
+    // Return standardized success response using the unified utility
+    return c.json(
+      createApiResponse({
+        data: results[0] as UserDetail,
+      }),
+      200
+    );
   } catch (error) {
     console.error("Error fetching user:", error);
-    const errorResponse = createApiErrorResponse(
-      "INTERNAL_SERVER_ERROR",
-      "Failed to retrieve user"
+
+    // Return error response using the unified utility
+    return c.json(
+      createApiResponse({
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to retrieve user",
+        },
+      }),
+      500
     );
-    return c.json(errorResponse, 500);
   }
 });
