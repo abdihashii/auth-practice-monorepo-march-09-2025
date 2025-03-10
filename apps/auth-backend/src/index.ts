@@ -2,7 +2,10 @@
 import { Hono } from "hono";
 
 // Local imports
+import { dbConnect } from "@/db";
+import { usersTable } from "@/db/schema";
 import { corsMiddleware } from "@/middlewares";
+import { getEnv, validateEnv } from "@/utils/env";
 
 const app = new Hono();
 
@@ -25,6 +28,41 @@ app.get("/health", (c) => {
     status: "ok",
     timestamp: new Date().toISOString(),
   });
+});
+
+// Database health check
+app.get("/health/db", async (c) => {
+  try {
+    const env = getEnv();
+    validateEnv();
+
+    const db = await dbConnect();
+
+    // Try to execute a simple query
+    const result = await db.select().from(usersTable).limit(1);
+
+    return c.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      database: {
+        connected: true,
+        message: "Database connection successful",
+      },
+    });
+  } catch (error) {
+    return c.json(
+      {
+        status: "error",
+        timestamp: new Date().toISOString(),
+        database: {
+          connected: false,
+          message: "Database connection failed",
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+      },
+      503
+    );
+  }
 });
 
 export default {
