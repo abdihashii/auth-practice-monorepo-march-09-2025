@@ -4,13 +4,66 @@ A Hono-based authentication backend service built with Bun.
 
 ## Development
 
-### Using Docker
+### Development Options
 
-To run the service in development mode with hot reloading:
+You have multiple ways to run the service:
+
+1. **Docker Development (recommended for full isolation):**
+
+   ```bash
+   pnpm run dev
+   # or
+   pnpm run dev:docker
+   ```
+
+   This will start both the database and the server in Docker containers.
+
+2. **Local Development with Docker Database:**
+
+   ```bash
+   # Using Hot Module Replacement (HMR) - only reloads changed modules
+   pnpm run dev:local
+
+   # Using watch mode - completely restarts the server on changes
+   pnpm run dev:local:watch
+   ```
+
+   Both options will start the database in Docker and run the server locally with automatic reloading.
+
+   - `--hot` (HMR): Faster feedback, preserves application state between reloads
+   - `--watch`: Full restart, ensures clean state but slightly slower feedback
+
+3. **Database Only:**
+
+   ```bash
+   pnpm run dev:db
+   ```
+
+   This will start only the database in Docker.
+
+4. **Managing the Database:**
+
+   ```bash
+   # Stop the database container
+   pnpm run stop:db
+
+   # Restart the database container
+   pnpm run db:restart
+   ```
+
+### Without Docker
+
+To run the service entirely without Docker:
 
 ```bash
-# From the auth-backend directory
-docker-compose up auth-backend-dev
+# From the root of the monorepo
+pnpm install
+# Navigate to auth-backend
+cd apps/auth-backend
+# Start the database in Docker first
+pnpm run dev:db
+# Then start the server locally
+pnpm run start
 ```
 
 ### Production Mode
@@ -43,19 +96,8 @@ The production Dockerfile (`Dockerfile.server`) is designed to be self-contained
 
 The service will be available at http://localhost:1234 when running locally.
 
-### Without Docker
-
-To run the service without Docker:
-
-```bash
-# From the root of the monorepo
-pnpm install
-bun run dev
-```
-
 ## API Endpoints
 
-- `GET /`: Hello message
 - `GET /health`: Health check endpoint
 
 ## Environment Variables
