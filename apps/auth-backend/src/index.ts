@@ -5,6 +5,7 @@ import { Hono } from "hono";
 import { dbConnect } from "@/db";
 import { usersTable } from "@/db/schema";
 import { corsMiddleware } from "@/middlewares";
+import { dbMiddleware } from "@/middlewares/dbMiddleware";
 import type { CustomEnv } from "@/types";
 import { getEnv, validateEnv } from "@/utils/env";
 
@@ -64,6 +65,17 @@ app.get("/health/db", async (c) => {
       503
     );
   }
+});
+
+// Initialize API router with versioning
+const api = new Hono<CustomEnv>();
+
+// Apply database middleware to all API routes
+api.use("*", dbMiddleware);
+
+// Add API routes
+api.get("/", (c) => {
+  return c.json({ message: "Hello, from the API!" });
 });
 
 export default {
