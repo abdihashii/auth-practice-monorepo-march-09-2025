@@ -6,6 +6,7 @@ import { dbConnect } from "@/db";
 import { usersTable } from "@/db/schema";
 import { corsMiddleware } from "@/middlewares";
 import { dbMiddleware } from "@/middlewares/dbMiddleware";
+import { usersRoutes } from "@/routes/users-routes";
 import type { CustomEnv } from "@/types";
 import { getEnv, validateEnv } from "@/utils/env";
 
@@ -73,12 +74,8 @@ const api = new Hono<CustomEnv>();
 // Apply database middleware to all API routes
 api.use("*", dbMiddleware);
 
-// Get all users
-api.get("/users", async (c) => {
-  const db = c.get("db");
-  const users = await db.select().from(usersTable);
-  return c.json(users);
-});
+// Mount all routes to the API router
+api.route("/users", usersRoutes);
 
 // Mount the API router to the main app
 app.route("/api/v1", api);
