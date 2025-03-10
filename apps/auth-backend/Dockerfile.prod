@@ -21,12 +21,12 @@ COPY tsconfig*.json ./
 RUN pnpm install
 
 # Copy the auth-backend app code, excluding node_modules
-COPY apps/auth-backend/index.ts ./apps/auth-backend/
+COPY apps/auth-backend/src ./apps/auth-backend/src
 COPY apps/auth-backend/tsconfig.json ./apps/auth-backend/
 
 # Build the app if needed (for TypeScript compilation)
 WORKDIR /app/apps/auth-backend
-RUN bun build --target=bun index.ts --outdir=./dist
+RUN bun build --target=bun src/index.ts --outdir=./dist
 
 # Production stage: Start fresh with minimal image
 FROM oven/bun:latest as production

@@ -44,7 +44,7 @@ services:
   auth-backend:
     build:
       context: ../.. # Root of the monorepo
-      dockerfile: apps/auth-backend/Dockerfile.server
+      dockerfile: apps/auth-backend/Dockerfile.prod
       target: production
     container_name: auth-backend
     ports:
