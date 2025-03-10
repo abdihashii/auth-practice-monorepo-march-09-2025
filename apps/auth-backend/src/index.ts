@@ -73,10 +73,8 @@ const api = new Hono<CustomEnv>();
 // Apply database middleware to all API routes
 api.use("*", dbMiddleware);
 
-// Add API routes
-api.get("/", (c) => {
-  return c.json({ message: "Hello, from the API!" });
-});
+// Mount the API router to the main app
+app.route("/api/v1", api);
 
 export default {
   port: 8000,
