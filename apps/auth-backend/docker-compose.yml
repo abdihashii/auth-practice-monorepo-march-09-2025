@@ -33,6 +33,7 @@ services:
       - /app/apps/auth-backend/node_modules
     environment:
       - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@auth-backend-db:5432/auth-backend-db
     restart: unless-stopped
     depends_on:
       auth-backend-db:
