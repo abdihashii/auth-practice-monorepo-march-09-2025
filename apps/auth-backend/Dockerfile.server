@@ -1,7 +1,7 @@
-# Use the latest Bun image as base
-FROM oven/bun:latest as base
+# Build stage: Use the latest Bun image as base
+FROM oven/bun:latest as builder
 
-# Install pnpm using Bun instead of npm
+# Install pnpm
 RUN bun install -g pnpm
 
 # Set working directory for the app
@@ -13,17 +13,40 @@ COPY package.json pnpm-workspace.yaml* ./
 # Copy the package.json for the auth-backend package
 COPY apps/auth-backend/package.json ./apps/auth-backend/
 
+# Copy shared dependencies from root if they exist
+COPY tsconfig*.json ./
+COPY packages ./packages
+
 # Install dependencies
 RUN pnpm install
 
-# Copy the rest of the app (respect .dockerignore if present)
-COPY . .
+# Copy the auth-backend app code
+COPY apps/auth-backend ./apps/auth-backend/
 
-# Set working directory to the auth-backend package
+# Build the app if needed (for TypeScript compilation)
 WORKDIR /app/apps/auth-backend
+RUN bun build --target=bun index.ts --outdir=./dist
+
+# Production stage: Start fresh with minimal image
+FROM oven/bun:latest as production
+
+# No need for pnpm in production since we'll copy the built app
+
+# Set working directory
+WORKDIR /app
+
+# Copy built app from builder stage (only what's needed to run)
+COPY --from=builder /app/apps/auth-backend/dist ./dist
+COPY --from=builder /app/apps/auth-backend/package.json ./
+
+# Install only production dependencies
+RUN bun install --production
+
+# Set production environment
+ENV NODE_ENV=production
 
 # Expose the port the app runs on
 EXPOSE 1234
 
-# Command to run the app
-CMD ["bun", "run", "dev"]
+# Command to run the app in production mode
+CMD ["bun", "run", "dist/index.js"]
