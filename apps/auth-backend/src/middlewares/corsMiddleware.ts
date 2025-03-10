@@ -1,4 +1,7 @@
+// Third party imports
 import { cors } from "hono/cors";
+
+// Local imports
 import { getEnv } from "@/utils/env";
 
 /**
