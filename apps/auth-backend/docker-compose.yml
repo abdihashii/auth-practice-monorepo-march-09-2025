@@ -1,11 +1,26 @@
 version: "3.8"
 
 services:
+  # Database service
+  auth-backend-db:
+    image: postgres:latest
+    container_name: auth-backend-db
+    environment:
+      - POSTGRES_DB=auth-backend-db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
   # Development service with live reloading
   auth-backend-dev:
     build:
       context: ../.. # Root of the monorepo
       dockerfile: apps/auth-backend/Dockerfile.dev
+    container_name: auth-backend-dev
     ports:
       - "1234:1234"
     volumes:
@@ -23,8 +38,12 @@ services:
       context: ../.. # Root of the monorepo
       dockerfile: apps/auth-backend/Dockerfile.server
       target: production
+    container_name: auth-backend
     ports:
       - "1234:1234"
     environment:
       - NODE_ENV=production
     restart: unless-stopped
+
+volumes:
+  postgres_data:
