@@ -14,6 +14,9 @@
     "db:start": "docker compose -f docker-compose.yml up auth-backend-db -d",
     "db:stop": "docker compose -f docker-compose.yml down auth-backend-db",
     "db:restart": "docker compose -f docker-compose.yml restart auth-backend-db",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
     "// =============== PRODUCTION COMMANDS ===============": "",
     "// start": "Start the server in production mode",
     "start": "bun run src/index.ts",
@@ -23,9 +26,11 @@
     "clean": "rm -rf node_modules"
   },
   "devDependencies": {
-    "@types/bun": "^1.2.4"
+    "@types/bun": "^1.2.4",
+    "drizzle-kit": "^0.30.5"
   },
   "dependencies": {
+    "drizzle-orm": "^0.40.0",
     "hono": "^4.7.4"
   }
 }

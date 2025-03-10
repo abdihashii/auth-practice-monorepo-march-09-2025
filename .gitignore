@@ -5,7 +5,6 @@
 .env.production.local
 
 node_modules
-pnpm-lock.yaml
 pnpm-debug.log
 npm-debug.log
 bun-debug.log
