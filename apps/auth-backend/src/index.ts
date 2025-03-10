@@ -9,6 +9,16 @@ const app = new Hono();
 // Use the cors middleware
 app.use("*", corsMiddleware);
 
+// Add request logging
+app.use("*", async (c, next) => {
+  console.log(`${c.req.method} ${c.req.url}`);
+  try {
+    await next();
+  } catch (err) {
+    throw err; // Let error handler middleware handle it
+  }
+});
+
 // Basic health check
 app.get("/health", (c) => {
   return c.json({
