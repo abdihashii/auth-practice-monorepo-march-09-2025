@@ -73,6 +73,13 @@ const api = new Hono<CustomEnv>();
 // Apply database middleware to all API routes
 api.use("*", dbMiddleware);
 
+// Get all users
+api.get("/users", async (c) => {
+  const db = c.get("db");
+  const users = await db.select().from(usersTable);
+  return c.json(users);
+});
+
 // Mount the API router to the main app
 app.route("/api/v1", api);
 
