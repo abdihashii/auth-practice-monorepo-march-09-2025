@@ -6,7 +6,7 @@ import { dbConnect } from "@/db";
 import { usersTable } from "@/db/schema";
 import { corsMiddleware } from "@/middlewares";
 import { dbMiddleware } from "@/middlewares/dbMiddleware";
-import { usersRoutes } from "@/routes/users-routes";
+import { userRoutes } from "@/routes/user-routes";
 import type { CustomEnv } from "@/types";
 import { getEnv, validateEnv } from "@/utils";
 
@@ -75,7 +75,7 @@ const api = new Hono<CustomEnv>();
 api.use("*", dbMiddleware);
 
 // Mount all routes to the API router
-api.route("/users", usersRoutes);
+api.route("/users", userRoutes);
 
 // Mount the API router to the main app
 app.route("/api/v1", api);
