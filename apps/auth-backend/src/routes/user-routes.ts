@@ -13,10 +13,10 @@ import type { CustomEnv, UserDetail, UserListItem } from "@/types";
 import { createApiResponse, createSelectObject } from "@/utils";
 import { idParamSchema } from "@/validation";
 
-export const usersRoutes = new Hono<CustomEnv>();
+export const userRoutes = new Hono<CustomEnv>();
 
 // Get all users
-usersRoutes.get("/", async (c) => {
+userRoutes.get("/", async (c) => {
   try {
     const db = c.get("db");
 
@@ -50,7 +50,7 @@ usersRoutes.get("/", async (c) => {
 });
 
 // Get a user by id
-usersRoutes.get("/:id", zValidator("param", idParamSchema), async (c) => {
+userRoutes.get("/:id", zValidator("param", idParamSchema), async (c) => {
   try {
     const db = c.get("db");
     const { id } = c.req.param();
