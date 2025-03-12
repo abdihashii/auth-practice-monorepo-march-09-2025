@@ -8,6 +8,12 @@ import { usersTable } from "@/db/schema";
 
 export const authRoutes = new Hono<CustomEnv>();
 
+/**
+ * TODO:
+ * - input validation
+ * - `ApiResponse` typing for returns (success and error)
+ * - add `authentication_token`
+ */
 authRoutes.post("/register", async (c) => {
   try {
     // Get db connection
