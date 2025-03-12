@@ -10,6 +10,8 @@ import { getEnv } from "@/utils";
  */
 export const corsMiddleware = cors({
   origin: (origin) => {
+    // Get the environment - note that we've already validated
+    // environment variables at startup, so this won't throw
     const env = getEnv();
     const isProd = env.NODE_ENV === "production";
 
