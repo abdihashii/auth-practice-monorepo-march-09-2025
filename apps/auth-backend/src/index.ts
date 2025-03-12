@@ -6,6 +6,7 @@ import { dbConnect } from "@/db";
 import { usersTable } from "@/db/schema";
 import { corsMiddleware } from "@/middlewares";
 import { dbMiddleware } from "@/middlewares/dbMiddleware";
+import { authRoutes } from "@/routes/auth-routes";
 import { userRoutes } from "@/routes/user-routes";
 import type { CustomEnv } from "@/types";
 import { getEnv, validateEnv } from "@/utils";
@@ -76,6 +77,7 @@ api.use("*", dbMiddleware);
 
 // Mount all routes to the API router
 api.route("/users", userRoutes);
+api.route("/auth", authRoutes);
 
 // Mount the API router to the main app
 app.route("/api/v1", api);
