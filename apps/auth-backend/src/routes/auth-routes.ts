@@ -34,11 +34,10 @@ authRoutes.post("/register", async (c) => {
     // Get body from request of type application/json
     const body = await c.req.json<CreateUserDto>();
 
-    // Check if user already exists
+    // Check if user already exists and return error if so
     const existingUser = await db.query.usersTable.findFirst({
       where: eq(usersTable.email, body.email),
     });
-
     if (existingUser) {
       return c.json(
         createApiResponse({
