@@ -1,3 +1,3 @@
-- [ ] Registration
+- [x] Registration
 - [ ] Log in
 - [ ] Authorization
