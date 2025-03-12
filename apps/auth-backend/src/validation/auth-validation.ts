@@ -61,6 +61,26 @@ export const passwordSchema = z
     }
   );
 
+/**
+ * Validation schema for user registration
+ * Validates the CreateUserDto structure with proper constraints
+ */
+export const createUserSchema = z.object({
+  email: z
+    .string()
+    .email("Invalid email format")
+    .min(5, "Email must be at least 5 characters")
+    .max(255, "Email must be less than 255 characters"),
+  password: passwordSchema,
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name must be less than 100 characters")
+    .optional(),
+});
+
+export type CreateUserSchema = z.infer<typeof createUserSchema>;
+
 export function validatePasswordStrength(
   password: string
 ): PasswordValidationResult {
@@ -75,6 +95,36 @@ export function validatePasswordStrength(
     return {
       isValid: false,
       errors: result.error.errors.map((err) => err.message),
+    };
+  }
+}
+
+/**
+ * Validates user registration input data
+ * @param data - The data to validate against CreateUserDto schema
+ * @returns Object containing validation result and any error messages
+ */
+export function validateCreateUser(data: unknown): {
+  isValid: boolean;
+  errors: string[];
+  data?: z.infer<typeof createUserSchema>;
+} {
+  const result = createUserSchema.safeParse(data);
+
+  if (result.success) {
+    return {
+      isValid: true,
+      errors: [],
+      data: result.data,
+    };
+  } else {
+    // Format errors in a consistent way: "field: error message"
+    return {
+      isValid: false,
+      errors: result.error.errors.map((err) => {
+        const field = err.path.length > 0 ? err.path[0] : "unknown";
+        return `${field}: ${err.message}`;
+      }),
     };
   }
 }
