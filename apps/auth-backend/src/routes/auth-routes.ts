@@ -2,9 +2,9 @@
 import { Hono } from "hono";
 
 // Local imports
+import { usersTable } from "@/db/schema";
 import type { CustomEnv } from "@/types";
 import { generateTokens, hashPassword } from "@/utils";
-import { usersTable } from "@/db/schema";
 
 export const authRoutes = new Hono<CustomEnv>();
 
