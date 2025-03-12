@@ -14,6 +14,7 @@ import {
   type UserSettings,
 } from "@/types";
 import { createApiResponse, generateTokens, hashPassword } from "@/utils";
+import { validatePasswordStrength } from "@/validation/auth-validation";
 
 export const authRoutes = new Hono<CustomEnv>();
 
@@ -44,6 +45,20 @@ authRoutes.post("/register", async (c) => {
           error: {
             code: ApiErrorCode.USER_ALREADY_EXISTS,
             message: "User already exists",
+          },
+        }),
+        400
+      );
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePasswordStrength(body.password);
+    if (!passwordValidation.isValid) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.WEAK_PASSWORD,
+            message: passwordValidation.errors.join(", "),
           },
         }),
         400
