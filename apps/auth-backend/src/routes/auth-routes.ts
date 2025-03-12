@@ -21,11 +21,6 @@ export const authRoutes = new Hono<CustomEnv>();
 /**
  * Register a new user
  * POST /api/v1/auth/register
- *
- * TODO:
- * - input validation
- * - `ApiResponse` typing for returns (success and error)
- * - add `authentication_token`
  */
 authRoutes.post("/register", async (c) => {
   try {
