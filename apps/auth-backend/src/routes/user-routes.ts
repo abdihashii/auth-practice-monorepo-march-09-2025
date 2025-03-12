@@ -9,7 +9,12 @@ import {
   DEFAULT_USER_LIST_COLUMNS,
 } from "@/constants";
 import { usersTable } from "@/db/schema";
-import type { CustomEnv, UserDetail, UserListItem } from "@/types";
+import {
+  ApiErrorCode,
+  type CustomEnv,
+  type UserDetail,
+  type UserListItem,
+} from "@/types";
 import { createApiResponse, createSelectObject } from "@/utils";
 import { idParamSchema } from "@/validation";
 
@@ -40,7 +45,7 @@ userRoutes.get("/", async (c) => {
     return c.json(
       createApiResponse({
         error: {
-          code: "INTERNAL_SERVER_ERROR",
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
           message: "Failed to retrieve users",
         },
       }),

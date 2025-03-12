@@ -6,9 +6,22 @@ import { dbConnect } from "@/db";
 import { usersTable } from "@/db/schema";
 import { corsMiddleware } from "@/middlewares";
 import { dbMiddleware } from "@/middlewares/dbMiddleware";
+import { authRoutes } from "@/routes/auth-routes";
 import { userRoutes } from "@/routes/user-routes";
 import type { CustomEnv } from "@/types";
-import { getEnv, validateEnv } from "@/utils";
+import { validateEnv } from "@/utils";
+
+// Validate environment variables at startup
+try {
+  validateEnv();
+  console.log("✅ Environment variables validated successfully");
+} catch (error) {
+  console.error(
+    "❌ Environment validation failed:",
+    error instanceof Error ? error.message : error
+  );
+  process.exit(1); // Exit the process with an error code
+}
 
 const app = new Hono<CustomEnv>();
 
@@ -36,9 +49,6 @@ app.get("/health", (c) => {
 // Database health check
 app.get("/health/db", async (c) => {
   try {
-    const env = getEnv();
-    validateEnv();
-
     const db = await dbConnect();
 
     // Try to execute a simple query
@@ -76,6 +86,7 @@ api.use("*", dbMiddleware);
 
 // Mount all routes to the API router
 api.route("/users", userRoutes);
+api.route("/auth", authRoutes);
 
 // Mount the API router to the main app
 app.route("/api/v1", api);

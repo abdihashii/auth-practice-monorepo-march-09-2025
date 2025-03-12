@@ -1,12 +1,13 @@
 export enum ApiErrorCode {
-  INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR", // Something went wrong on the server
-  NOT_FOUND = "NOT_FOUND", // The requested resource was not found
-  VALIDATION_ERROR = "VALIDATION_ERROR", // Input validation failed
+  INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR", // Something went wrong on the server, 500
+  NOT_FOUND = "NOT_FOUND", // The requested resource was not found, 404
+  VALIDATION_ERROR = "VALIDATION_ERROR", // Input validation failed, 400
+  USER_ALREADY_EXISTS = "USER_ALREADY_EXISTS", // User already exists, 400
 }
 
 export interface ApiError {
   error: {
-    code: string;
+    code: ApiErrorCode;
     message: string;
     details?: Record<string, unknown>;
   };

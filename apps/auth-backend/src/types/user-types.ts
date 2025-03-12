@@ -36,3 +36,76 @@ export type UserDetail = UserListItem & {
 export type SelectableUserColumns = {
   [K in keyof typeof usersTable]?: boolean;
 };
+
+/**
+ * Type for user settings
+ *
+ * TODO: move to shared types package
+ */
+export interface UserSettings {
+  theme: "system" | "light" | "dark";
+  language: string;
+  timezone: string;
+}
+
+/**
+ * Type for user notification preferences
+ *
+ * TODO: move to shared types package
+ */
+export interface NotificationPreferences {
+  email: {
+    enabled: boolean;
+    digest: "never" | "daily" | "weekly" | "monthly";
+    marketing: boolean;
+  };
+  push: {
+    enabled: boolean;
+    alerts: boolean;
+  };
+}
+
+/**
+ * Represents a user in the system.
+ * This is the safe user type that excludes sensitive information like passwords and tokens.
+ * Used for client-side rendering and API responses.
+ *
+ * TODO: move to shared types package
+ */
+export interface User {
+  // Core user information
+  id: string;
+  email: string;
+  name: string | null;
+  createdAt: string;
+  updatedAt: string;
+
+  // Email verification
+  emailVerified: boolean;
+
+  // Account status & management
+  isActive: boolean;
+  deletedAt: string | null;
+
+  // User preferences & settings
+  settings: UserSettings;
+  notificationPreferences: NotificationPreferences;
+
+  // Activity tracking
+  lastActivityAt: string | null;
+  lastSuccessfulLogin: string | null;
+  loginCount: number;
+}
+
+/**
+ * Data Transfer Object (DTO) for user registration.
+ * Contains only the essential fields needed to create a new user account.
+ * Additional user data can be updated after registration.
+ *
+ * TODO: move to shared types package
+ */
+export interface CreateUserDto {
+  email: string;
+  password: string /** Will be hashed server-side */;
+  name?: string;
+}
