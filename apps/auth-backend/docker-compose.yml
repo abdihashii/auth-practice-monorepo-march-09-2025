@@ -31,6 +31,10 @@ services:
       - ../../apps/auth-backend:/app/apps/auth-backend
       # Exclude node_modules from being overwritten by the mount
       - /app/apps/auth-backend/node_modules
+      # Mount the root of the monorepo for workspace dependencies
+      - ../..:/app
+      # Don't let the above mount overwrite the node_modules at the root
+      - /app/node_modules
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@auth-backend-db:5432/auth-backend-db
