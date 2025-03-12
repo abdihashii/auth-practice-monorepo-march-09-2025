@@ -65,6 +65,7 @@ authRoutes.post("/register", async (c) => {
       })
       .returning();
 
+    // If user creation fails, throw error and have it handled in catch block
     if (!user) {
       throw new Error("Failed to create user");
     }
@@ -124,6 +125,7 @@ authRoutes.post("/register", async (c) => {
       loginCount: user.loginCount ?? 0,
     };
 
+    // Combine user and access token into auth response
     const authResponse: AuthResponse = {
       user: safeUser,
       accessToken,
