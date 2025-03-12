@@ -14,7 +14,7 @@ import {
   type UserSettings,
 } from "@/types";
 import { createApiResponse, generateTokens, hashPassword } from "@/utils";
-import { validatePasswordStrength } from "@/validation/auth-validation";
+import { validateCreateUser } from "@/validation/auth-validation";
 
 export const authRoutes = new Hono<CustomEnv>();
 
@@ -33,7 +33,24 @@ authRoutes.post("/register", async (c) => {
     const db = c.get("db");
 
     // Get body from request of type application/json
-    const body = await c.req.json<CreateUserDto>();
+    const rawBody = await c.req.json();
+
+    // Validate user input data (email, password, and optional name)
+    const validationResult = validateCreateUser(rawBody);
+    if (!validationResult.isValid) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: "Invalid input data",
+            details: { errors: validationResult.errors },
+          },
+        }),
+        400
+      );
+    }
+
+    const body = validationResult.data as CreateUserDto;
 
     // Check if user already exists and return error if so
     const existingUser = await db.query.usersTable.findFirst({
@@ -45,20 +62,6 @@ authRoutes.post("/register", async (c) => {
           error: {
             code: ApiErrorCode.USER_ALREADY_EXISTS,
             message: "User already exists",
-          },
-        }),
-        400
-      );
-    }
-
-    // Validate password strength
-    const passwordValidation = validatePasswordStrength(body.password);
-    if (!passwordValidation.isValid) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.WEAK_PASSWORD,
-            message: passwordValidation.errors.join(", "),
           },
         }),
         400
@@ -77,6 +80,7 @@ authRoutes.post("/register", async (c) => {
       .values({
         email,
         hashedPassword,
+        name: body.name ?? null,
       })
       .returning();
 
