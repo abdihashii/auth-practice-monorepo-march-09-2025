@@ -1,7 +1,7 @@
 type EnvVars = {
   DATABASE_URL: string;
   NODE_ENV: string;
-  // FRONTEND_URL: string;
+  // FRONTEND_URL: string; // Used for CORS
   JWT_SECRET: string;
 };
 
