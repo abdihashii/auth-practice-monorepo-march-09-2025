@@ -1,0 +1,3 @@
+- [ ] Registration
+- [ ] Log in
+- [ ] Authorization
