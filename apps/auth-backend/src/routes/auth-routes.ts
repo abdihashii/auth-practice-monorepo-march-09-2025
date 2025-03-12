@@ -3,7 +3,7 @@ import { Hono } from "hono";
 
 // Local imports
 import type { CustomEnv } from "@/types";
-import { hashPassword } from "@/utils";
+import { generateTokens, hashPassword } from "@/utils";
 import { usersTable } from "@/db/schema";
 
 export const authRoutes = new Hono<CustomEnv>();
@@ -26,9 +26,14 @@ authRoutes.post("/register", async (c) => {
     // Hash user password
     const hashedPassword = await hashPassword(password);
 
+    // Get JWT secret
+    const { accessToken, refreshToken } = await generateTokens(email);
+
     const newUser = {
       email,
       hashedPassword,
+      accessToken,
+      refreshToken,
     };
 
     // Add user to users table
@@ -38,6 +43,8 @@ authRoutes.post("/register", async (c) => {
       {
         email,
         message: `Successfully added ${email} to db!`,
+        accessToken,
+        refreshToken,
       },
       200
     );
