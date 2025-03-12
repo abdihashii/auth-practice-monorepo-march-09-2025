@@ -2,7 +2,7 @@ type EnvVars = {
   DATABASE_URL: string;
   NODE_ENV: string;
   // FRONTEND_URL: string;
-  // JWT_SECRET: string;
+  JWT_SECRET: string;
 };
 
 /**
@@ -15,7 +15,7 @@ export function getEnv(): EnvVars {
     DATABASE_URL: process.env.DATABASE_URL!,
     NODE_ENV: process.env.NODE_ENV!,
     // FRONTEND_URL: process.env.FRONTEND_URL!,
-    // JWT_SECRET: process.env.JWT_SECRET!,
+    JWT_SECRET: process.env.JWT_SECRET!,
   };
 }
 
@@ -28,7 +28,7 @@ export function validateEnv(): void {
     "DATABASE_URL",
     "NODE_ENV",
     // "FRONTEND_URL",
-    // "JWT_SECRET",
+    "JWT_SECRET",
   ];
   const missing = required.filter((key) => !process.env[key]);
 
