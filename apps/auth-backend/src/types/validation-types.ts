@@ -7,8 +7,3 @@ export const PASSWORD_REQUIREMENTS = {
   minSymbols: 1,
   allowedSymbols: "!@#$%^&*()_+-=[]{}|;:,.<>?",
 } as const;
-
-export interface PasswordValidationResult {
-  isValid: boolean;
-  errors: string[];
-}

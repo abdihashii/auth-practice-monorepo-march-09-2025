@@ -2,7 +2,7 @@
 import { z } from "zod";
 
 // Local imports
-import { PASSWORD_REQUIREMENTS, type PasswordValidationResult } from "@/types";
+import { PASSWORD_REQUIREMENTS } from "@/types";
 
 /**
  * Validation schema for password
@@ -78,24 +78,6 @@ export const createUserSchema = z.object({
     .max(100, "Name must be less than 100 characters")
     .optional(),
 });
-
-export function validatePasswordStrength(
-  password: string
-): PasswordValidationResult {
-  const result = passwordSchema.safeParse(password);
-
-  if (result.success) {
-    return {
-      isValid: true,
-      errors: [],
-    };
-  } else {
-    return {
-      isValid: false,
-      errors: result.error.errors.map((err) => err.message),
-    };
-  }
-}
 
 /**
  * Validates user registration input data
