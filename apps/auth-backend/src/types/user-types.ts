@@ -36,3 +36,16 @@ export type UserDetail = UserListItem & {
 export type SelectableUserColumns = {
   [K in keyof typeof usersTable]?: boolean;
 };
+
+/**
+ * Data Transfer Object (DTO) for user registration.
+ * Contains only the essential fields needed to create a new user account.
+ * Additional user data can be updated after registration.
+ *
+ * TODO: move to shared types package
+ */
+export interface CreateUserDto {
+  email: string;
+  password: string /** Will be hashed server-side */;
+  name?: string;
+}
