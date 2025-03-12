@@ -3,7 +3,6 @@ export enum ApiErrorCode {
   NOT_FOUND = "NOT_FOUND", // The requested resource was not found, 404
   VALIDATION_ERROR = "VALIDATION_ERROR", // Input validation failed, 400
   USER_ALREADY_EXISTS = "USER_ALREADY_EXISTS", // User already exists, 400
-  WEAK_PASSWORD = "WEAK_PASSWORD", // Password is too weak, 400
 }
 
 export interface ApiError {
