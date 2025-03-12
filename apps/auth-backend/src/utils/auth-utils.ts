@@ -5,6 +5,9 @@ import { sign } from "hono/jwt";
 /**
  * Hash a password using Argon2id (recommended by OWASP)
  * Using recommended settings from: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+ *
+ * @param password - The password to hash
+ * @returns The hashed password
  */
 export async function hashPassword(password: string): Promise<string> {
   return argon2.hash(password, {
@@ -17,8 +20,13 @@ export async function hashPassword(password: string): Promise<string> {
 
 /**
  * Generate JWT tokens for authentication
+ * @param userId - The user ID (uuid) to generate tokens for
+ * @returns An object containing the access token and refresh token
  */
-export async function generateTokens(userId: string) {
+export async function generateTokens(userId: string): Promise<{
+  accessToken: string;
+  refreshToken: string;
+}> {
   const secret = process.env["JWT_SECRET"];
   if (!secret) {
     throw new Error("JWT_SECRET is not defined");
