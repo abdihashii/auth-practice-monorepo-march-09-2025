@@ -35,6 +35,22 @@ authRoutes.post("/register", async (c) => {
     // Get body from request of type application/json
     const rawBody = await c.req.json();
 
+    // Check if user already exists and return error if so
+    const existingUser = await db.query.usersTable.findFirst({
+      where: eq(usersTable.email, rawBody.email),
+    });
+    if (existingUser) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.USER_ALREADY_EXISTS,
+            message: "User already exists",
+          },
+        }),
+        400
+      );
+    }
+
     // Validate user input data (email, password, and optional name)
     const validationResult = validateCreateUser(rawBody);
     if (!validationResult.isValid) {
@@ -50,23 +66,8 @@ authRoutes.post("/register", async (c) => {
       );
     }
 
+    // Create a body object from the validated data
     const body = validationResult.data as CreateUserDto;
-
-    // Check if user already exists and return error if so
-    const existingUser = await db.query.usersTable.findFirst({
-      where: eq(usersTable.email, body.email),
-    });
-    if (existingUser) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.USER_ALREADY_EXISTS,
-            message: "User already exists",
-          },
-        }),
-        400
-      );
-    }
 
     // Get email and password from body
     const { email, password } = body;
