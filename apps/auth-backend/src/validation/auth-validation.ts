@@ -79,8 +79,6 @@ export const createUserSchema = z.object({
     .optional(),
 });
 
-export type CreateUserSchema = z.infer<typeof createUserSchema>;
-
 export function validatePasswordStrength(
   password: string
 ): PasswordValidationResult {
