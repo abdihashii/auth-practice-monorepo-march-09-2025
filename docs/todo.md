@@ -10,8 +10,8 @@
 - [ ] CSRF protection
 - [ ] Authorization
   - [x] Separate public and protected routes
-  - [ ] Create protected route examples
-  - [ ] Create authorization middleware to verify tokens on protected routes
+  - [x] Create protected route examples
+  - [x] Create authorization middleware to verify tokens on protected routes
   - [ ] Add token validation checks (expiration, signature, etc.)
   - [ ] Implement proper error responses for authorization failures (401/403)
   - [ ] Add documentation for token usage in API responses
