@@ -9,6 +9,10 @@ export enum ApiErrorCode {
   INVALID_REFRESH_TOKEN = "INVALID_REFRESH_TOKEN", // Invalid refresh token, 401
   REFRESH_TOKEN_EXPIRED = "REFRESH_TOKEN_EXPIRED", // Refresh token expired, 401
   USER_INACTIVE = "USER_INACTIVE", // User is inactive, 401
+  UNAUTHORIZED = "UNAUTHORIZED", // Unauthorized, 401
+  INVALID_AUTH_TOKEN = "INVALID_AUTH_TOKEN", // Invalid authentication token, 401
+  AUTH_TOKEN_EXPIRED = "AUTH_TOKEN_EXPIRED", // Authentication token expired, 401
+  TOKEN_INVALIDATED = "TOKEN_INVALIDATED", // Token invalidated, 401
 }
 
 export interface ApiError {
