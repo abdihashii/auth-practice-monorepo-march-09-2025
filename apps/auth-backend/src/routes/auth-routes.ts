@@ -544,8 +544,6 @@ protectedRoutes.get("/me", async (c) => {
     // Get user id from auth middleware context variable
     const userId = c.get("userId");
 
-    console.log("userId", userId);
-
     // Find the user from the database
     const user = await db.query.usersTable.findFirst({
       where: eq(usersTable.id, userId),
