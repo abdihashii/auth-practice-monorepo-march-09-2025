@@ -11,6 +11,7 @@ import {
   type CreateUserDto,
   type CustomEnv,
   type NotificationPreferences,
+  type TokenResponse,
   type User,
   type UserSettings,
 } from "@/types";
@@ -396,6 +397,132 @@ authRoutes.post("/logout", async (c) => {
         data: {
           message: "Logged out successfully",
         },
+      }),
+      200
+    );
+  } catch (err) {
+    return c.json(
+      createApiResponse({
+        error: {
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+          message: err instanceof Error ? err.message : "Internal server error",
+        },
+      }),
+      500
+    );
+  }
+});
+
+/**
+ * Refresh a user's access token
+ * POST /api/v1/auth/refresh
+ */
+authRoutes.post("/refresh", async (c) => {
+  try {
+    // Get db connection
+    const db = c.get("db");
+
+    // Get refresh token from cookie
+    const refreshToken = getCookie(c, "auth-app-refreshToken");
+    if (!refreshToken) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.NO_REFRESH_TOKEN,
+            message: "No refresh token provided",
+          },
+        }),
+        401
+      );
+    }
+
+    // Find the user with this refresh token
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.refreshToken, refreshToken),
+    });
+    if (!user) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INVALID_REFRESH_TOKEN,
+            message: "Invalid refresh token",
+          },
+        }),
+        401
+      );
+    }
+    if (!user.refreshTokenExpiresAt) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INVALID_REFRESH_TOKEN,
+            message: "Invalid refresh token",
+          },
+        }),
+        401
+      );
+    }
+
+    // Check if refresh token is expired
+    if (user.refreshTokenExpiresAt < new Date()) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.REFRESH_TOKEN_EXPIRED,
+            message: "Refresh token expired",
+          },
+        }),
+        401
+      );
+    }
+
+    // Check if user is active
+    if (!user.isActive) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.USER_INACTIVE,
+            message: "User account is not active",
+          },
+        }),
+        401
+      );
+    }
+
+    // Generate new tokens
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+      await generateTokens(user.id);
+
+    // Update user with new refresh token (rotation)
+    await db
+      .update(usersTable)
+      .set({
+        refreshToken: newRefreshToken,
+        refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        lastActivityAt: new Date(),
+      })
+      .where(eq(usersTable.id, user.id));
+
+    // Set new refresh token cookie
+    setCookie(c, "auth-app-refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // true in production
+      sameSite: "Lax", // or 'Strict' if not dealing with third-party redirects
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      // Optional: Use __Host- prefix for additional security in production
+      ...(process.env.NODE_ENV === "production" && {
+        prefix: "host", // This will prefix the cookie with __Host-
+      }),
+    });
+
+    const tokenResponse: TokenResponse = {
+      accessToken: newAccessToken,
+    };
+
+    return c.json(
+      createApiResponse({
+        data: tokenResponse,
       }),
       200
     );
