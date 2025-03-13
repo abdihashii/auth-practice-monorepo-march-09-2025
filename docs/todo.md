@@ -5,7 +5,7 @@
 - [x] Log out
 - [ ] Forgot password
 - [ ] Verify email
-- [ ] Refresh token endpoint
+- [x] Refresh token endpoint
 - [x] HTTP-only cookie
 - [ ] CSRF protection
 - [ ] Authorization

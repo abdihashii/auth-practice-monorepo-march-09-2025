@@ -33,3 +33,12 @@ export interface AuthResponse {
   user: User;
   accessToken: string;
 }
+
+/**
+ * Internal response type for token refresh operations.
+ * Returns a new access token for memory storage.
+ * Note: Refresh tokens are handled via HTTP-only cookies and never exposed to JavaScript.
+ */
+export interface TokenResponse {
+  accessToken: string;
+}
