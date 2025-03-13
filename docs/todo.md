@@ -9,8 +9,7 @@
 - [x] HTTP-only cookie
 - [ ] CSRF protection
 - [ ] Authorization
-  - [ ] Separate public and protected routes
-  - [ ] Create protected route examples
+  - [x] Separate public and protected routes
   - [ ] Create authorization middleware to verify tokens on protected routes
   - [ ] Implement token refresh mechanism (using refreshToken to get a new accessToken)
   - [ ] Add token validation checks (expiration, signature, etc.)
