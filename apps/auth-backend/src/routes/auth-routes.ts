@@ -440,18 +440,7 @@ authRoutes.post("/refresh", async (c) => {
     const user = await db.query.usersTable.findFirst({
       where: eq(usersTable.refreshToken, refreshToken),
     });
-    if (!user) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.INVALID_REFRESH_TOKEN,
-            message: "Invalid refresh token",
-          },
-        }),
-        401
-      );
-    }
-    if (!user.refreshTokenExpiresAt) {
+    if (!user || !user.refreshTokenExpiresAt) {
       return c.json(
         createApiResponse({
           error: {
