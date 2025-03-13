@@ -5,6 +5,10 @@ export enum ApiErrorCode {
   USER_ALREADY_EXISTS = "USER_ALREADY_EXISTS", // User already exists, 400
   USER_NOT_FOUND = "USER_NOT_FOUND", // User not found, 404
   INVALID_CREDENTIALS = "INVALID_CREDENTIALS", // Invalid credentials, 401
+  NO_REFRESH_TOKEN = "NO_REFRESH_TOKEN", // No refresh token provided, 401
+  INVALID_REFRESH_TOKEN = "INVALID_REFRESH_TOKEN", // Invalid refresh token, 401
+  REFRESH_TOKEN_EXPIRED = "REFRESH_TOKEN_EXPIRED", // Refresh token expired, 401
+  USER_INACTIVE = "USER_INACTIVE", // User is inactive, 401
 }
 
 export interface ApiError {
