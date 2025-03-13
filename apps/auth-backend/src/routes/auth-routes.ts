@@ -1,6 +1,7 @@
 // Third-party imports
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
+import { setCookie } from "hono/cookie";
 
 // Local imports
 import { usersTable } from "@/db/schema";
@@ -24,7 +25,6 @@ import {
   loginUserSchema,
   validateAuthSchema,
 } from "@/validation/auth-validation";
-import { setCookie } from "hono/cookie";
 
 export const authRoutes = new Hono<CustomEnv>();
 
@@ -110,7 +110,7 @@ authRoutes.post("/register", async (c) => {
       .where(eq(usersTable.id, user.id));
 
     // Set refresh token in HTTP-only cookie
-    setCookie(c, "refreshToken", refreshToken, {
+    setCookie(c, "auth-app-refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // true in production
       sameSite: "Lax", // or 'Strict' if not dealing with third-party redirects
