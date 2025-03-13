@@ -2,11 +2,11 @@
 
 - [x] Registration
 - [x] Log in
-- [ ] Log out
+- [x] Log out
 - [ ] Forgot password
 - [ ] Verify email
-- [x] Refresh token
-- [ ] HTTP-only cookie
+- [ ] Refresh token endpoint
+- [x] HTTP-only cookie
 - [ ] Authorization
   - [ ] Separate public and protected routes
   - [ ] Create protected route examples
