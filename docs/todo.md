@@ -6,6 +6,7 @@
 - [ ] Forgot password
 - [ ] Verify email
 - [ ] Refresh token
+- [ ] HTTP-only cookie
 - [ ] Authorization
   - [ ] Separate public and protected routes
   - [ ] Create protected route examples
