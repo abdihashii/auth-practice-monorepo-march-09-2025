@@ -35,7 +35,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
       );
     }
 
-    // Get the JWT secret
+    // Get the JWT secret from the environment variables
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
       return c.json(
@@ -50,7 +50,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
     }
 
     try {
-      // Decode the token
+      // Decode the access token
       const decoded = await verify(authToken, jwtSecret);
       const payload = decoded as unknown as CustomJWTPayload;
 
@@ -59,8 +59,8 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
         return c.json(
           {
             error: {
-              code: ApiErrorCode.INVALID_AUTH_TOKEN,
-              message: "Invalid authentication token",
+              code: ApiErrorCode.INVALID_ACCESS_TOKEN,
+              message: "Invalid access token",
             },
           },
           401
@@ -72,8 +72,8 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
         return c.json(
           {
             error: {
-              code: ApiErrorCode.AUTH_TOKEN_EXPIRED,
-              message: "Authentication token expired",
+              code: ApiErrorCode.ACCESS_TOKEN_EXPIRED,
+              message: "Access token expired",
             },
           },
           401
@@ -123,7 +123,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
             {
               error: {
                 code: ApiErrorCode.TOKEN_INVALIDATED,
-                message: "Authentication token invalidated",
+                message: "Access token invalidated",
               },
             },
             401
@@ -137,14 +137,22 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
       return c.json(
         {
           error: {
-            code: ApiErrorCode.INVALID_AUTH_TOKEN,
-            message: "Invalid authentication token",
+            code: ApiErrorCode.INVALID_ACCESS_TOKEN,
+            message: "Invalid access token",
           },
         },
         401
       );
     }
   } catch (err) {
-    return c.json({ error: "Unauthorized" }, 401);
+    return c.json(
+      {
+        error: {
+          code: ApiErrorCode.UNAUTHORIZED,
+          message: "Unauthorized",
+        },
+      },
+      401
+    );
   }
 };
