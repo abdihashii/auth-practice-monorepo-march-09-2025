@@ -24,6 +24,7 @@ import {
   loginUserSchema,
   validateAuthSchema,
 } from "@/validation/auth-validation";
+import { setCookie } from "hono/cookie";
 
 export const authRoutes = new Hono<CustomEnv>();
 
@@ -107,6 +108,19 @@ authRoutes.post("/register", async (c) => {
         loginCount: 1,
       })
       .where(eq(usersTable.id, user.id));
+
+    // Set refresh token in HTTP-only cookie
+    setCookie(c, "refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // true in production
+      sameSite: "Lax", // or 'Strict' if not dealing with third-party redirects
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      // Optional: Use __Host- prefix for additional security in production
+      ...(process.env.NODE_ENV === "production" && {
+        prefix: "host", // This will prefix the cookie with __Host-
+      }),
+    });
 
     // Create a safe user object (excluding sensitive data)
     const safeUser: User = {
