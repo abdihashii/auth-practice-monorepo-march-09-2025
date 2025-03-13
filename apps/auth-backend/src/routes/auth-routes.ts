@@ -5,6 +5,7 @@ import { getCookie, setCookie } from "hono/cookie";
 
 // Local imports
 import { usersTable } from "@/db/schema";
+import { authMiddleware } from "@/middlewares/authMiddleware";
 import {
   ApiErrorCode,
   type AuthResponse,
@@ -29,11 +30,14 @@ import {
 
 export const authRoutes = new Hono<CustomEnv>();
 
+// Public auth routes (no auth required)
+const publicRoutes = new Hono<CustomEnv>();
+
 /**
  * Register a new user
  * POST /api/v1/auth/register
  */
-authRoutes.post("/register", async (c) => {
+publicRoutes.post("/register", async (c) => {
   try {
     // Get db connection
     const db = c.get("db");
@@ -193,7 +197,7 @@ authRoutes.post("/register", async (c) => {
  * Login a user
  * POST /api/v1/auth/login
  */
-authRoutes.post("/login", async (c) => {
+publicRoutes.post("/login", async (c) => {
   try {
     // Get db connection
     const db = c.get("db");
@@ -350,7 +354,7 @@ authRoutes.post("/login", async (c) => {
  * Logout a user
  * POST /api/v1/auth/logout
  */
-authRoutes.post("/logout", async (c) => {
+publicRoutes.post("/logout", async (c) => {
   try {
     // Get db connection
     const db = c.get("db");
@@ -417,7 +421,7 @@ authRoutes.post("/logout", async (c) => {
  * Refresh a user's access token
  * POST /api/v1/auth/refresh
  */
-authRoutes.post("/refresh", async (c) => {
+publicRoutes.post("/refresh", async (c) => {
   try {
     // Get db connection
     const db = c.get("db");
@@ -527,3 +531,91 @@ authRoutes.post("/refresh", async (c) => {
     );
   }
 });
+
+// Protected auth routes (auth required)
+const protectedRoutes = new Hono<CustomEnv>();
+protectedRoutes.use("*", authMiddleware);
+
+protectedRoutes.get("/me", async (c) => {
+  try {
+    // Get db connection
+    const db = c.get("db");
+
+    // Get user id from auth middleware context variable
+    const userId = c.get("userId");
+
+    // Find the user from the database
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, userId),
+    });
+    if (!user) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.USER_NOT_FOUND,
+            message: "User not found",
+          },
+        }),
+        404
+      );
+    }
+
+    // Create a safe user object (excluding sensitive data)
+    const safeUser: User = {
+      // Core user information
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
+      updatedAt: user.updatedAt?.toISOString() ?? new Date().toISOString(),
+
+      // Email verification
+      emailVerified: user.emailVerified ?? false,
+
+      // Account status & management
+      isActive: user.isActive ?? true,
+      deletedAt: user.deletedAt?.toISOString() ?? null,
+
+      // User preferences & settings
+      settings: (user.settings as UserSettings) ?? {
+        theme: "system",
+        language: "en",
+        timezone: "UTC",
+      },
+
+      // User preferences & settings
+      notificationPreferences:
+        (user.notificationPreferences as NotificationPreferences) ?? {
+          email: {
+            enabled: false,
+          },
+        },
+
+      // Activity tracking
+      lastActivityAt: user.lastActivityAt?.toISOString() ?? null,
+      lastSuccessfulLogin: user.lastSuccessfulLogin?.toISOString() ?? null,
+      loginCount: user.loginCount ?? 0,
+    };
+
+    return c.json(
+      createApiResponse({
+        data: safeUser,
+      }),
+      200
+    );
+  } catch (err) {
+    return c.json(
+      createApiResponse({
+        error: {
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+          message: err instanceof Error ? err.message : "Internal server error",
+        },
+      }),
+      500
+    );
+  }
+});
+
+// Mount route groups to authRoutes
+authRoutes.route("", publicRoutes);
+authRoutes.route("", protectedRoutes);
