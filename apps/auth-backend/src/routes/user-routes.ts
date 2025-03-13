@@ -77,7 +77,7 @@ userRoutes.get("/:id", zValidator("param", idParamSchema), async (c) => {
       return c.json(
         createApiResponse({
           error: {
-            code: "NOT_FOUND",
+            code: ApiErrorCode.NOT_FOUND,
             message: "User not found",
           },
         }),
@@ -99,7 +99,7 @@ userRoutes.get("/:id", zValidator("param", idParamSchema), async (c) => {
     return c.json(
       createApiResponse({
         error: {
-          code: "INTERNAL_SERVER_ERROR",
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
           message: "Failed to retrieve user",
         },
       }),
