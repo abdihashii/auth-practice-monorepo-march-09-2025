@@ -94,6 +94,10 @@ export const loginUserSchema = z.object({
  * Validate user input data against a Zod schema
  * Returns a boolean indicating success or failure
  * Returns an object with isValid, errors, and data properties
+ *
+ * @param {z.ZodSchema} schema - The Zod schema to validate against
+ * @param {unknown} data - The data to validate
+ * @returns {Object} An object with isValid, errors, and data properties
  */
 export function validateAuthSchema<T extends z.ZodSchema>(
   schema: T,
