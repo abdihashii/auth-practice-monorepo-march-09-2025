@@ -533,7 +533,6 @@ publicRoutes.post("/refresh", async (c) => {
 });
 
 // Protected auth routes (auth required)
-// TODO: add verification middleware to the protected routes
 const protectedRoutes = new Hono<CustomEnv>();
 protectedRoutes.use("*", authMiddleware);
 
