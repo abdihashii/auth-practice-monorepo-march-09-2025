@@ -4,6 +4,12 @@ import { z } from "zod";
 // Local imports
 import { PASSWORD_REQUIREMENTS } from "@/types";
 
+export const emailSchema = z
+  .string()
+  .email("Invalid email format")
+  .min(5, "Email must be at least 5 characters")
+  .max(255, "Email must be less than 255 characters");
+
 /**
  * Validation schema for password
  * Ensures the password
@@ -66,11 +72,7 @@ export const passwordSchema = z
  * Validates the CreateUserDto structure with proper constraints
  */
 export const createUserSchema = z.object({
-  email: z
-    .string()
-    .email("Invalid email format")
-    .min(5, "Email must be at least 5 characters")
-    .max(255, "Email must be less than 255 characters"),
+  email: emailSchema,
   password: passwordSchema,
   name: z
     .string()
@@ -80,16 +82,32 @@ export const createUserSchema = z.object({
 });
 
 /**
- * Validates user registration input data
- * @param data - The data to validate against CreateUserDto schema
- * @returns Object containing validation result and any error messages
+ * Validation schema for user login
+ * Validates the LoginUserDto structure with proper constraints
  */
-export function validateCreateUser(data: unknown): {
+export const loginUserSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+});
+
+/**
+ * Validate user input data against a Zod schema
+ * Returns a boolean indicating success or failure
+ * Returns an object with isValid, errors, and data properties
+ *
+ * @param {z.ZodSchema} schema - The Zod schema to validate against
+ * @param {unknown} data - The data to validate
+ * @returns {Object} An object with isValid, errors, and data properties
+ */
+export function validateAuthSchema<T extends z.ZodSchema>(
+  schema: T,
+  data: unknown
+): {
   isValid: boolean;
   errors: string[];
-  data?: z.infer<typeof createUserSchema>;
+  data?: z.infer<typeof schema>;
 } {
-  const result = createUserSchema.safeParse(data);
+  const result = schema.safeParse(data);
 
   if (result.success) {
     return {

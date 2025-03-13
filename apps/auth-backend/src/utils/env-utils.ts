@@ -7,7 +7,8 @@ type EnvVars = {
 
 /**
  * Gets environment variables from process.env
- * @returns Environment variables
+ *
+ * @returns {EnvVars} Environment variables
  */
 export function getEnv(): EnvVars {
   return {
@@ -20,7 +21,8 @@ export function getEnv(): EnvVars {
 
 /**
  * Validates that all required environment variables are present
- * @throws Error if any required variables are missing
+ *
+ * @throws {Error} if any required variables are missing
  */
 export function validateEnv(): void {
   const required = [

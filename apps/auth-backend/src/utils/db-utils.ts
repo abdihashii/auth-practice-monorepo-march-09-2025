@@ -3,8 +3,10 @@ import { PgColumn } from "drizzle-orm/pg-core";
 
 /**
  * Helper function to create a select object for Drizzle ORM from selectable columns
- * @param columns The columns to select
- * @returns A record mapping column names to their PgColumn objects
+ *
+ * @param {T} table - The table to select from
+ * @param {Record<string, boolean>} columns - The columns to select
+ * @returns {Record<string, PgColumn<any>>} A record mapping column names to their PgColumn objects
  */
 export function createSelectObject<T extends Record<string, any>>(
   table: T,
