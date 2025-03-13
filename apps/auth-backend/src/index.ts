@@ -10,6 +10,15 @@ import { authRoutes } from "@/routes/auth-routes";
 import { userRoutes } from "@/routes/user-routes";
 import type { CustomEnv } from "@/types";
 import { validateEnv } from "@/utils";
+import * as Sentry from "@sentry/bun";
+
+Sentry.init({
+  dsn: "https://c3ff452ee3118ace1c8ab114cce5f2f3@o4508969051553792.ingest.us.sentry.io/4508969051815936",
+
+  // Add Performance Monitoring by setting tracesSampleRate
+  // We recommend adjusting this value in production
+  tracesSampleRate: 1.0,
+});
 
 // Validate environment variables at startup
 try {
