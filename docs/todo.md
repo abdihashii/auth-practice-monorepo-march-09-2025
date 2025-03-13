@@ -5,7 +5,7 @@
 - [ ] Log out
 - [ ] Forgot password
 - [ ] Verify email
-- [ ] Refresh token
+- [x] Refresh token
 - [ ] HTTP-only cookie
 - [ ] Authorization
   - [ ] Separate public and protected routes
