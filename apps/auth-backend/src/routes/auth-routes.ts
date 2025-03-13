@@ -1,7 +1,7 @@
 // Third-party imports
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { setCookie } from "hono/cookie";
+import { getCookie, setCookie } from "hono/cookie";
 
 // Local imports
 import { usersTable } from "@/db/schema";
@@ -329,6 +329,73 @@ authRoutes.post("/login", async (c) => {
     return c.json(
       createApiResponse({
         data: authResponse,
+      }),
+      200
+    );
+  } catch (err) {
+    return c.json(
+      createApiResponse({
+        error: {
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+          message: err instanceof Error ? err.message : "Internal server error",
+        },
+      }),
+      500
+    );
+  }
+});
+
+/**
+ * Logout a user
+ * POST /api/v1/auth/logout
+ */
+authRoutes.post("/logout", async (c) => {
+  try {
+    // Get db connection
+    const db = c.get("db");
+
+    // Get refresh token from cookie
+    const refreshToken = getCookie(c, "auth-app-refreshToken");
+
+    // If no refresh token is found, return success (already logged out)
+    if (!refreshToken) {
+      return c.json(
+        createApiResponse({
+          data: {
+            message: "Logged out successfully",
+          },
+        }),
+        200
+      );
+    }
+
+    // Clear refresh token from database and invalidate it
+    await db
+      .update(usersTable)
+      .set({
+        refreshToken: null,
+        refreshTokenExpiresAt: null,
+        lastTokenInvalidation: new Date(),
+      })
+      .where(eq(usersTable.refreshToken, refreshToken));
+
+    // Clear refresh token from cookie
+    setCookie(c, "refreshToken", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // true in production
+      sameSite: "Lax", // or 'Strict' if not dealing with third-party redirects
+      path: "/",
+      maxAge: 0, // Expire immediately
+      ...(process.env.NODE_ENV === "production" && {
+        prefix: "host", // This will prefix the cookie with __Host-
+      }),
+    });
+
+    return c.json(
+      createApiResponse({
+        data: {
+          message: "Logged out successfully",
+        },
       }),
       200
     );
