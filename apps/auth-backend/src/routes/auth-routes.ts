@@ -29,11 +29,14 @@ import {
 
 export const authRoutes = new Hono<CustomEnv>();
 
+// Public auth routes (no auth required)
+const publicRoutes = new Hono<CustomEnv>();
+
 /**
  * Register a new user
  * POST /api/v1/auth/register
  */
-authRoutes.post("/register", async (c) => {
+publicRoutes.post("/register", async (c) => {
   try {
     // Get db connection
     const db = c.get("db");
@@ -193,7 +196,7 @@ authRoutes.post("/register", async (c) => {
  * Login a user
  * POST /api/v1/auth/login
  */
-authRoutes.post("/login", async (c) => {
+publicRoutes.post("/login", async (c) => {
   try {
     // Get db connection
     const db = c.get("db");
@@ -350,7 +353,7 @@ authRoutes.post("/login", async (c) => {
  * Logout a user
  * POST /api/v1/auth/logout
  */
-authRoutes.post("/logout", async (c) => {
+publicRoutes.post("/logout", async (c) => {
   try {
     // Get db connection
     const db = c.get("db");
@@ -417,7 +420,7 @@ authRoutes.post("/logout", async (c) => {
  * Refresh a user's access token
  * POST /api/v1/auth/refresh
  */
-authRoutes.post("/refresh", async (c) => {
+publicRoutes.post("/refresh", async (c) => {
   try {
     // Get db connection
     const db = c.get("db");
@@ -527,3 +530,6 @@ authRoutes.post("/refresh", async (c) => {
     );
   }
 });
+
+// Mount route groups to authRoutes
+authRoutes.route("", publicRoutes);
