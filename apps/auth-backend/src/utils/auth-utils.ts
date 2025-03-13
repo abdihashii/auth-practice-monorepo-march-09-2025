@@ -19,6 +19,25 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 /**
+ * Verify a password against a hash using Argon2id
+ *
+ * @param {string} password - The password to verify
+ * @param {string} hash - The hashed password to verify against
+ * @returns {Promise<boolean>} True if the password is valid, false otherwise
+ */
+export async function verifyPassword(
+  password: string,
+  hash: string
+): Promise<boolean> {
+  try {
+    return await argon2.verify(hash, password);
+  } catch (error) {
+    console.error("Password verification error:", error);
+    return false;
+  }
+}
+
+/**
  * Generate JWT tokens for authentication
  * @param userId - The user ID (uuid) to generate tokens for
  * @returns An object containing the access token and refresh token
