@@ -40,14 +40,14 @@ WORKDIR /app
 COPY --from=builder /app/apps/auth-backend/dist ./dist
 COPY --from=builder /app/apps/auth-backend/package.json ./
 
-# Install only production dependencies
-RUN bun install --production
+# Instead of running bun install, we'll simply copy the node_modules from the builder stage
+COPY --from=builder /app/apps/auth-backend/node_modules ./node_modules
 
 # Set production environment
 ENV NODE_ENV=production
 
 # Expose the port the app runs on
-EXPOSE 1234
+EXPOSE 8000
 
 # Command to run the app in production mode
 CMD ["bun", "run", "dist/index.js"]
