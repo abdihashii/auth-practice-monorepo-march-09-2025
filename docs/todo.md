@@ -1,5 +1,11 @@
+## Backend TODOs
+
 - [x] Registration
 - [x] Log in
+- [ ] Log out
+- [ ] Forgot password
+- [ ] Verify email
+- [ ] Refresh token
 - [ ] Authorization
   - [ ] Separate public and protected routes
   - [ ] Create protected route examples
@@ -13,3 +19,17 @@ Bonus
 
 - [ ] Add role-based access control (RBAC) for different user types
 - [ ] Create token blacklisting/revocation system
+- [ ] Add rate limiting to the API
+- [ ] Delete account
+
+## Frontend TODOs
+
+- [ ] Create a basic public page
+- [ ] Create a basic registration UI
+- [ ] Create a basic login UI
+- [ ] Create a basic protected page
+- [ ] Add auth protection to the protected page
+- [ ] Implement a way to refresh the access token
+- [ ] Implement a way to revoke the refresh token
+- [ ] Implement a way to check if the user is authenticated
+- [ ] Implement a way to logout the user
