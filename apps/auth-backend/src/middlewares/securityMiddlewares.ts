@@ -1,4 +1,6 @@
 // Third-party imports
+import type { CustomEnv } from "@/types";
+import type { MiddlewareHandler } from "hono";
 import { csrf } from "hono/csrf";
 import { secureHeaders } from "hono/secure-headers";
 
@@ -40,3 +42,22 @@ export const securityHeadersMiddleware = secureHeaders({
       }
     : {}),
 });
+
+/**
+ * HTTPS enforcement middleware (only in production)
+ * Redirects HTTP requests to HTTPS in production environment
+ */
+export const httpsEnforcementMiddleware: MiddlewareHandler<CustomEnv> = async (
+  c,
+  next
+) => {
+  if (process.env.NODE_ENV === "production") {
+    const proto = c.req.header("x-forwarded-proto");
+    if (proto && proto !== "https") {
+      const url = new URL(c.req.url);
+      url.protocol = "https:";
+      return c.redirect(url.toString(), 301);
+    }
+  }
+  await next();
+};
