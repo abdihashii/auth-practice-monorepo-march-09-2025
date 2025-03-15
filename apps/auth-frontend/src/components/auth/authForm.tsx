@@ -1,5 +1,4 @@
-import { cn } from "@/lib/utils";
-
+// Third-party imports
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,6 +9,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+
+// Local imports
 
 export function LoginForm({
   className,
