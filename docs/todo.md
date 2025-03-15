@@ -26,11 +26,13 @@ Bonus
 ## Frontend TODOs
 
 - [ ] Create a basic public page
-- [ ] Create a basic registration UI
-- [ ] Create a basic login UI
-- [ ] Create a basic protected page
-- [ ] Add auth protection to the protected page
+- [x] Create a basic registration UI
+- [x] Create a basic login UI
+- [x] Create a basic protected page
+- [x] Add auth protection to the protected page
 - [ ] Implement a way to refresh the access token
 - [ ] Implement a way to revoke the refresh token
-- [ ] Implement a way to check if the user is authenticated
-- [ ] Implement a way to logout the user
+- [x] Implement a way to check if the user is authenticated
+- [x] Implement a way to logout the user
+- [ ] Eslint
+- [ ] Prettier
