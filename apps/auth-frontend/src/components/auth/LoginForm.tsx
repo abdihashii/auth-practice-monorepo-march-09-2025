@@ -21,6 +21,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Link } from "@tanstack/react-router";
 
 // Local libraries
 import { loginFormSchema } from "@/schemas/auth-form-schema";
@@ -114,9 +115,12 @@ export function LoginForm({
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-              <a href="/signup" className="underline underline-offset-4">
-                Sign up
-              </a>
+              <Link
+                to="/register"
+                className="underline underline-offset-4 hover:text-primary"
+              >
+                Register
+              </Link>
             </div>
           </form>
         </CardContent>
