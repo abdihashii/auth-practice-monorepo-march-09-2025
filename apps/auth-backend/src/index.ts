@@ -11,6 +11,7 @@ import { userRoutes } from "@/routes/user-routes";
 import type { CustomEnv } from "@/types";
 import { validateEnv } from "@/utils";
 import * as Sentry from "@sentry/bun";
+import { securityMiddlewares } from "./middlewares/securityMiddlewares";
 
 Sentry.init({
   dsn: "https://c3ff452ee3118ace1c8ab114cce5f2f3@o4508969051553792.ingest.us.sentry.io/4508969051815936",
@@ -36,6 +37,9 @@ const app = new Hono<CustomEnv>();
 
 // Use the cors middleware
 app.use("*", corsMiddleware);
+
+// Apply all security middlewares
+app.use("*", ...securityMiddlewares);
 
 // Add request logging
 app.use("*", async (c, next) => {

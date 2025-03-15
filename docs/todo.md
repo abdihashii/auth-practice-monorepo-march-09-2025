@@ -7,7 +7,7 @@
 - [ ] Verify email
 - [x] Refresh token endpoint
 - [x] HTTP-only cookie
-- [ ] CSRF protection
+- [x] CSRF protection
 - [ ] Authorization
   - [x] Separate public and protected routes
   - [x] Create protected route examples
