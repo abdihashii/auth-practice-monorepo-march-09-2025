@@ -15,6 +15,12 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Local libraries
 import { loginFormSchema } from "@/schemas/auth-form-schema";
@@ -68,13 +74,29 @@ export function LoginForm({
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
+                  <Label htmlFor="password" className="flex-1">
+                    Password
+                  </Label>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="hover:cursor-not-allowed ">
+                          <a
+                            href="#"
+                            className="inline-block text-sm underline-offset-4 hover:underline pointer-events-none opacity-50"
+                            aria-disabled="true"
+                            onClick={(e) => e.preventDefault()}
+                            tabIndex={-1}
+                          >
+                            Forgot your password?
+                          </a>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        We are still working on this feature!
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
                 <Input
                   {...register("password")}
