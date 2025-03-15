@@ -7,9 +7,8 @@ import { secureHeaders } from "hono/secure-headers";
 /**
  * CSRF protection middleware configuration
  *
- * This middleware is used to protect the API from CSRF attacks by
- * preventing Cross-Site Request Forgery (CSRF) attacks by requiring
- * a CSRF token in the request headers.
+ * This middleware protects the API from Cross-Site Request Forgery (CSRF)
+ * attacks by requiring and validating a CSRF token in the request headers.
  *
  * It checks the CSRF token in the request headers and validates it.
  * If the token is invalid, the request is rejected with a 403 error.
@@ -20,6 +19,7 @@ export const csrfMiddleware = csrf({
 
 /**
  * Security headers middleware configuration
+ *
  * These HTTP headers help protect against common web vulnerabilities
  */
 export const securityHeadersMiddleware = secureHeaders({
@@ -43,6 +43,7 @@ export const securityHeadersMiddleware = secureHeaders({
 
 /**
  * HTTPS enforcement middleware (only in production)
+ *
  * Redirects HTTP requests to HTTPS in production environment
  */
 export const httpsEnforcementMiddleware: MiddlewareHandler<CustomEnv> = async (
