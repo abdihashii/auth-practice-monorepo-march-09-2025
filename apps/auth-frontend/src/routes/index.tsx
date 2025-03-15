@@ -23,8 +23,11 @@ function App() {
 
           <div className="mb-6 rounded-lg border bg-card p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-semibold">
-              Welcome, {user?.name || "User"}!
+              Welcome, {user?.user?.name ?? "User"}!
             </h2>
+            <p className="text-muted-foreground">
+              <span className="font-bold">Email:</span> {user?.user?.email}
+            </p>
             <p className="text-muted-foreground">
               You are now authenticated and viewing a protected route.
             </p>
