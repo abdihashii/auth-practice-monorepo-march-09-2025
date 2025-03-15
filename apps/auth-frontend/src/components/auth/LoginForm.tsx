@@ -67,7 +67,6 @@ export function LoginForm({
                   id="email"
                   type="email"
                   placeholder="test@example.com"
-                  required
                 />
                 {errors.email && (
                   <p className="text-red-500">{errors.email.message}</p>
@@ -103,8 +102,10 @@ export function LoginForm({
                   {...register("password")}
                   id="password"
                   type="password"
-                  required
                 />
+                {errors.password && (
+                  <p className="text-red-500">{errors.password.message}</p>
+                )}
               </div>
               <Button type="submit" className="w-full">
                 Login
