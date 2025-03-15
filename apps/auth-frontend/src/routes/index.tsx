@@ -6,8 +6,8 @@ export const Route = createFileRoute("/")({
 
 function App() {
   return (
-    <main>
-      <h1>Roll Your Own Auth</h1>
+    <main className="min-h-screen bg-black">
+      <h1 className="text-white">Roll Your Own Auth</h1>
     </main>
   );
 }
