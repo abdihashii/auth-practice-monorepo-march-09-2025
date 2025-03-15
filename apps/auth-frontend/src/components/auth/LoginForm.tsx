@@ -1,6 +1,3 @@
-// React
-import { useNavigate } from "@tanstack/react-router";
-
 // Third-party libraries
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,7 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Link } from "@tanstack/react-router";
-import { Loader2Icon } from "lucide-react";
+import { AlertCircle, Loader2Icon } from "lucide-react";
 
 // Local libraries
 import { useAuthContext } from "@/providers/auth-context-provider";
@@ -37,12 +34,13 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const navigate = useNavigate();
+  const { login, isLoggingIn } = useAuthContext();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -51,13 +49,19 @@ export function LoginForm({
     },
   });
 
-  const { login, isPending: isLoggingIn } = useAuthContext();
-
   async function onSubmit(data: z.infer<typeof loginFormSchema>) {
-    await login(data.email, data.password);
-
-    // Navigate to the home page
-    navigate({ to: "/" });
+    try {
+      await login(data.email, data.password);
+    } catch (error) {
+      // Set form error for server-side errors
+      setError("root", {
+        type: "server",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to log in. Please try again.",
+      });
+    }
   }
 
   return (
@@ -72,6 +76,14 @@ export function LoginForm({
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
+              {/* Server error message */}
+              {errors.root?.message && (
+                <div className="flex items-center gap-2 p-4 text-sm border border-red-500 bg-red-50 text-red-900 rounded-md">
+                  <AlertCircle className="h-4 w-4" />
+                  <div>{errors.root.message}</div>
+                </div>
+              )}
+
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -121,7 +133,10 @@ export function LoginForm({
               </div>
               <Button type="submit" className="w-full" disabled={isLoggingIn}>
                 {isLoggingIn ? (
-                  <Loader2Icon className="w-4 h-4 mr-2" />
+                  <>
+                    <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                    Logging in...
+                  </>
                 ) : (
                   "Login"
                 )}
