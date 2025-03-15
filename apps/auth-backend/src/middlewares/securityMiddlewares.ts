@@ -61,3 +61,31 @@ export const httpsEnforcementMiddleware: MiddlewareHandler<CustomEnv> = async (
   }
   await next();
 };
+
+/**
+ * Content-Type enforcement Middleware
+ *
+ * Ensures proper Content-Type headers are used for requests.
+ * Enforces application/json for POST, PUT, PATCH requests
+ */
+export const contentTypeMiddleware: MiddlewareHandler<CustomEnv> = async (
+  c,
+  next
+) => {
+  const contentType = c.req.header("content-type");
+  const method = c.req.method;
+
+  // Only check content-type for POST, PUT, PATCH requests
+  if (
+    ["POST", "PUT", "PATCH"].includes(method) &&
+    (!contentType || !contentType.includes("application/json"))
+  ) {
+    return c.json(
+      {
+        error: "Content-Type must be application/json",
+      },
+      415
+    );
+  }
+  await next();
+};
