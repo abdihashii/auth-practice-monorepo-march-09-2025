@@ -1,57 +1,49 @@
 // React
+import type { RefetchOptions } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 
-// Third-party components
-import { useQuery } from "@tanstack/react-query";
-
 // Local components
-import { AUTH_QUERY_KEY, useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
+import type { User } from "@/types/auth-types";
 
-type User = {
-  id: string;
-  email: string;
-  name?: string;
-};
-
-type AuthContextType = {
-  user: User | null;
-  isPending: boolean;
+// Define the shape of the auth context
+interface AuthContextType {
+  // State
+  user: User | null | undefined;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-};
+  isPending: boolean;
+  isLoading: boolean;
+  isLoggingIn: boolean;
+  isLoggingOut: boolean;
+  error: unknown;
 
+  // Actions
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  refetchUser: (options?: RefetchOptions) => Promise<unknown>;
+}
+
+// Create the auth context with undefined as initial value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Provider component that wraps your app and makes auth object available to any
+ * child component that calls useAuthContext().
+ */
 export const AuthContextProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const { loginMutation } = useAuth();
+  // Use our custom hook to get auth methods and state
+  const auth = useAuth();
 
-  // Get user data from the query cache
-  const { data: user, isPending } = useQuery({
-    queryKey: AUTH_QUERY_KEY,
-    // No queryFn needed as data comes from the login mutation
-    staleTime: Infinity,
-  });
-
-  const login = async (email: string, password: string) => {
-    await loginMutation.mutateAsync({ email, password });
-  };
-
-  // Context value object
-  const value: AuthContextType = {
-    user: user as User | null,
-    isPending: isPending || loginMutation.isPending,
-    isAuthenticated: !!user,
-    login,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };
 
-// Custom hook to use the auth context
+/**
+ * Hook for components to get the auth object and re-render when it changes.
+ */
 export const useAuthContext = () => {
   const context = useContext(AuthContext);
 
