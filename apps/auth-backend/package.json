@@ -4,11 +4,8 @@
   "type": "module",
   "scripts": {
     "// ============== DEVELOPMENT COMMANDS ===============": "",
-    "// dev": "Default development mode: Run API locally with hot reload, DB in Docker",
     "dev": "pnpm run dev:local",
-    "// dev:local": "Run API locally with hot reload, DB in Docker",
     "dev:local": "pnpm run db:start && bun run --hot src/index.ts",
-    "// dev:docker": "Run both DB and API in Docker containers",
     "dev:docker": "docker compose up auth-backend-db auth-backend-dev",
     "// ================ DATABASE COMMANDS ================": "",
     "db:start": "docker compose -f docker-compose.yml up auth-backend-db -d",
@@ -18,9 +15,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "// =============== PRODUCTION COMMANDS ===============": "",
-    "// start": "Start the server in production mode",
     "start": "bun run src/index.ts",
-    "// start:docker": "Start the server in production mode in Docker",
     "start:docker": "docker compose -f docker-compose.yml up auth-backend",
     "// ================ UTILITY COMMANDS ================": "",
     "clean": "rm -rf node_modules pnpm-lock.yaml"
