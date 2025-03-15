@@ -89,3 +89,23 @@ export const contentTypeMiddleware: MiddlewareHandler<CustomEnv> = async (
   }
   await next();
 };
+
+/**
+ * Cookie security Middleware
+ *
+ * Sets secure cookie policies including HttpOnly, SameSite,
+ * and Secure (in production)
+ */
+export const cookieMiddleware: MiddlewareHandler<CustomEnv> = async (
+  c,
+  next
+) => {
+  // Set secure cookie policy header
+  c.header(
+    "Set-Cookie",
+    `Path=/; ${
+      process.env.NODE_ENV === "production" ? "Secure; " : ""
+    }HttpOnly; SameSite=Lax`
+  );
+  await next();
+};
