@@ -4,8 +4,6 @@ import type { MiddlewareHandler } from "hono";
 import { csrf } from "hono/csrf";
 import { secureHeaders } from "hono/secure-headers";
 
-// Local imports
-
 /**
  * CSRF protection middleware configuration
  *
@@ -109,3 +107,16 @@ export const cookieMiddleware: MiddlewareHandler<CustomEnv> = async (
   );
   await next();
 };
+
+/**
+ * Combined security middlewares
+ *
+ * Applies all security middlewares in the correct order
+ */
+export const securityMiddlewares: MiddlewareHandler<CustomEnv>[] = [
+  httpsEnforcementMiddleware,
+  contentTypeMiddleware,
+  cookieMiddleware,
+  securityHeadersMiddleware,
+  csrfMiddleware,
+];
