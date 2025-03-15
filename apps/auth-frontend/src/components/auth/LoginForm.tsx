@@ -1,3 +1,6 @@
+// React
+import { useNavigate } from "@tanstack/react-router";
+
 // Third-party libraries
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,8 +25,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Link } from "@tanstack/react-router";
+import { Loader2Icon } from "lucide-react";
 
 // Local libraries
+import { useAuthContext } from "@/providers/auth-context-provider";
 import { loginFormSchema } from "@/schemas/auth-form-schema";
 
 // Local components
@@ -32,6 +37,8 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -44,8 +51,13 @@ export function LoginForm({
     },
   });
 
-  function onSubmit(data: z.infer<typeof loginFormSchema>) {
-    console.log(data);
+  const { login, isPending: isLoggingIn } = useAuthContext();
+
+  async function onSubmit(data: z.infer<typeof loginFormSchema>) {
+    await login(data.email, data.password);
+
+    // Navigate to the home page
+    navigate({ to: "/" });
   }
 
   return (
@@ -107,8 +119,12 @@ export function LoginForm({
                   <p className="text-red-500">{errors.password.message}</p>
                 )}
               </div>
-              <Button type="submit" className="w-full">
-                Login
+              <Button type="submit" className="w-full" disabled={isLoggingIn}>
+                {isLoggingIn ? (
+                  <Loader2Icon className="w-4 h-4 mr-2" />
+                ) : (
+                  "Login"
+                )}
               </Button>
               <Button variant="outline" className="w-full">
                 Login with Google
