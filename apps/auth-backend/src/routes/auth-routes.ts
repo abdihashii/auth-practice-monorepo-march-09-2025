@@ -385,7 +385,7 @@ publicRoutes.post("/logout", async (c) => {
       .where(eq(usersTable.refreshToken, refreshToken));
 
     // Clear refresh token from cookie
-    setCookie(c, "refreshToken", "", {
+    setCookie(c, "auth-app-refreshToken", "", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // true in production
       sameSite: "Lax", // or 'Strict' if not dealing with third-party redirects
