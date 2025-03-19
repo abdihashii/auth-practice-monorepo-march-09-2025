@@ -11,16 +11,15 @@ interface AuthContextType {
   // State
   user: User | null | undefined;
   isAuthenticated: boolean;
-  isPending: boolean;
-  isLoading: boolean;
+  isAuthPending: boolean;
   isLoggingIn: boolean;
+  loginError: unknown;
   isLoggingOut: boolean;
-  error: unknown;
+  logoutError: unknown;
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  refetchUser: (options?: RefetchOptions) => Promise<unknown>;
 }
 
 // Create the auth context with undefined as initial value

@@ -1,6 +1,5 @@
 // Third-party imports
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
 
 // Local imports
 import { login, logout } from "@/api/auth-apis";
@@ -14,14 +13,11 @@ export const AUTH_QUERY_KEY = ["auth"];
  * Hook for authentication functionality
  */
 export const useAuth = () => {
-  // State to track if initial auth check is complete
-  const [initialCheckComplete, setInitialCheckComplete] = useState(false);
-
   // QueryClient instance is used to cache, invalidate, clear, and refetch data
   const queryClient = useQueryClient();
 
   // Query for managing auth state - loads from localStorage in queryFn
-  const { data: authData } = useQuery({
+  const { data: authData, isPending: isAuthPending } = useQuery({
     queryKey: AUTH_QUERY_KEY,
     // Use queryFn as the source of truth for auth data from localStorage
     queryFn: () => {
@@ -39,11 +35,6 @@ export const useAuth = () => {
     refetchOnReconnect: false,
   });
 
-  // Mark initial auth check as complete immediately after mount
-  useEffect(() => {
-    setInitialCheckComplete(true);
-  }, []);
-
   // Extract user from auth data
   const user = authData?.data;
   const isAuthenticated = !!user;
@@ -58,14 +49,9 @@ export const useAuth = () => {
 
       // Update query cache with login response data
       queryClient.setQueryData(AUTH_QUERY_KEY, data);
-
-      // Mark initial check as complete
-      setInitialCheckComplete(true);
     },
     onError: (error) => {
       console.error(error);
-      // Set initial check complete even on error to avoid indefinite loading states
-      setInitialCheckComplete(true);
     },
   });
 
@@ -78,9 +64,6 @@ export const useAuth = () => {
 
       // Clear query cache authData query to remove the auth data
       queryClient.setQueryData(AUTH_QUERY_KEY, null);
-
-      // Mark initial check as complete after logout
-      setInitialCheckComplete(true);
     },
   });
 
@@ -100,10 +83,11 @@ export const useAuth = () => {
     // State
     user: user as User | null | undefined,
     isAuthenticated,
-    isPending: !initialCheckComplete, // If the auth check is not complete, the auth state is pending
+    isAuthPending,
     isLoggingIn: loginMutation.isPending,
+    loginError: loginMutation.error,
     isLoggingOut: logoutMutation.isPending,
-    isLoginError: loginMutation.isError,
+    logoutError: logoutMutation.error,
 
     // Actions
     login: loginFn,
