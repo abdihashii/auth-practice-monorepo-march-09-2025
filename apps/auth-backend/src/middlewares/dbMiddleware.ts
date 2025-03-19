@@ -3,7 +3,7 @@ import type { MiddlewareHandler } from "hono";
 
 // Local imports
 import { dbConnect } from "@/db";
-import type { CustomEnv } from "@/types";
+import type { CustomEnv } from "@/lib/types";
 
 // Create the middleware handler with proper typing
 export const dbMiddleware: MiddlewareHandler<CustomEnv> = async (c, next) => {

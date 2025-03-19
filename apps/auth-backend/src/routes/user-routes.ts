@@ -7,16 +7,16 @@ import { Hono } from "hono";
 import {
   DEFAULT_USER_DETAIL_COLUMNS,
   DEFAULT_USER_LIST_COLUMNS,
-} from "@/constants";
+} from "@/lib/constants";
 import { usersTable } from "@/db/schema";
 import {
   ApiErrorCode,
   type CustomEnv,
   type UserDetail,
   type UserListItem,
-} from "@/types";
-import { createApiResponse, createSelectObject } from "@/utils";
-import { idParamSchema } from "@/validation";
+} from "@/lib/types";
+import { createApiResponse, createSelectObject } from "@/lib/utils";
+import { idParamSchema } from "@/lib/validation";
 
 export const userRoutes = new Hono<CustomEnv>();
 

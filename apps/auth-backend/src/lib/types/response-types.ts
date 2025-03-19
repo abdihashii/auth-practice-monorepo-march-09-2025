@@ -1,6 +1,6 @@
 // Local imports
-import type { ApiError } from "@/types/error-types";
-import type { User } from "@/types/user-types";
+import type { ApiError } from "@/lib/types/error-types";
+import type { User } from "@/lib/types/user-types";
 
 /**
  * Standard successful response format for single resources

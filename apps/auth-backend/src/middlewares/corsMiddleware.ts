@@ -2,7 +2,7 @@
 import { cors } from "hono/cors";
 
 // Local imports
-import { getEnv } from "@/utils";
+import { getEnv } from "@/lib/utils";
 
 /**
  * CORS middleware configuration

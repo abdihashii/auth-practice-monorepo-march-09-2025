@@ -3,9 +3,9 @@ import type {
   ApiResponse,
   CollectionResponse,
   SingleResourceResponse,
-} from "@/types";
-import { ApiErrorCode } from "@/types";
-import { createApiErrorResponse } from "@/utils/error-utils";
+} from "@/lib/types";
+import { ApiErrorCode } from "@/lib/types";
+import { createApiErrorResponse } from "@/lib/utils/error-utils";
 
 /**
  * Creates a standardized response for a single resource

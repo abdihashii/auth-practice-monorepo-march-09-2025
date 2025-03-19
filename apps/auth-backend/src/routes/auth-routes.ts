@@ -15,18 +15,18 @@ import {
   type TokenResponse,
   type User,
   type UserSettings,
-} from "@/types";
+} from "@/lib/types";
 import {
   createApiResponse,
   generateTokens,
   hashPassword,
   verifyPassword,
-} from "@/utils";
+} from "@/lib/utils";
 import {
   createUserSchema,
   loginUserSchema,
   validateAuthSchema,
-} from "@/validation/auth-validation";
+} from "@/lib/validation/auth-validation";
 
 export const authRoutes = new Hono<CustomEnv>();
 

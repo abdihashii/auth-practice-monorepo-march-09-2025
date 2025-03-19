@@ -8,8 +8,8 @@ import { corsMiddleware } from "@/middlewares";
 import { dbMiddleware } from "@/middlewares/dbMiddleware";
 import { authRoutes } from "@/routes/auth-routes";
 import { userRoutes } from "@/routes/user-routes";
-import type { CustomEnv } from "@/types";
-import { validateEnv } from "@/utils";
+import type { CustomEnv } from "@/lib/types";
+import { validateEnv } from "@/lib/utils";
 import * as Sentry from "@sentry/bun";
 import { securityMiddlewares } from "./middlewares/securityMiddlewares";
 

@@ -3,7 +3,7 @@ import type { MiddlewareHandler } from "hono";
 
 // Local imports
 import { usersTable } from "@/db/schema";
-import { ApiErrorCode } from "@/types";
+import { ApiErrorCode } from "@/lib/types";
 import { eq } from "drizzle-orm";
 import { verify } from "hono/jwt";
 

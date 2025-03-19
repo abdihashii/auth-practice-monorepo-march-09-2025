@@ -2,7 +2,7 @@
 import { z } from "zod";
 
 // Local imports
-import { PASSWORD_REQUIREMENTS } from "@/types";
+import { PASSWORD_REQUIREMENTS } from "@/lib/types";
 
 export const emailSchema = z
   .string()

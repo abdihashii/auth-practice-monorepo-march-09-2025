@@ -1,5 +1,5 @@
 // Third-party imports
-import type { CustomEnv } from "@/types";
+import type { CustomEnv } from "@/lib/types";
 import type { MiddlewareHandler } from "hono";
 import { csrf } from "hono/csrf";
 import { secureHeaders } from "hono/secure-headers";
