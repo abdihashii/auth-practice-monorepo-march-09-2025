@@ -17,6 +17,7 @@ export const useAuth = () => {
   // State to track if initial auth check is complete
   const [initialCheckComplete, setInitialCheckComplete] = useState(false);
 
+  // QueryClient instance is used to cache, invalidate, clear, and refetch data
   const queryClient = useQueryClient();
 
   // Query for getting the current authenticated user

@@ -14,6 +14,11 @@ interface AuthGuardProps {
 
 /**
  * AuthGuard component that controls access to routes based on authentication state
+ *
+ * If the route is protected and the user is not authenticated, they will be redirected to the login page.
+ * If the route is public, all users will be able to access it.
+ * If the route is protected and the user is authenticated, they will be able to access the route.
+ *
  * @param children The content to render if authentication check passes
  * @param requireAuth Whether authentication is required (default: true)
  */
