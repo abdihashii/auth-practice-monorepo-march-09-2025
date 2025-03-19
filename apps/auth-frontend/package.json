@@ -1,5 +1,5 @@
 {
-  "name": "auth-frontend",
+  "name": "@roll-your-own-auth/web",
   "private": true,
   "type": "module",
   "scripts": {
