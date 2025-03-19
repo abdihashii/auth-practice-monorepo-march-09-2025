@@ -33,6 +33,6 @@ jobs:
         uses: superfly/flyctl-actions/setup-flyctl@master
 
       - name: Deploy to Fly.io
-        run: flyctl deploy --config ./apps/auth-backend/fly.toml --dockerfile ./apps/auth-backend/Dockerfile.prod
+        run: flyctl deploy --app auth-backend-blue-darkness-6417 --config ./apps/auth-backend/fly.toml --dockerfile ./apps/auth-backend/Dockerfile.prod
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
