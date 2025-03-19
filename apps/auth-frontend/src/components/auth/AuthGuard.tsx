@@ -24,10 +24,10 @@ interface AuthGuardProps {
  */
 export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
   const location = useLocation();
-  const { isAuthenticated, isPending } = useAuthContext();
+  const { isAuthenticated, isAuthPending } = useAuthContext();
 
   // Show loading spinner during authentication check
-  if (isPending) {
+  if (isAuthPending) {
     return (
       <div className="flex min-h-svh w-full items-center justify-center">
         <Loader2Icon className="h-10 w-10 animate-spin text-primary" />
