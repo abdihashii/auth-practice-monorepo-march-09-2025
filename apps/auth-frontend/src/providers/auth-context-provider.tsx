@@ -1,5 +1,4 @@
 // React
-import type { RefetchOptions } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 
 // Local components
