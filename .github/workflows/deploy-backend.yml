@@ -14,6 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy -a auth-backend-blue-darkness-6417 --remote-only
+      - run: flyctl deploy -a auth-backend-blue-darkness-6417 --remote-only --config ./apps/auth-backend/fly.toml --dockerfile ./apps/auth-backend/Dockerfile.prod
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
