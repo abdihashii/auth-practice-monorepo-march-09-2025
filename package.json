@@ -3,21 +3,28 @@
   "version": "1.0.0",
   "private": true,
   "description": "Authentication practice monorepo using pnpm workspaces",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
   "main": "index.js",
   "scripts": {
     "clean:all": "pnpm -r clean",
     "clean": "rm -rf node_modules pnpm-lock.yaml",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:backend": "pnpm --filter auth-backend run dev:docker",
-    "deploy:backend": "fly deploy --config ./apps/auth-backend/fly.toml --dockerfile ./apps/auth-backend/Dockerfile.prod"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "typescript": "^5.8.2"
+    "deploy:backend": "fly deploy --config ./apps/auth-backend/fly.toml --dockerfile ./apps/auth-backend/Dockerfile.prod",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
   },
   "dependencies": {
     "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^4.10.2",
+    "@eslint-react/eslint-plugin": "^1.37.0",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "typescript": "^5.8.2"
   }
 }
