@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build && tsc",
     "serve": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "eslint ./src"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.3",
