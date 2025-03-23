@@ -5,7 +5,6 @@ import type { CustomEnv } from "@/lib/types";
 
 import { dbConnect } from "@/db";
 import { usersTable } from "@/db/schema";
-import { validateEnv } from "@/lib/utils";
 import { corsMiddleware } from "@/middlewares";
 import { dbMiddleware } from "@/middlewares/dbMiddleware";
 import { securityMiddlewares } from "@/middlewares/securityMiddlewares";
@@ -19,20 +18,6 @@ Sentry.init({
   // We recommend adjusting this value in production
   tracesSampleRate: 1.0,
 });
-
-// Validate environment variables at startup
-try {
-  validateEnv();
-  /* eslint-disable-next-line no-console */
-  console.log("✅ Environment variables validated successfully");
-}
-catch (error) {
-  console.error(
-    "❌ Environment validation failed:",
-    error instanceof Error ? error.message : error,
-  );
-  process.exit(1); // Exit the process with an error code
-}
 
 const app = new Hono<CustomEnv>();
 
