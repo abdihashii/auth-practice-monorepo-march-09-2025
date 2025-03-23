@@ -49,4 +49,5 @@ if (error) {
   process.exit(1);
 }
 
+// Export validated environment as a non-optional constant
 export default env!;
