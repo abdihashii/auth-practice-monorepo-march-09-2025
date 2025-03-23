@@ -1,4 +1,4 @@
-import antfu from '@antfu/eslint-config'
+import antfu from "@antfu/eslint-config";
 
 export default antfu({
   type: "app",
@@ -27,4 +27,4 @@ export default antfu({
       ignore: ["README.md"],
     }],
   },
-})
+});
