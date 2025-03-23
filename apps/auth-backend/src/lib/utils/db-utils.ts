@@ -1,5 +1,5 @@
 // Third-party imports
-import { PgColumn } from "drizzle-orm/pg-core";
+import type { PgColumn } from "drizzle-orm/pg-core";
 
 /**
  * Helper function to create a select object for Drizzle ORM from selectable columns
@@ -10,7 +10,7 @@ import { PgColumn } from "drizzle-orm/pg-core";
  */
 export function createSelectObject<T extends Record<string, any>>(
   table: T,
-  columns: { [K in keyof T]?: boolean }
+  columns: { [K in keyof T]?: boolean },
 ): Record<string, PgColumn<any>> {
   const selectObj: Record<string, PgColumn<any>> = {};
 

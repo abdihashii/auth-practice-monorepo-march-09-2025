@@ -18,7 +18,10 @@
     "start": "bun run src/index.ts",
     "start:docker": "docker compose up auth-backend",
     "// ================ UTILITY COMMANDS ================": "",
-    "clean": "rm -rf node_modules pnpm-lock.yaml"
+    "clean": "rm -rf node_modules pnpm-lock.yaml",
+    "// ================ LINTING COMMANDS ================": "",
+    "lint": "eslint --fix src",
+    "lint:fix": "eslint --fix src"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.4.3",

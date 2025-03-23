@@ -1,5 +1,6 @@
-// Third-party imports
 import { sign } from "hono/jwt";
+
+import env from "@/env";
 
 /**
  * Hash a password using Bun's built-in Argon2id implementation
@@ -25,11 +26,12 @@ export async function hashPassword(password: string): Promise<string> {
  */
 export async function verifyPassword(
   password: string,
-  hash: string
+  hash: string,
 ): Promise<boolean> {
   try {
     return await Bun.password.verify(password, hash);
-  } catch (error) {
+  }
+  catch (error) {
     console.error("Password verification error:", error);
     return false;
   }
@@ -45,14 +47,14 @@ export async function generateTokens(userId: string): Promise<{
   accessToken: string;
   refreshToken: string;
 }> {
-  const secret = process.env["JWT_SECRET"];
+  const secret = env.JWT_SECRET;
   if (!secret) {
     throw new Error("JWT_SECRET is not defined");
   }
 
   const accessToken = await sign(
     { userId, exp: Math.floor(Date.now() / 1000) + 15 * 60 },
-    secret
+    secret,
   );
   const refreshToken = await sign(
     {
@@ -60,7 +62,7 @@ export async function generateTokens(userId: string): Promise<{
       type: "refresh",
       exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
     },
-    secret
+    secret,
   );
 
   return { accessToken, refreshToken };

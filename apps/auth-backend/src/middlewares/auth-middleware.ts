@@ -1,23 +1,23 @@
-// Third-party imports
 import type { MiddlewareHandler } from "hono";
 
-// Local imports
-import { usersTable } from "@/db/schema";
-import { ApiErrorCode } from "@/lib/types";
 import { eq } from "drizzle-orm";
 import { verify } from "hono/jwt";
 
-interface CustomJWTPayload {
+import { usersTable } from "@/db/schema";
+import env from "@/env";
+import { ApiErrorCode } from "@/lib/types";
+
+type CustomJWTPayload = {
   userId: string;
   exp: number;
   iat: number;
-}
+};
 
-declare module "hono" {
-  interface ContextVariableMap {
-    userId: string;
-  }
-}
+// declare module "hono" {
+//   type ContextVariableMap = {
+//     userId: string;
+//   };
+// }
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
   try {
@@ -31,12 +31,12 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
             message: "Authentication required",
           },
         },
-        401
+        401,
       );
     }
 
     // Get the JWT secret from the environment variables
-    const jwtSecret = process.env.JWT_SECRET;
+    const jwtSecret = env.JWT_SECRET;
     if (!jwtSecret) {
       return c.json(
         {
@@ -45,7 +45,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
             message: "JWT secret not found",
           },
         },
-        500
+        500,
       );
     }
 
@@ -63,7 +63,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
               message: "Invalid access token",
             },
           },
-          401
+          401,
         );
       }
 
@@ -76,7 +76,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
               message: "Access token expired",
             },
           },
-          401
+          401,
         );
       }
 
@@ -93,7 +93,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
               message: "User not found",
             },
           },
-          404
+          404,
         );
       }
       if (!user.isActive) {
@@ -104,7 +104,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
               message: "User is inactive",
             },
           },
-          401
+          401,
         );
       }
 
@@ -115,7 +115,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
       if (user.lastTokenInvalidation) {
         const tokenIssuedAt = payload.iat;
         const invalidationTime = Math.floor(
-          user.lastTokenInvalidation.getTime() / 1000
+          user.lastTokenInvalidation.getTime() / 1000,
         );
 
         if (tokenIssuedAt < invalidationTime) {
@@ -126,14 +126,15 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
                 message: "Access token invalidated",
               },
             },
-            401
+            401,
           );
         }
       }
 
       // Call the next middleware
       await next();
-    } catch (err) {
+    }
+    catch {
       return c.json(
         {
           error: {
@@ -141,10 +142,11 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
             message: "Invalid access token",
           },
         },
-        401
+        401,
       );
     }
-  } catch (err) {
+  }
+  catch {
     return c.json(
       {
         error: {
@@ -152,7 +154,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
           message: "Unauthorized",
         },
       },
-      401
+      401,
     );
   }
 };
