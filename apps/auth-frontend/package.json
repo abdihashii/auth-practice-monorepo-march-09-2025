@@ -1,9 +1,9 @@
 {
   "name": "@roll-your-own-auth/web",
-  "private": true,
   "type": "module",
+  "private": true,
   "scripts": {
-    "start": "vite",
+    "dev": "vite",
     "build": "vite build && tsc",
     "serve": "vite preview",
     "test": "vitest run"

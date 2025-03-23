@@ -1,5 +1,5 @@
 {
-  "name": "auth-backend",
+  "name": "@roll-your-own-auth/backend",
   "type": "module",
   "module": "src/index.ts",
   "scripts": {
