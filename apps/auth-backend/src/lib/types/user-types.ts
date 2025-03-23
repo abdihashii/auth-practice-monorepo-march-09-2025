@@ -2,7 +2,7 @@
 import type { InferSelectModel } from "drizzle-orm";
 
 // Local imports
-import { usersTable } from "@/db/schema";
+import type { usersTable } from "@/db/schema";
 
 /**
  * Type representing the full database schema of a user row
@@ -42,18 +42,18 @@ export type SelectableUserColumns = {
  *
  * TODO: move to shared types package
  */
-export interface UserSettings {
+export type UserSettings = {
   theme: "system" | "light" | "dark";
   language: string;
   timezone: string;
-}
+};
 
 /**
  * Type for user notification preferences
  *
  * TODO: move to shared types package
  */
-export interface NotificationPreferences {
+export type NotificationPreferences = {
   email: {
     enabled: boolean;
     digest: "never" | "daily" | "weekly" | "monthly";
@@ -63,7 +63,7 @@ export interface NotificationPreferences {
     enabled: boolean;
     alerts: boolean;
   };
-}
+};
 
 /**
  * Represents a user in the system.
@@ -72,7 +72,7 @@ export interface NotificationPreferences {
  *
  * TODO: move to shared types package
  */
-export interface User {
+export type User = {
   // Core user information
   id: string;
   email: string;
@@ -95,7 +95,7 @@ export interface User {
   lastActivityAt: string | null;
   lastSuccessfulLogin: string | null;
   loginCount: number;
-}
+};
 
 /**
  * Data Transfer Object (DTO) for user registration.
@@ -104,8 +104,8 @@ export interface User {
  *
  * TODO: move to shared types package
  */
-export interface CreateUserDto {
+export type CreateUserDto = {
   email: string;
-  password: string /** Will be hashed server-side */;
+  password: string;
   name?: string;
-}
+};

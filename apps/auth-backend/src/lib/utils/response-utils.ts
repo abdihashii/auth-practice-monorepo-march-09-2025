@@ -1,11 +1,11 @@
-// Local imports
 import type {
+  ApiErrorCode,
   ApiResponse,
   CollectionResponse,
   SingleResourceResponse,
 } from "@/lib/types";
-import { ApiErrorCode } from "@/lib/types";
-import { createApiErrorResponse } from "@/lib/utils/error-utils";
+
+import { createApiErrorResponse } from "@/lib/utils";
 
 /**
  * Creates a standardized response for a single resource
@@ -34,9 +34,9 @@ function createCollectionResponse<T>(data: T[]): CollectionResponse<T> {
 /**
  * Creates a standardized API response that can be either success or error
  *
- * @param {Object} options - Configuration object for the response
+ * @param {object} options - Configuration object for the response
  * @param {T | T[]} options.data - Optional data to include in a success response. Can be a single resource or an array of resources.
- * @param {Object} options.error - Optional error details to include in an error response
+ * @param {object} options.error - Optional error details to include in an error response
  * @param {ApiErrorCode} options.error.code - The error code
  * @param {string} options.error.message - The error message
  * @param {Record<string, unknown>} options.error.details - Optional additional details about the error
@@ -73,7 +73,7 @@ export function createApiResponse<T>(options: {
     return createApiErrorResponse(
       options.error.code as ApiErrorCode,
       options.error.message,
-      options.error.details
+      options.error.details,
     );
   }
 

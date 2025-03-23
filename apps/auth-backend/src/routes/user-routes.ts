@@ -3,17 +3,17 @@ import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 
+import type { CustomEnv, UserDetail, UserListItem } from "@/lib/types";
+
+import { usersTable } from "@/db/schema";
 // Local imports
 import {
   DEFAULT_USER_DETAIL_COLUMNS,
   DEFAULT_USER_LIST_COLUMNS,
 } from "@/lib/constants";
-import { usersTable } from "@/db/schema";
 import {
   ApiErrorCode,
-  type CustomEnv,
-  type UserDetail,
-  type UserListItem,
+
 } from "@/lib/types";
 import { createApiResponse, createSelectObject } from "@/lib/utils";
 import { idParamSchema } from "@/lib/validation";
@@ -36,9 +36,10 @@ userRoutes.get("/", async (c) => {
       createApiResponse({
         data: users as UserListItem[],
       }),
-      200
+      200,
     );
-  } catch (error) {
+  }
+  catch (error) {
     console.error("Error fetching users:", error);
 
     // Return error response using the unified utility
@@ -49,7 +50,7 @@ userRoutes.get("/", async (c) => {
           message: "Failed to retrieve users",
         },
       }),
-      500
+      500,
     );
   }
 });
@@ -63,7 +64,7 @@ userRoutes.get("/:id", zValidator("param", idParamSchema), async (c) => {
     // Create select object using the helper function
     const selectObj = createSelectObject(
       usersTable,
-      DEFAULT_USER_DETAIL_COLUMNS
+      DEFAULT_USER_DETAIL_COLUMNS,
     );
 
     // Only select the necessary columns based on default detail columns
@@ -81,7 +82,7 @@ userRoutes.get("/:id", zValidator("param", idParamSchema), async (c) => {
             message: "User not found",
           },
         }),
-        404
+        404,
       );
     }
 
@@ -90,9 +91,10 @@ userRoutes.get("/:id", zValidator("param", idParamSchema), async (c) => {
       createApiResponse({
         data: results[0] as UserDetail,
       }),
-      200
+      200,
     );
-  } catch (error) {
+  }
+  catch (error) {
     console.error("Error fetching user:", error);
 
     // Return error response using the unified utility
@@ -103,7 +105,7 @@ userRoutes.get("/:id", zValidator("param", idParamSchema), async (c) => {
           message: "Failed to retrieve user",
         },
       }),
-      500
+      500,
     );
   }
 });

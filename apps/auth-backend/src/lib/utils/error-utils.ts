@@ -12,7 +12,7 @@ import type { ApiError, ApiErrorCode } from "@/lib/types";
 export function createApiErrorResponse(
   code: string = "INTERNAL_SERVER_ERROR",
   message: string,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ): ApiError {
   return {
     error: {

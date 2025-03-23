@@ -1,7 +1,7 @@
 {
   "name": "auth-backend",
-  "module": "src/index.ts",
   "type": "module",
+  "module": "src/index.ts",
   "scripts": {
     "// ============== DEVELOPMENT COMMANDS ===============": "",
     "dev": "pnpm run dev:local",
@@ -18,12 +18,10 @@
     "start": "bun run src/index.ts",
     "start:docker": "docker compose up auth-backend",
     "// ================ UTILITY COMMANDS ================": "",
-    "clean": "rm -rf node_modules pnpm-lock.yaml"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.2.4",
-    "@types/pg": "^8.11.11",
-    "drizzle-kit": "^0.30.5"
+    "clean": "rm -rf node_modules pnpm-lock.yaml",
+    "// ================ LINTING COMMANDS ================": "",
+    "lint": "eslint --fix src",
+    "lint:fix": "eslint --fix src"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.4.3",
@@ -31,5 +29,10 @@
     "drizzle-orm": "^0.40.0",
     "hono": "^4.7.4",
     "pg": "^8.13.3"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.4",
+    "@types/pg": "^8.11.11",
+    "drizzle-kit": "^0.30.5"
   }
 }

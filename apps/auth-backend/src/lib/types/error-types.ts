@@ -15,10 +15,10 @@ export enum ApiErrorCode {
   TOKEN_INVALIDATED = "TOKEN_INVALIDATED", // Token invalidated, 401
 }
 
-export interface ApiError {
+export type ApiError = {
   error: {
     code: ApiErrorCode;
     message: string;
     details?: Record<string, unknown>;
   };
-}
+};

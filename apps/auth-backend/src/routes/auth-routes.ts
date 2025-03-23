@@ -1,20 +1,14 @@
-// Third-party imports
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 
-// Local imports
+import type { AuthResponse, CreateUserDto, CustomEnv, NotificationPreferences, TokenResponse, User, UserSettings } from "@/lib/types";
+
 import { usersTable } from "@/db/schema";
-import { authMiddleware } from "@/middlewares/authMiddleware";
+import env from "@/env";
 import {
   ApiErrorCode,
-  type AuthResponse,
-  type CreateUserDto,
-  type CustomEnv,
-  type NotificationPreferences,
-  type TokenResponse,
-  type User,
-  type UserSettings,
+
 } from "@/lib/types";
 import {
   createApiResponse,
@@ -27,6 +21,7 @@ import {
   loginUserSchema,
   validateAuthSchema,
 } from "@/lib/validation/auth-validation";
+import { authMiddleware } from "@/middlewares/auth-middleware";
 
 export const authRoutes = new Hono<CustomEnv>();
 
@@ -57,7 +52,7 @@ publicRoutes.post("/register", async (c) => {
             message: "User already exists",
           },
         }),
-        400
+        400,
       );
     }
 
@@ -72,7 +67,7 @@ publicRoutes.post("/register", async (c) => {
             details: { errors: validationResult.errors },
           },
         }),
-        400
+        400,
       );
     }
 
@@ -117,12 +112,12 @@ publicRoutes.post("/register", async (c) => {
     // Set refresh token in HTTP-only cookie
     setCookie(c, "auth-app-refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // true in production
+      secure: env.NODE_ENV === "production", // true in production
       sameSite: "Lax", // or 'Strict' if not dealing with third-party redirects
       path: "/",
       maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
       // Optional: Use __Host- prefix for additional security in production
-      ...(process.env.NODE_ENV === "production" && {
+      ...(env.NODE_ENV === "production" && {
         prefix: "host", // This will prefix the cookie with __Host-
       }),
     });
@@ -178,9 +173,10 @@ publicRoutes.post("/register", async (c) => {
       createApiResponse({
         data: authResponse,
       }),
-      200
+      200,
     );
-  } catch (err) {
+  }
+  catch (err) {
     return c.json(
       createApiResponse({
         error: {
@@ -188,7 +184,7 @@ publicRoutes.post("/register", async (c) => {
           message: err instanceof Error ? err.message : "Internal server error",
         },
       }),
-      500
+      500,
     );
   }
 });
@@ -215,7 +211,7 @@ publicRoutes.post("/login", async (c) => {
             message: "Invalid input data",
           },
         }),
-        400
+        400,
       );
     }
 
@@ -234,7 +230,7 @@ publicRoutes.post("/login", async (c) => {
             message: "User not found",
           },
         }),
-        404
+        404,
       );
     }
 
@@ -248,7 +244,7 @@ publicRoutes.post("/login", async (c) => {
             message: "Invalid credentials",
           },
         }),
-        401
+        401,
       );
     }
 
@@ -270,12 +266,12 @@ publicRoutes.post("/login", async (c) => {
     // Set refresh token in HTTP-only cookie
     setCookie(c, "auth-app-refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // true in production
+      secure: env.NODE_ENV === "production", // true in production
       sameSite: "Lax", // or 'Strict' if not dealing with third-party redirects
       path: "/",
       maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
       // Optional: Use __Host- prefix for additional security in production
-      ...(process.env.NODE_ENV === "production" && {
+      ...(env.NODE_ENV === "production" && {
         prefix: "host", // This will prefix the cookie with __Host-
       }),
     });
@@ -335,9 +331,10 @@ publicRoutes.post("/login", async (c) => {
       createApiResponse({
         data: authResponse,
       }),
-      200
+      200,
     );
-  } catch (err) {
+  }
+  catch (err) {
     return c.json(
       createApiResponse({
         error: {
@@ -345,7 +342,7 @@ publicRoutes.post("/login", async (c) => {
           message: err instanceof Error ? err.message : "Internal server error",
         },
       }),
-      500
+      500,
     );
   }
 });
@@ -370,7 +367,7 @@ publicRoutes.post("/logout", async (c) => {
             message: "Logged out successfully",
           },
         }),
-        200
+        200,
       );
     }
 
@@ -387,11 +384,11 @@ publicRoutes.post("/logout", async (c) => {
     // Clear refresh token from cookie
     setCookie(c, "auth-app-refreshToken", "", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // true in production
+      secure: env.NODE_ENV === "production", // true in production
       sameSite: "Lax", // or 'Strict' if not dealing with third-party redirects
       path: "/",
       maxAge: 0, // Expire immediately
-      ...(process.env.NODE_ENV === "production" && {
+      ...(env.NODE_ENV === "production" && {
         prefix: "host", // This will prefix the cookie with __Host-
       }),
     });
@@ -402,9 +399,10 @@ publicRoutes.post("/logout", async (c) => {
           message: "Logged out successfully",
         },
       }),
-      200
+      200,
     );
-  } catch (err) {
+  }
+  catch (err) {
     return c.json(
       createApiResponse({
         error: {
@@ -412,7 +410,7 @@ publicRoutes.post("/logout", async (c) => {
           message: err instanceof Error ? err.message : "Internal server error",
         },
       }),
-      500
+      500,
     );
   }
 });
@@ -436,7 +434,7 @@ publicRoutes.post("/refresh", async (c) => {
             message: "No refresh token provided",
           },
         }),
-        401
+        401,
       );
     }
 
@@ -452,7 +450,7 @@ publicRoutes.post("/refresh", async (c) => {
             message: "Invalid refresh token",
           },
         }),
-        401
+        401,
       );
     }
 
@@ -465,7 +463,7 @@ publicRoutes.post("/refresh", async (c) => {
             message: "Refresh token expired",
           },
         }),
-        401
+        401,
       );
     }
 
@@ -478,13 +476,13 @@ publicRoutes.post("/refresh", async (c) => {
             message: "User account is not active",
           },
         }),
-        401
+        401,
       );
     }
 
     // Generate new tokens
-    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-      await generateTokens(user.id);
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken }
+      = await generateTokens(user.id);
 
     // Update user with new refresh token (rotation)
     await db
@@ -499,12 +497,12 @@ publicRoutes.post("/refresh", async (c) => {
     // Set new refresh token cookie
     setCookie(c, "auth-app-refreshToken", newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // true in production
+      secure: env.NODE_ENV === "production", // true in production
       sameSite: "Lax", // or 'Strict' if not dealing with third-party redirects
       path: "/",
       maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
       // Optional: Use __Host- prefix for additional security in production
-      ...(process.env.NODE_ENV === "production" && {
+      ...(env.NODE_ENV === "production" && {
         prefix: "host", // This will prefix the cookie with __Host-
       }),
     });
@@ -517,9 +515,10 @@ publicRoutes.post("/refresh", async (c) => {
       createApiResponse({
         data: tokenResponse,
       }),
-      200
+      200,
     );
-  } catch (err) {
+  }
+  catch (err) {
     return c.json(
       createApiResponse({
         error: {
@@ -527,7 +526,7 @@ publicRoutes.post("/refresh", async (c) => {
           message: err instanceof Error ? err.message : "Internal server error",
         },
       }),
-      500
+      500,
     );
   }
 });
@@ -556,7 +555,7 @@ protectedRoutes.get("/me", async (c) => {
             message: "User not found",
           },
         }),
-        404
+        404,
       );
     }
 
@@ -601,9 +600,10 @@ protectedRoutes.get("/me", async (c) => {
       createApiResponse({
         data: safeUser,
       }),
-      200
+      200,
     );
-  } catch (err) {
+  }
+  catch (err) {
     return c.json(
       createApiResponse({
         error: {
@@ -611,7 +611,7 @@ protectedRoutes.get("/me", async (c) => {
           message: err instanceof Error ? err.message : "Internal server error",
         },
       }),
-      500
+      500,
     );
   }
 });

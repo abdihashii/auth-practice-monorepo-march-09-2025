@@ -1,17 +1,15 @@
-// Third party imports
 import * as Sentry from "@sentry/bun";
 import { Hono } from "hono";
 
-// Local imports
+import type { CustomEnv } from "@/lib/types";
+
 import { dbConnect } from "@/db";
 import { usersTable } from "@/db/schema";
-import type { CustomEnv } from "@/lib/types";
-import { validateEnv } from "@/lib/utils";
 import { corsMiddleware } from "@/middlewares";
-import { dbMiddleware } from "@/middlewares/dbMiddleware";
+import { dbMiddleware } from "@/middlewares/db-middleware";
+import { securityMiddlewares } from "@/middlewares/security-middlewares";
 import { authRoutes } from "@/routes/auth-routes";
 import { userRoutes } from "@/routes/user-routes";
-import { securityMiddlewares } from "./middlewares/securityMiddlewares";
 
 Sentry.init({
   dsn: "https://c3ff452ee3118ace1c8ab114cce5f2f3@o4508969051553792.ingest.us.sentry.io/4508969051815936",
@@ -20,18 +18,6 @@ Sentry.init({
   // We recommend adjusting this value in production
   tracesSampleRate: 1.0,
 });
-
-// Validate environment variables at startup
-try {
-  validateEnv();
-  console.log("✅ Environment variables validated successfully");
-} catch (error) {
-  console.error(
-    "❌ Environment validation failed:",
-    error instanceof Error ? error.message : error
-  );
-  process.exit(1); // Exit the process with an error code
-}
 
 const app = new Hono<CustomEnv>();
 
@@ -43,12 +29,9 @@ app.use("*", ...securityMiddlewares);
 
 // Add request logging
 app.use("*", async (c, next) => {
+  /* eslint-disable-next-line no-console */
   console.log(`${c.req.method} ${c.req.url}`);
-  try {
-    await next();
-  } catch (err) {
-    throw err; // Let error handler middleware handle it
-  }
+  await next();
 });
 
 // Basic health check
@@ -65,7 +48,7 @@ app.get("/health/db", async (c) => {
     const db = await dbConnect();
 
     // Try to execute a simple query
-    const result = await db.select().from(usersTable).limit(1);
+    await db.select().from(usersTable).limit(1);
 
     return c.json({
       status: "ok",
@@ -75,7 +58,8 @@ app.get("/health/db", async (c) => {
         message: "Database connection successful",
       },
     });
-  } catch (error) {
+  }
+  catch (error) {
     return c.json(
       {
         status: "error",
@@ -86,7 +70,7 @@ app.get("/health/db", async (c) => {
           error: error instanceof Error ? error.message : "Unknown error",
         },
       },
-      503
+      503,
     );
   }
 });

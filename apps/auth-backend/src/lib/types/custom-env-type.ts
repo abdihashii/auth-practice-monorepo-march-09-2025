@@ -1,5 +1,5 @@
 // Local imports
-import { dbConnect } from "@/db";
+import type { dbConnect } from "@/db";
 
 export type CustomEnv = {
   Variables: {

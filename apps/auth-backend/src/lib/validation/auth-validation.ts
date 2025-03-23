@@ -18,53 +18,53 @@ export const passwordSchema = z
   .string()
   .min(
     PASSWORD_REQUIREMENTS.minLength,
-    `Password must be at least ${PASSWORD_REQUIREMENTS.minLength} characters long`
+    `Password must be at least ${PASSWORD_REQUIREMENTS.minLength} characters long`,
   )
   .max(
     PASSWORD_REQUIREMENTS.maxLength,
-    `Password must be less than ${PASSWORD_REQUIREMENTS.maxLength} characters`
+    `Password must be less than ${PASSWORD_REQUIREMENTS.maxLength} characters`,
   )
   .refine(
-    (password) =>
-      (password.match(/[a-z]/g) || []).length >=
-      PASSWORD_REQUIREMENTS.minLowercase,
+    password =>
+      (password.match(/[a-z]/g) || []).length
+      >= PASSWORD_REQUIREMENTS.minLowercase,
     {
       message: "Password must contain at least one lowercase letter",
-    }
+    },
   )
   .refine(
-    (password) =>
-      (password.match(/[A-Z]/g) || []).length >=
-      PASSWORD_REQUIREMENTS.minUppercase,
+    password =>
+      (password.match(/[A-Z]/g) || []).length
+      >= PASSWORD_REQUIREMENTS.minUppercase,
     {
       message: "Password must contain at least one uppercase letter",
-    }
+    },
   )
   .refine(
-    (password) =>
-      (password.match(/[0-9]/g) || []).length >=
-      PASSWORD_REQUIREMENTS.minNumbers,
+    password =>
+      (password.match(/\d/g) || []).length
+      >= PASSWORD_REQUIREMENTS.minNumbers,
     {
       message: "Password must contain at least one number",
-    }
+    },
   )
   .refine(
     (password) => {
       const symbols = new RegExp(
         `[${PASSWORD_REQUIREMENTS.allowedSymbols.replace(
           /[-[\]{}()*+?.,\\^$|#\s]/g,
-          "\\$&"
+          "\\$&",
         )}]`,
-        "g"
+        "g",
       );
       return (
-        (password.match(symbols) || []).length >=
-        PASSWORD_REQUIREMENTS.minSymbols
+        (password.match(symbols) || []).length
+        >= PASSWORD_REQUIREMENTS.minSymbols
       );
     },
     {
       message: "Password must contain at least one special character",
-    }
+    },
   );
 
 /**
@@ -97,16 +97,16 @@ export const loginUserSchema = z.object({
  *
  * @param {z.ZodSchema} schema - The Zod schema to validate against
  * @param {unknown} data - The data to validate
- * @returns {Object} An object with isValid, errors, and data properties
+ * @returns {object} An object with isValid, errors, and data properties
  */
 export function validateAuthSchema<T extends z.ZodSchema>(
   schema: T,
-  data: unknown
+  data: unknown,
 ): {
-  isValid: boolean;
-  errors: string[];
-  data?: z.infer<typeof schema>;
-} {
+    isValid: boolean;
+    errors: string[];
+    data?: z.infer<typeof schema>;
+  } {
   const result = schema.safeParse(data);
 
   if (result.success) {
@@ -115,7 +115,8 @@ export function validateAuthSchema<T extends z.ZodSchema>(
       errors: [],
       data: result.data,
     };
-  } else {
+  }
+  else {
     // Format errors in a consistent way: "field: error message"
     return {
       isValid: false,
