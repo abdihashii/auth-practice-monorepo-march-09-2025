@@ -16,5 +16,5 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
-      - run: pnpm install
+      - run: pnpm i
       - run: pnpm lint ./apps/auth-backend
