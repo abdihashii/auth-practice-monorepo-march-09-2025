@@ -1,14 +1,12 @@
-import { BASE_API_URL } from "@/constants";
 import type { AuthResponse } from "@/types/auth-types";
+
+import { BASE_API_URL } from "@/constants";
 
 /**
  * Log in a user with email and password
  * @returns AuthResponse containing user data and access token
  */
-export const login = async (
-  email: string,
-  password: string
-): Promise<AuthResponse> => {
+export async function login(email: string, password: string): Promise<AuthResponse> {
   const res = await fetch(`${BASE_API_URL}/api/v1/auth/login`, {
     method: "POST",
     headers: {
@@ -24,15 +22,13 @@ export const login = async (
   }
 
   return res.json();
-};
+}
 
 /**
  * Get the current authenticated user
  * @returns AuthResponse if authenticated, null otherwise
  */
-export const getCurrentUser = async (
-  accessToken: string
-): Promise<AuthResponse | null> => {
+export async function getCurrentUser(accessToken: string): Promise<AuthResponse | null> {
   try {
     if (!accessToken) {
       return null;
@@ -42,7 +38,7 @@ export const getCurrentUser = async (
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
+        "Authorization": `Bearer ${accessToken}`,
       },
       credentials: "include", // Important for cookies
     });
@@ -60,12 +56,12 @@ export const getCurrentUser = async (
     console.error("Error fetching current user:", error);
     return null;
   }
-};
+}
 
 /**
  * Log out the current user
  */
-export const logout = async (): Promise<void> => {
+export async function logout(): Promise<void> {
   const res = await fetch(`${BASE_API_URL}/api/v1/auth/logout`, {
     method: "POST",
     headers: {
@@ -77,4 +73,4 @@ export const logout = async (): Promise<void> => {
   if (!res.ok) {
     throw new Error("Failed to logout");
   }
-};
+}
