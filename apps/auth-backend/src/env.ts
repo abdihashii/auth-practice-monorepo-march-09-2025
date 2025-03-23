@@ -39,7 +39,7 @@ const EnvSchema = z.object({
   }
 });
 
-export type env = z.infer<typeof EnvSchema>;
+export type Env = z.infer<typeof EnvSchema>;
 
 const { data: env, error } = EnvSchema.safeParse(process.env);
 
@@ -49,4 +49,4 @@ if (error) {
   process.exit(1);
 }
 
-export default env;
+export default env!;
