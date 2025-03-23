@@ -10,7 +10,7 @@ export default antfu({
     semi: true,
     quotes: "double",
   },
-  ignores: [".pnpm-store/*", "apps/auth-backend/drizzle/**"],
+  ignores: [".pnpm-store/*", "apps/auth-backend/drizzle/**", "**/*.md"],
 }, {
   rules: {
     "ts/no-redeclare": "off",
