@@ -1,8 +1,11 @@
-// Third-party imports
-import type { CustomEnv } from "@/lib/types";
 import type { MiddlewareHandler } from "hono";
+
 import { csrf } from "hono/csrf";
 import { secureHeaders } from "hono/secure-headers";
+
+import type { CustomEnv } from "@/lib/types";
+
+import env from "@/env";
 
 /**
  * CSRF protection middleware configuration
@@ -14,7 +17,7 @@ import { secureHeaders } from "hono/secure-headers";
  * If the token is invalid, the request is rejected with a 403 error.
  */
 export const csrfMiddleware = csrf({
-  origin: process.env.FRONTEND_URL, // Only allow requests from the frontend URL
+  origin: env.FRONTEND_URL, // Only allow requests from the frontend URL
 });
 
 /**
@@ -34,7 +37,7 @@ export const securityHeadersMiddleware = secureHeaders({
   xContentTypeOptions: "nosniff", // Prevent MIME type sniffing
   referrerPolicy: "strict-origin-when-cross-origin", // Control referrer information
   // Only enable HSTS in production
-  ...(process.env.NODE_ENV === "production"
+  ...(env.NODE_ENV === "production"
     ? {
         strictTransportSecurity: "max-age=31536000; includeSubDomains",
       }
@@ -48,9 +51,9 @@ export const securityHeadersMiddleware = secureHeaders({
  */
 export const httpsEnforcementMiddleware: MiddlewareHandler<CustomEnv> = async (
   c,
-  next
+  next,
 ) => {
-  if (process.env.NODE_ENV === "production") {
+  if (env.NODE_ENV === "production") {
     const proto = c.req.header("x-forwarded-proto");
     if (proto && proto !== "https") {
       const url = new URL(c.req.url);
@@ -69,21 +72,21 @@ export const httpsEnforcementMiddleware: MiddlewareHandler<CustomEnv> = async (
  */
 export const contentTypeMiddleware: MiddlewareHandler<CustomEnv> = async (
   c,
-  next
+  next,
 ) => {
   const contentType = c.req.header("content-type");
   const method = c.req.method;
 
   // Only check content-type for POST, PUT, PATCH requests
   if (
-    ["POST", "PUT", "PATCH"].includes(method) &&
-    (!contentType || !contentType.includes("application/json"))
+    ["POST", "PUT", "PATCH"].includes(method)
+    && (!contentType || !contentType.includes("application/json"))
   ) {
     return c.json(
       {
         error: "Content-Type must be application/json",
       },
-      415
+      415,
     );
   }
   await next();
@@ -97,14 +100,14 @@ export const contentTypeMiddleware: MiddlewareHandler<CustomEnv> = async (
  */
 export const cookieMiddleware: MiddlewareHandler<CustomEnv> = async (
   c,
-  next
+  next,
 ) => {
   // Set secure cookie policy header
   c.header(
     "Set-Cookie",
     `Path=/; ${
-      process.env.NODE_ENV === "production" ? "Secure; " : ""
-    }HttpOnly; SameSite=Lax`
+      env.NODE_ENV === "production" ? "Secure; " : ""
+    }HttpOnly; SameSite=Lax`,
   );
   await next();
 };
