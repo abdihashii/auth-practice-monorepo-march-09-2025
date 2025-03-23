@@ -6,8 +6,8 @@ import type { CustomEnv } from "@/lib/types";
 import { dbConnect } from "@/db";
 import { usersTable } from "@/db/schema";
 import { corsMiddleware } from "@/middlewares";
-import { dbMiddleware } from "@/middlewares/dbMiddleware";
-import { securityMiddlewares } from "@/middlewares/securityMiddlewares";
+import { dbMiddleware } from "@/middlewares/db-middleware";
+import { securityMiddlewares } from "@/middlewares/security-middlewares";
 import { authRoutes } from "@/routes/auth-routes";
 import { userRoutes } from "@/routes/user-routes";
 
