@@ -1,11 +1,6 @@
 import antfu from '@antfu/eslint-config';
 
-type AntfuParams = Parameters<typeof antfu>;
-type AntfuReturn = ReturnType<typeof antfu>;
-type Options = AntfuParams[0];
-type UserConfigs = AntfuParams[1][];
-
-export default function createConfig(options?: Options, ...userConfigs: UserConfigs): AntfuReturn {
+export default function createConfig(options, ...userConfigs) {
   return antfu({
     type: 'app',
     react: true,

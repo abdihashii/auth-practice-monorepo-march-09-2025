@@ -6,12 +6,7 @@
   "author": "Abdirahman Haji <abdirahman.haji.13@gmail.com>",
   "exports": {
     ".": "./eslint.config.js",
-    "./create-config": "./dist/create-config.js"
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "tsc",
-    "clean": "rm -rf dist"
+    "./create-config": "./create-config.js"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.11.0"
