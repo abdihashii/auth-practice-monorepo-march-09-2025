@@ -30,5 +30,6 @@ export default antfu({
       allowSingleLine: true,
     }],
     'style/arrow-parens': ['error', 'always'],
+    'antfu/if-newline': ['off'],
   },
 });
