@@ -1,7 +1,7 @@
-import type { AuthResponse, User } from "@/types/auth-types";
+import type { AuthResponse, User } from '@/types/auth-types';
 
-const AUTH_TOKEN_KEY = "auth_token";
-const AUTH_USER_KEY = "auth_user";
+const AUTH_TOKEN_KEY = 'auth_token';
+const AUTH_USER_KEY = 'auth_user';
 
 /**
  * Service to handle storage of authentication data
@@ -32,7 +32,7 @@ export const authStorage = {
     try {
       return JSON.parse(userJson) as User;
     } catch (error) {
-      console.error("Error parsing user from storage:", error);
+      console.error('Error parsing user from storage:', error);
       return null;
     }
   },
