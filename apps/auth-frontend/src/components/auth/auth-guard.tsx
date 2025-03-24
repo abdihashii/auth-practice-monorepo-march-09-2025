@@ -15,8 +15,9 @@ interface AuthGuardProps {
  * If the route is public, all users will be able to access it.
  * If the route is protected and the user is authenticated, they will be able to access the route.
  *
- * @param children The content to render if authentication check passes
- * @param requireAuth Whether authentication is required (default: true)
+ * @param props - Component props
+ * @param props.children - The content to render if authentication check passes
+ * @param props.requireAuth - Whether authentication is required (default: true)
  */
 export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
   const location = useLocation();
