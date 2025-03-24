@@ -1,5 +1,4 @@
-// Third-party imports
-import type { PgColumn } from "drizzle-orm/pg-core";
+import type { PgColumn } from 'drizzle-orm/pg-core';
 
 /**
  * Helper function to create a select object for Drizzle ORM from selectable columns

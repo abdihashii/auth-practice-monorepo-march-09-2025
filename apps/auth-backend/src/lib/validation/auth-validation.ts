@@ -1,14 +1,12 @@
-// Third-party imports
-import { z } from "zod";
+import { z } from 'zod';
 
-// Local imports
-import { PASSWORD_REQUIREMENTS } from "@/lib/types";
+import { PASSWORD_REQUIREMENTS } from '@/lib/types';
 
 export const emailSchema = z
   .string()
-  .email("Invalid email format")
-  .min(5, "Email must be at least 5 characters")
-  .max(255, "Email must be less than 255 characters");
+  .email('Invalid email format')
+  .min(5, 'Email must be at least 5 characters')
+  .max(255, 'Email must be less than 255 characters');
 
 /**
  * Validation schema for password
@@ -25,27 +23,27 @@ export const passwordSchema = z
     `Password must be less than ${PASSWORD_REQUIREMENTS.maxLength} characters`,
   )
   .refine(
-    password =>
+    (password) =>
       (password.match(/[a-z]/g) || []).length
       >= PASSWORD_REQUIREMENTS.minLowercase,
     {
-      message: "Password must contain at least one lowercase letter",
+      message: 'Password must contain at least one lowercase letter',
     },
   )
   .refine(
-    password =>
+    (password) =>
       (password.match(/[A-Z]/g) || []).length
       >= PASSWORD_REQUIREMENTS.minUppercase,
     {
-      message: "Password must contain at least one uppercase letter",
+      message: 'Password must contain at least one uppercase letter',
     },
   )
   .refine(
-    password =>
+    (password) =>
       (password.match(/\d/g) || []).length
       >= PASSWORD_REQUIREMENTS.minNumbers,
     {
-      message: "Password must contain at least one number",
+      message: 'Password must contain at least one number',
     },
   )
   .refine(
@@ -53,9 +51,9 @@ export const passwordSchema = z
       const symbols = new RegExp(
         `[${PASSWORD_REQUIREMENTS.allowedSymbols.replace(
           /[-[\]{}()*+?.,\\^$|#\s]/g,
-          "\\$&",
+          '\\$&',
         )}]`,
-        "g",
+        'g',
       );
       return (
         (password.match(symbols) || []).length
@@ -63,7 +61,7 @@ export const passwordSchema = z
       );
     },
     {
-      message: "Password must contain at least one special character",
+      message: 'Password must contain at least one special character',
     },
   );
 
@@ -76,8 +74,8 @@ export const createUserSchema = z.object({
   password: passwordSchema,
   name: z
     .string()
-    .min(2, "Name must be at least 2 characters")
-    .max(100, "Name must be less than 100 characters")
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name must be less than 100 characters')
     .optional(),
 });
 
@@ -115,13 +113,12 @@ export function validateAuthSchema<T extends z.ZodSchema>(
       errors: [],
       data: result.data,
     };
-  }
-  else {
+  } else {
     // Format errors in a consistent way: "field: error message"
     return {
       isValid: false,
       errors: result.error.errors.map((err) => {
-        const field = err.path.length > 0 ? err.path[0] : "unknown";
+        const field = err.path.length > 0 ? err.path[0] : 'unknown';
         return `${field}: ${err.message}`;
       }),
     };

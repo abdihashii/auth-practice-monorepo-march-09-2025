@@ -1,11 +1,11 @@
-import type { MiddlewareHandler } from "hono";
+import type { MiddlewareHandler } from 'hono';
 
-import { csrf } from "hono/csrf";
-import { secureHeaders } from "hono/secure-headers";
+import { csrf } from 'hono/csrf';
+import { secureHeaders } from 'hono/secure-headers';
 
-import type { CustomEnv } from "@/lib/types";
+import type { CustomEnv } from '@/lib/types';
 
-import env from "@/env";
+import env from '@/env';
 
 /**
  * CSRF protection middleware configuration
@@ -27,19 +27,19 @@ export const csrfMiddleware = csrf({
  */
 export const securityHeadersMiddleware = secureHeaders({
   contentSecurityPolicy: {
-    defaultSrc: ["self"], // Only allow resources from the same origin
-    scriptSrc: ["self"], // Only allow scripts from the same origin
-    styleSrc: ["self"], // Only allow styles from the same origin
-    imgSrc: ["self", "data:", "blob:"], // Allow images from the same origin + data/blob URLs
-    connectSrc: ["self", "ws:", "wss:"], // Allow WebSocket connections
+    defaultSrc: ['self'], // Only allow resources from the same origin
+    scriptSrc: ['self'], // Only allow scripts from the same origin
+    styleSrc: ['self'], // Only allow styles from the same origin
+    imgSrc: ['self', 'data:', 'blob:'], // Allow images from the same origin + data/blob URLs
+    connectSrc: ['self', 'ws:', 'wss:'], // Allow WebSocket connections
   },
-  xFrameOptions: "DENY", // Prevent site from being embedded in iframes
-  xContentTypeOptions: "nosniff", // Prevent MIME type sniffing
-  referrerPolicy: "strict-origin-when-cross-origin", // Control referrer information
+  xFrameOptions: 'DENY', // Prevent site from being embedded in iframes
+  xContentTypeOptions: 'nosniff', // Prevent MIME type sniffing
+  referrerPolicy: 'strict-origin-when-cross-origin', // Control referrer information
   // Only enable HSTS in production
-  ...(env.NODE_ENV === "production"
+  ...(env.NODE_ENV === 'production'
     ? {
-        strictTransportSecurity: "max-age=31536000; includeSubDomains",
+        strictTransportSecurity: 'max-age=31536000; includeSubDomains',
       }
     : {}),
 });
@@ -53,11 +53,11 @@ export const httpsEnforcementMiddleware: MiddlewareHandler<CustomEnv> = async (
   c,
   next,
 ) => {
-  if (env.NODE_ENV === "production") {
-    const proto = c.req.header("x-forwarded-proto");
-    if (proto && proto !== "https") {
+  if (env.NODE_ENV === 'production') {
+    const proto = c.req.header('x-forwarded-proto');
+    if (proto && proto !== 'https') {
       const url = new URL(c.req.url);
-      url.protocol = "https:";
+      url.protocol = 'https:';
       return c.redirect(url.toString(), 301);
     }
   }
@@ -74,17 +74,17 @@ export const contentTypeMiddleware: MiddlewareHandler<CustomEnv> = async (
   c,
   next,
 ) => {
-  const contentType = c.req.header("content-type");
+  const contentType = c.req.header('content-type');
   const method = c.req.method;
 
   // Only check content-type for POST, PUT, PATCH requests
   if (
-    ["POST", "PUT", "PATCH"].includes(method)
-    && (!contentType || !contentType.includes("application/json"))
+    ['POST', 'PUT', 'PATCH'].includes(method)
+    && (!contentType || !contentType.includes('application/json'))
   ) {
     return c.json(
       {
-        error: "Content-Type must be application/json",
+        error: 'Content-Type must be application/json',
       },
       415,
     );
@@ -104,9 +104,9 @@ export const cookieMiddleware: MiddlewareHandler<CustomEnv> = async (
 ) => {
   // Set secure cookie policy header
   c.header(
-    "Set-Cookie",
+    'Set-Cookie',
     `Path=/; ${
-      env.NODE_ENV === "production" ? "Secure; " : ""
+      env.NODE_ENV === 'production' ? 'Secure; ' : ''
     }HttpOnly; SameSite=Lax`,
   );
   await next();

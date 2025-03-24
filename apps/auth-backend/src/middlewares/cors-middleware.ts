@@ -1,6 +1,6 @@
-import { cors } from "hono/cors";
+import { cors } from 'hono/cors';
 
-import env from "@/env";
+import env from '@/env';
 
 /**
  * CORS middleware configuration
@@ -10,7 +10,7 @@ export const corsMiddleware = cors({
   origin: (origin) => {
     // Get the environment - note that we've already validated
     // environment variables at startup, so this won't throw
-    const isProd = env.NODE_ENV === "production";
+    const isProd = env.NODE_ENV === 'production';
 
     // In development, allow all origins
     if (!isProd) {
@@ -25,15 +25,15 @@ export const corsMiddleware = cors({
 
     return allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
   },
-  allowMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowHeaders: [
-    "Content-Type",
-    "Authorization",
-    "X-CSRF-Token",
-    "credentials",
-    "X-Requested-With",
+    'Content-Type',
+    'Authorization',
+    'X-CSRF-Token',
+    'credentials',
+    'X-Requested-With',
   ],
-  exposeHeaders: ["Content-Length", "X-Requested-With", "X-CSRF-Token"],
+  exposeHeaders: ['Content-Length', 'X-Requested-With', 'X-CSRF-Token'],
   credentials: true,
   maxAge: 600,
 });

@@ -1,10 +1,8 @@
-// Third-party imports
-import type { MiddlewareHandler } from "hono";
+import type { MiddlewareHandler } from 'hono';
 
-import type { CustomEnv } from "@/lib/types";
+import type { CustomEnv } from '@/lib/types';
 
-// Local imports
-import { dbConnect } from "@/db";
+import { dbConnect } from '@/db';
 
 // Create the middleware handler with proper typing
 export const dbMiddleware: MiddlewareHandler<CustomEnv> = async (c, next) => {
@@ -13,12 +11,11 @@ export const dbMiddleware: MiddlewareHandler<CustomEnv> = async (c, next) => {
     const db = await dbConnect();
 
     // Set the database connection in the context
-    c.set("db", db);
+    c.set('db', db);
 
     // Call the next middleware
     await next();
-  }
-  catch {
-    return c.json({ error: "Failed to connect to database" }, 500);
+  } catch {
+    return c.json({ error: 'Failed to connect to database' }, 500);
   }
 };

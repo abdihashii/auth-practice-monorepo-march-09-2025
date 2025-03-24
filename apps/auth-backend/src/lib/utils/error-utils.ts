@@ -1,4 +1,4 @@
-import type { ApiError, ApiErrorCode } from "@/lib/types";
+import type { ApiError, ApiErrorCode } from '@/lib/types';
 
 /**
  * Creates an API error response that's used in createApiResponse which is a
@@ -10,7 +10,7 @@ import type { ApiError, ApiErrorCode } from "@/lib/types";
  * @returns {ApiError} The API error response
  */
 export function createApiErrorResponse(
-  code: string = "INTERNAL_SERVER_ERROR",
+  code: string = 'INTERNAL_SERVER_ERROR',
   message: string,
   details?: Record<string, unknown>,
 ): ApiError {

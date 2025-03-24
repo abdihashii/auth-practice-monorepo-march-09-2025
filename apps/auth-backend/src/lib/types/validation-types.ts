@@ -5,5 +5,5 @@ export const PASSWORD_REQUIREMENTS = {
   minUppercase: 1,
   minNumbers: 1,
   minSymbols: 1,
-  allowedSymbols: "!@#$%^&*()_+-=[]{}|;:,.<>?",
+  allowedSymbols: '!@#$%^&*()_+-=[]{}|;:,.<>?',
 } as const;
