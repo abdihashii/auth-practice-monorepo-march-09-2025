@@ -9,3 +9,5 @@ pnpm-debug.log
 npm-debug.log
 bun-debug.log
 bun-debug.log.2
+
+dist
