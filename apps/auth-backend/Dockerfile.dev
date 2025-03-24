@@ -12,7 +12,7 @@ COPY apps/auth-backend/package.json ./apps/auth-backend/
 
 # Copy shared dependencies from root if they exist
 COPY tsconfig*.json ./
-# COPY packages ./packages
+COPY packages ./packages
 
 # Install dependencies
 RUN pnpm install
@@ -21,7 +21,7 @@ RUN pnpm install
 WORKDIR /app/apps/auth-backend
 
 # Expose the port the app runs on
-EXPOSE 1234
+EXPOSE 8000
 
 # Command to directly run the app with hot reloading
 CMD ["bun", "run", "--hot", "src/index.ts"] 
