@@ -1,14 +1,12 @@
 {
-  "name": "@roll-your-own-auth/monorepo",
+  "name": "roll-your-own-auth",
   "version": "1.0.0",
-  "private": true,
   "description": "Authentication practice monorepo using pnpm workspaces",
-  "author": "",
-  "license": "ISC",
+  "author": "Abdirahman Haji <abdirahman.haji.13@gmail.com>",
+  "license": "MIT",
   "keywords": [],
-  "main": "index.js",
   "scripts": {
-    "clean:all": "pnpm -r clean",
+    "clean:all": "pnpm run -r --parallel clean",
     "clean": "rm -rf node_modules pnpm-lock.yaml",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:backend": "pnpm --filter backend run dev:docker",
@@ -22,9 +20,8 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^4.10.2",
-    "@eslint-react/eslint-plugin": "^1.37.0",
-    "eslint": "^9.22.0",
+    "@eslint-react/eslint-plugin": "^1.37.3",
+    "eslint": "^9.23.0",
     "eslint-plugin-format": "^1.0.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
