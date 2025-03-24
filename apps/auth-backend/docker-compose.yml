@@ -8,7 +8,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -25,7 +25,7 @@ services:
       dockerfile: apps/auth-backend/Dockerfile.dev
     container_name: auth-backend-dev
     ports:
-      - "8000:8000"
+      - '8000:8000'
     volumes:
       # For development, mount the source code
       - ../../apps/auth-backend:/app/apps/auth-backend
@@ -35,6 +35,8 @@ services:
       - ../..:/app
       # Don't let the above mount overwrite the node_modules at the root
       - /app/node_modules
+      # Ensure packages directory is accessible
+      - ../../packages:/app/packages
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@auth-backend-db:5432/auth-backend-db
@@ -51,7 +53,7 @@ services:
       target: production
     container_name: auth-backend
     ports:
-      - "8000:8000"
+      - '8000:8000'
     environment:
       - NODE_ENV=production
     restart: unless-stopped
