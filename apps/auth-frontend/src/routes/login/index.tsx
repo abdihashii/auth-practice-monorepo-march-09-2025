@@ -1,11 +1,11 @@
 // Third-party imports
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router';
 
 // Local components
-import { AuthGuard } from "@/components/auth/AuthGuard";
-import { LoginForm } from "@/components/auth/LoginForm";
+import { AuthGuard } from '@/components/auth/auth-guard';
+import { LoginForm } from '@/components/auth/login-form';
 
-export const Route = createFileRoute("/login/")({
+export const Route = createFileRoute('/login/')({
   component: Login,
 });
 

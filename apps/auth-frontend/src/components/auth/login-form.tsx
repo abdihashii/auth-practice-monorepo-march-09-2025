@@ -1,39 +1,34 @@
-// Third-party libraries
-import { cn } from "@/lib/utils";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import type { z } from 'zod';
 
-// Third-party components
-import { Button } from "@/components/ui/button";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Link } from '@tanstack/react-router';
+import { AlertCircle, Loader2Icon } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Link } from "@tanstack/react-router";
-import { AlertCircle, Loader2Icon } from "lucide-react";
-
-// Local libraries
-import { useAuthContext } from "@/providers/auth-context-provider";
-import { loginFormSchema } from "@/schemas/auth-form-schema";
-
-// Local components
+} from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+import { useAuthContext } from '@/providers/auth-context-provider';
+import { loginFormSchema } from '@/schemas/auth-form-schema';
 
 export function LoginForm({
   className,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+}: React.ComponentPropsWithoutRef<'div'>) {
   const { login, isLoggingIn } = useAuthContext();
 
   const {
@@ -44,8 +39,8 @@ export function LoginForm({
   } = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
@@ -54,18 +49,18 @@ export function LoginForm({
       await login(data.email, data.password);
     } catch (error) {
       // Set form error for server-side errors
-      setError("root", {
-        type: "server",
+      setError('root', {
+        type: 'server',
         message:
           error instanceof Error
             ? error.message
-            : "Failed to log in. Please try again.",
+            : 'Failed to log in. Please try again.',
       });
     }
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
@@ -87,7 +82,7 @@ export function LoginForm({
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
-                  {...register("email")}
+                  {...register('email')}
                   id="email"
                   type="email"
                   placeholder="test@example.com"
@@ -123,7 +118,7 @@ export function LoginForm({
                   </TooltipProvider>
                 </div>
                 <Input
-                  {...register("password")}
+                  {...register('password')}
                   id="password"
                   type="password"
                 />
@@ -132,14 +127,16 @@ export function LoginForm({
                 )}
               </div>
               <Button type="submit" className="w-full" disabled={isLoggingIn}>
-                {isLoggingIn ? (
-                  <>
-                    <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                    Logging in...
-                  </>
-                ) : (
-                  "Login"
-                )}
+                {isLoggingIn
+                  ? (
+                      <>
+                        <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                        Logging in...
+                      </>
+                    )
+                  : (
+                      'Login'
+                    )}
               </Button>
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
@@ -148,7 +145,7 @@ export function LoginForm({
                       <Button
                         variant="outline"
                         className="w-full"
-                        disabled={true}
+                        disabled
                       >
                         Login with Google
                       </Button>
@@ -161,7 +158,8 @@ export function LoginForm({
               </TooltipProvider>
             </div>
             <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
+              Don&apos;t have an account?
+              {' '}
               <Link
                 to="/register"
                 className="underline underline-offset-4 hover:text-primary"
