@@ -20,11 +20,12 @@
     "// ================ UTILITY COMMANDS ================": "",
     "clean": "rm -rf node_modules pnpm-lock.yaml",
     "// ================ LINTING COMMANDS ================": "",
-    "lint": "eslint --fix src",
-    "lint:fix": "eslint --fix src"
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.4.3",
+    "@roll-your-own-auth/eslint-config": "workspace:^",
     "@sentry/bun": "^9.5.0",
     "drizzle-orm": "^0.40.0",
     "hono": "^4.7.4",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@types/bun": "^1.2.4",
     "@types/pg": "^8.11.11",
-    "drizzle-kit": "^0.30.5"
+    "drizzle-kit": "^0.30.5",
+    "eslint-plugin-drizzle": "^0.2.3"
   }
 }
