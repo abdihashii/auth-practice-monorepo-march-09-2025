@@ -1,29 +1,27 @@
-// Third-party imports
-import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
-import { Hono } from "hono";
+import { zValidator } from '@hono/zod-validator';
+import { eq } from 'drizzle-orm';
+import { Hono } from 'hono';
 
-import type { CustomEnv, UserDetail, UserListItem } from "@/lib/types";
+import type { CustomEnv, UserDetail, UserListItem } from '@/lib/types';
 
-import { usersTable } from "@/db/schema";
-// Local imports
+import { usersTable } from '@/db/schema';
 import {
   DEFAULT_USER_DETAIL_COLUMNS,
   DEFAULT_USER_LIST_COLUMNS,
-} from "@/lib/constants";
+} from '@/lib/constants';
 import {
   ApiErrorCode,
 
-} from "@/lib/types";
-import { createApiResponse, createSelectObject } from "@/lib/utils";
-import { idParamSchema } from "@/lib/validation";
+} from '@/lib/types';
+import { createApiResponse, createSelectObject } from '@/lib/utils';
+import { idParamSchema } from '@/lib/validation';
 
 export const userRoutes = new Hono<CustomEnv>();
 
 // Get all users
-userRoutes.get("/", async (c) => {
+userRoutes.get('/', async (c) => {
   try {
-    const db = c.get("db");
+    const db = c.get('db');
 
     // Create select object using the helper function
     const selectObj = createSelectObject(usersTable, DEFAULT_USER_LIST_COLUMNS);
@@ -38,16 +36,15 @@ userRoutes.get("/", async (c) => {
       }),
       200,
     );
-  }
-  catch (error) {
-    console.error("Error fetching users:", error);
+  } catch (error) {
+    console.error('Error fetching users:', error);
 
     // Return error response using the unified utility
     return c.json(
       createApiResponse({
         error: {
           code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: "Failed to retrieve users",
+          message: 'Failed to retrieve users',
         },
       }),
       500,
@@ -56,9 +53,9 @@ userRoutes.get("/", async (c) => {
 });
 
 // Get a user by id
-userRoutes.get("/:id", zValidator("param", idParamSchema), async (c) => {
+userRoutes.get('/:id', zValidator('param', idParamSchema), async (c) => {
   try {
-    const db = c.get("db");
+    const db = c.get('db');
     const { id } = c.req.param();
 
     // Create select object using the helper function
@@ -79,7 +76,7 @@ userRoutes.get("/:id", zValidator("param", idParamSchema), async (c) => {
         createApiResponse({
           error: {
             code: ApiErrorCode.NOT_FOUND,
-            message: "User not found",
+            message: 'User not found',
           },
         }),
         404,
@@ -93,16 +90,15 @@ userRoutes.get("/:id", zValidator("param", idParamSchema), async (c) => {
       }),
       200,
     );
-  }
-  catch (error) {
-    console.error("Error fetching user:", error);
+  } catch (error) {
+    console.error('Error fetching user:', error);
 
     // Return error response using the unified utility
     return c.json(
       createApiResponse({
         error: {
           code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: "Failed to retrieve user",
+          message: 'Failed to retrieve user',
         },
       }),
       500,

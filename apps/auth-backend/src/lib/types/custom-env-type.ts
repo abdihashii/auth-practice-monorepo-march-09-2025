@@ -1,8 +1,8 @@
 // Local imports
-import type { dbConnect } from "@/db";
+import type { dbConnect } from '@/db';
 
-export type CustomEnv = {
+export interface CustomEnv {
   Variables: {
     db: Awaited<ReturnType<typeof dbConnect>>;
   };
-};
+}

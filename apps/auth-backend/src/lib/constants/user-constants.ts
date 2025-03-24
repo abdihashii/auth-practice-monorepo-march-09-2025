@@ -1,4 +1,4 @@
-import type { SelectableUserColumns } from "@/lib/types";
+import type { SelectableUserColumns } from '@/lib/types';
 
 /**
  * Default columns for user list views

@@ -1,8 +1,8 @@
 // Third-party imports
-import type { InferSelectModel } from "drizzle-orm";
+import type { InferSelectModel } from 'drizzle-orm';
 
 // Local imports
-import type { usersTable } from "@/db/schema";
+import type { usersTable } from '@/db/schema';
 
 /**
  * Type representing the full database schema of a user row
@@ -12,13 +12,13 @@ export type UserSchema = InferSelectModel<typeof usersTable>;
 /**
  * Type for basic user information shown in lists
  */
-export type UserListItem = {
+export interface UserListItem {
   id: string;
   email: string;
   name: string | null;
   createdAt: Date;
   isActive: boolean;
-};
+}
 
 /**
  * Type for detailed user information shown in single user view
@@ -42,28 +42,28 @@ export type SelectableUserColumns = {
  *
  * TODO: move to shared types package
  */
-export type UserSettings = {
-  theme: "system" | "light" | "dark";
+export interface UserSettings {
+  theme: 'system' | 'light' | 'dark';
   language: string;
   timezone: string;
-};
+}
 
 /**
  * Type for user notification preferences
  *
  * TODO: move to shared types package
  */
-export type NotificationPreferences = {
+export interface NotificationPreferences {
   email: {
     enabled: boolean;
-    digest: "never" | "daily" | "weekly" | "monthly";
+    digest: 'never' | 'daily' | 'weekly' | 'monthly';
     marketing: boolean;
   };
   push: {
     enabled: boolean;
     alerts: boolean;
   };
-};
+}
 
 /**
  * Represents a user in the system.
@@ -72,7 +72,7 @@ export type NotificationPreferences = {
  *
  * TODO: move to shared types package
  */
-export type User = {
+export interface User {
   // Core user information
   id: string;
   email: string;
@@ -95,7 +95,7 @@ export type User = {
   lastActivityAt: string | null;
   lastSuccessfulLogin: string | null;
   loginCount: number;
-};
+}
 
 /**
  * Data Transfer Object (DTO) for user registration.
@@ -104,8 +104,8 @@ export type User = {
  *
  * TODO: move to shared types package
  */
-export type CreateUserDto = {
+export interface CreateUserDto {
   email: string;
   password: string;
   name?: string;
-};
+}
