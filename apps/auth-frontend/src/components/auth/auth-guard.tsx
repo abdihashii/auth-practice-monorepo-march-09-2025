@@ -1,11 +1,7 @@
-// React
-import { Navigate, useLocation } from "@tanstack/react-router";
+import { Navigate, useLocation } from '@tanstack/react-router';
+import { Loader2Icon } from 'lucide-react';
 
-// Third-party components
-import { Loader2Icon } from "lucide-react";
-
-// Local components
-import { useAuthContext } from "@/providers/auth-context-provider";
+import { useAuthContext } from '@/providers/auth-context-provider';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -44,7 +40,7 @@ export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
         to="/login"
         // Pass original destination as state so we can redirect after login
         search={
-          currentPath !== "/login" ? { redirect: currentPath } : undefined
+          currentPath !== '/login' ? { redirect: currentPath } : undefined
         }
         replace
       />
