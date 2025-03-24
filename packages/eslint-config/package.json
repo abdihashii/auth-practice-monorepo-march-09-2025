@@ -1,0 +1,19 @@
+{
+  "name": "@roll-your-own-auth/eslint-config",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "ESLint config for this monorepo and its apps + packages",
+  "author": "Abdirahman Haji <abdirahman.haji.13@gmail.com>",
+  "exports": {
+    ".": "./eslint.config.js",
+    "./create-config": "./dist/create-config.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^4.11.0"
+  }
+}
