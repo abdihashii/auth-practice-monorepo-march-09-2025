@@ -26,6 +26,7 @@
   "dependencies": {
     "@hono/zod-validator": "^0.4.3",
     "@roll-your-own-auth/eslint-config": "workspace:^",
+    "@roll-your-own-auth/types": "workspace:^",
     "@sentry/bun": "^9.5.0",
     "drizzle-orm": "^0.40.0",
     "hono": "^4.7.4",

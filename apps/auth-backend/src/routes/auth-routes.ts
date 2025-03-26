@@ -1,3 +1,6 @@
+import {
+  ApiErrorCode,
+} from '@roll-your-own-auth/types';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { getCookie, setCookie } from 'hono/cookie';
@@ -6,10 +9,6 @@ import type { AuthResponse, CreateUserDto, CustomEnv, NotificationPreferences, T
 
 import { usersTable } from '@/db/schema';
 import env from '@/env';
-import {
-  ApiErrorCode,
-
-} from '@/lib/types';
 import {
   createApiResponse,
   generateTokens,

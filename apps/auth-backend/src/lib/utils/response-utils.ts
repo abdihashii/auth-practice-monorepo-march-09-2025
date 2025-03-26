@@ -1,5 +1,8 @@
 import type {
   ApiErrorCode,
+} from '@roll-your-own-auth/types';
+
+import type {
   ApiResponse,
   CollectionResponse,
   SingleResourceResponse,

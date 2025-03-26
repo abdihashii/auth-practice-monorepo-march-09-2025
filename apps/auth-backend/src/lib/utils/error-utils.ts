@@ -1,4 +1,4 @@
-import type { ApiError, ApiErrorCode } from '@/lib/types';
+import type { ApiError, ApiErrorCode } from '@roll-your-own-auth/types';
 
 /**
  * Creates an API error response that's used in createApiResponse which is a

@@ -1,4 +1,7 @@
 import { zValidator } from '@hono/zod-validator';
+import {
+  ApiErrorCode,
+} from '@roll-your-own-auth/types';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 
@@ -9,10 +12,6 @@ import {
   DEFAULT_USER_DETAIL_COLUMNS,
   DEFAULT_USER_LIST_COLUMNS,
 } from '@/lib/constants';
-import {
-  ApiErrorCode,
-
-} from '@/lib/types';
 import { createApiResponse, createSelectObject } from '@/lib/utils';
 import { idParamSchema } from '@/lib/validation';
 

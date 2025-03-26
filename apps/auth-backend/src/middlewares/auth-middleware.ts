@@ -1,11 +1,11 @@
 import type { MiddlewareHandler } from 'hono';
 
+import { ApiErrorCode } from '@roll-your-own-auth/types';
 import { eq } from 'drizzle-orm';
 import { verify } from 'hono/jwt';
 
 import { usersTable } from '@/db/schema';
 import env from '@/env';
-import { ApiErrorCode } from '@/lib/types';
 
 interface CustomJWTPayload {
   userId: string;

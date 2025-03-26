@@ -1,5 +1,5 @@
-// Local imports
-import type { ApiError } from '@/lib/types/error-types';
+import type { ApiError } from '@roll-your-own-auth/types';
+
 import type { User } from '@/lib/types/user-types';
 
 /**
