@@ -13,11 +13,11 @@ interface CustomJWTPayload {
   iat: number;
 }
 
-// declare module "hono" {
-//   type ContextVariableMap = {
-//     userId: string;
-//   };
-// }
+declare module 'hono' {
+  interface ContextVariableMap {
+    userId: string;
+  }
+}
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
   try {
