@@ -1,27 +1,27 @@
-import { eq } from "drizzle-orm";
-import { Hono } from "hono";
-import { getCookie, setCookie } from "hono/cookie";
+import { eq } from 'drizzle-orm';
+import { Hono } from 'hono';
+import { getCookie, setCookie } from 'hono/cookie';
 
-import type { AuthResponse, CreateUserDto, CustomEnv, NotificationPreferences, TokenResponse, User, UserSettings } from "@/lib/types";
+import type { AuthResponse, CreateUserDto, CustomEnv, NotificationPreferences, TokenResponse, User, UserSettings } from '@/lib/types';
 
-import { usersTable } from "@/db/schema";
-import env from "@/env";
+import { usersTable } from '@/db/schema';
+import env from '@/env';
 import {
   ApiErrorCode,
 
-} from "@/lib/types";
+} from '@/lib/types';
 import {
   createApiResponse,
   generateTokens,
   hashPassword,
   verifyPassword,
-} from "@/lib/utils";
+} from '@/lib/utils';
 import {
   createUserSchema,
   loginUserSchema,
   validateAuthSchema,
-} from "@/lib/validation/auth-validation";
-import { authMiddleware } from "@/middlewares/auth-middleware";
+} from '@/lib/validation/auth-validation';
+import { authMiddleware } from '@/middlewares/auth-middleware';
 
 export const authRoutes = new Hono<CustomEnv>();
 
@@ -32,10 +32,10 @@ const publicRoutes = new Hono<CustomEnv>();
  * Register a new user
  * POST /api/v1/auth/register
  */
-publicRoutes.post("/register", async (c) => {
+publicRoutes.post('/register', async (c) => {
   try {
     // Get db connection
-    const db = c.get("db");
+    const db = c.get('db');
 
     // Get body from request of type application/json
     const rawBody = await c.req.json();
@@ -49,7 +49,7 @@ publicRoutes.post("/register", async (c) => {
         createApiResponse({
           error: {
             code: ApiErrorCode.USER_ALREADY_EXISTS,
-            message: "User already exists",
+            message: 'User already exists',
           },
         }),
         400,
@@ -63,7 +63,7 @@ publicRoutes.post("/register", async (c) => {
         createApiResponse({
           error: {
             code: ApiErrorCode.VALIDATION_ERROR,
-            message: "Invalid input data",
+            message: 'Invalid input data',
             details: { errors: validationResult.errors },
           },
         }),
@@ -92,7 +92,7 @@ publicRoutes.post("/register", async (c) => {
 
     // If user creation fails, throw error and have it handled in catch block
     if (!user) {
-      throw new Error("Failed to create user");
+      throw new Error('Failed to create user');
     }
 
     // Generate JWT tokens
@@ -110,15 +110,15 @@ publicRoutes.post("/register", async (c) => {
       .where(eq(usersTable.id, user.id));
 
     // Set refresh token in HTTP-only cookie
-    setCookie(c, "auth-app-refreshToken", refreshToken, {
+    setCookie(c, 'auth-app-refreshToken', refreshToken, {
       httpOnly: true,
-      secure: env.NODE_ENV === "production", // true in production
-      sameSite: "Lax", // or 'Strict' if not dealing with third-party redirects
-      path: "/",
+      secure: env.NODE_ENV === 'production', // true in production
+      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
+      path: '/',
       maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
       // Optional: Use __Host- prefix for additional security in production
-      ...(env.NODE_ENV === "production" && {
-        prefix: "host", // This will prefix the cookie with __Host-
+      ...(env.NODE_ENV === 'production' && {
+        prefix: 'host', // This will prefix the cookie with __Host-
       }),
     });
 
@@ -140,15 +140,15 @@ publicRoutes.post("/register", async (c) => {
 
       // User preferences & settings
       settings: (user.settings as UserSettings) ?? {
-        theme: "system",
-        language: "en",
-        timezone: "UTC",
+        theme: 'system',
+        language: 'en',
+        timezone: 'UTC',
       },
       notificationPreferences:
         (user.notificationPreferences as NotificationPreferences) ?? {
           email: {
             enabled: false,
-            digest: "never",
+            digest: 'never',
             marketing: false,
           },
           push: {
@@ -175,13 +175,12 @@ publicRoutes.post("/register", async (c) => {
       }),
       200,
     );
-  }
-  catch (err) {
+  } catch (err) {
     return c.json(
       createApiResponse({
         error: {
           code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: err instanceof Error ? err.message : "Internal server error",
+          message: err instanceof Error ? err.message : 'Internal server error',
         },
       }),
       500,
@@ -193,10 +192,10 @@ publicRoutes.post("/register", async (c) => {
  * Login a user
  * POST /api/v1/auth/login
  */
-publicRoutes.post("/login", async (c) => {
+publicRoutes.post('/login', async (c) => {
   try {
     // Get db connection
-    const db = c.get("db");
+    const db = c.get('db');
 
     // Get body from request of type application/json
     const rawBody = await c.req.json();
@@ -208,7 +207,7 @@ publicRoutes.post("/login", async (c) => {
         createApiResponse({
           error: {
             code: ApiErrorCode.VALIDATION_ERROR,
-            message: "Invalid input data",
+            message: 'Invalid input data',
           },
         }),
         400,
@@ -227,7 +226,7 @@ publicRoutes.post("/login", async (c) => {
         createApiResponse({
           error: {
             code: ApiErrorCode.USER_NOT_FOUND,
-            message: "User not found",
+            message: 'User not found',
           },
         }),
         404,
@@ -241,7 +240,7 @@ publicRoutes.post("/login", async (c) => {
         createApiResponse({
           error: {
             code: ApiErrorCode.INVALID_CREDENTIALS,
-            message: "Invalid credentials",
+            message: 'Invalid credentials',
           },
         }),
         401,
@@ -264,15 +263,15 @@ publicRoutes.post("/login", async (c) => {
       .where(eq(usersTable.id, user.id));
 
     // Set refresh token in HTTP-only cookie
-    setCookie(c, "auth-app-refreshToken", refreshToken, {
+    setCookie(c, 'auth-app-refreshToken', refreshToken, {
       httpOnly: true,
-      secure: env.NODE_ENV === "production", // true in production
-      sameSite: "Lax", // or 'Strict' if not dealing with third-party redirects
-      path: "/",
+      secure: env.NODE_ENV === 'production', // true in production
+      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
+      path: '/',
       maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
       // Optional: Use __Host- prefix for additional security in production
-      ...(env.NODE_ENV === "production" && {
-        prefix: "host", // This will prefix the cookie with __Host-
+      ...(env.NODE_ENV === 'production' && {
+        prefix: 'host', // This will prefix the cookie with __Host-
       }),
     });
 
@@ -294,9 +293,9 @@ publicRoutes.post("/login", async (c) => {
 
       // User preferences & settings
       settings: (user.settings as UserSettings) ?? {
-        theme: "system",
-        language: "en",
-        timezone: "UTC",
+        theme: 'system',
+        language: 'en',
+        timezone: 'UTC',
       },
 
       // User preferences & settings
@@ -304,7 +303,7 @@ publicRoutes.post("/login", async (c) => {
         (user.notificationPreferences as NotificationPreferences) ?? {
           email: {
             enabled: false,
-            digest: "never",
+            digest: 'never',
             marketing: false,
           },
           push: {
@@ -333,13 +332,12 @@ publicRoutes.post("/login", async (c) => {
       }),
       200,
     );
-  }
-  catch (err) {
+  } catch (err) {
     return c.json(
       createApiResponse({
         error: {
           code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: err instanceof Error ? err.message : "Internal server error",
+          message: err instanceof Error ? err.message : 'Internal server error',
         },
       }),
       500,
@@ -351,20 +349,20 @@ publicRoutes.post("/login", async (c) => {
  * Logout a user
  * POST /api/v1/auth/logout
  */
-publicRoutes.post("/logout", async (c) => {
+publicRoutes.post('/logout', async (c) => {
   try {
     // Get db connection
-    const db = c.get("db");
+    const db = c.get('db');
 
     // Get refresh token from cookie
-    const refreshToken = getCookie(c, "auth-app-refreshToken");
+    const refreshToken = getCookie(c, 'auth-app-refreshToken');
 
     // If no refresh token is found, return success (already logged out)
     if (!refreshToken) {
       return c.json(
         createApiResponse({
           data: {
-            message: "Logged out successfully",
+            message: 'Logged out successfully',
           },
         }),
         200,
@@ -382,32 +380,31 @@ publicRoutes.post("/logout", async (c) => {
       .where(eq(usersTable.refreshToken, refreshToken));
 
     // Clear refresh token from cookie
-    setCookie(c, "auth-app-refreshToken", "", {
+    setCookie(c, 'auth-app-refreshToken', '', {
       httpOnly: true,
-      secure: env.NODE_ENV === "production", // true in production
-      sameSite: "Lax", // or 'Strict' if not dealing with third-party redirects
-      path: "/",
+      secure: env.NODE_ENV === 'production', // true in production
+      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
+      path: '/',
       maxAge: 0, // Expire immediately
-      ...(env.NODE_ENV === "production" && {
-        prefix: "host", // This will prefix the cookie with __Host-
+      ...(env.NODE_ENV === 'production' && {
+        prefix: 'host', // This will prefix the cookie with __Host-
       }),
     });
 
     return c.json(
       createApiResponse({
         data: {
-          message: "Logged out successfully",
+          message: 'Logged out successfully',
         },
       }),
       200,
     );
-  }
-  catch (err) {
+  } catch (err) {
     return c.json(
       createApiResponse({
         error: {
           code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: err instanceof Error ? err.message : "Internal server error",
+          message: err instanceof Error ? err.message : 'Internal server error',
         },
       }),
       500,
@@ -419,19 +416,19 @@ publicRoutes.post("/logout", async (c) => {
  * Refresh a user's access token
  * POST /api/v1/auth/refresh
  */
-publicRoutes.post("/refresh", async (c) => {
+publicRoutes.post('/refresh', async (c) => {
   try {
     // Get db connection
-    const db = c.get("db");
+    const db = c.get('db');
 
     // Get refresh token from cookie
-    const refreshToken = getCookie(c, "auth-app-refreshToken");
+    const refreshToken = getCookie(c, 'auth-app-refreshToken');
     if (!refreshToken) {
       return c.json(
         createApiResponse({
           error: {
             code: ApiErrorCode.NO_REFRESH_TOKEN,
-            message: "No refresh token provided",
+            message: 'No refresh token provided',
           },
         }),
         401,
@@ -447,7 +444,7 @@ publicRoutes.post("/refresh", async (c) => {
         createApiResponse({
           error: {
             code: ApiErrorCode.INVALID_REFRESH_TOKEN,
-            message: "Invalid refresh token",
+            message: 'Invalid refresh token',
           },
         }),
         401,
@@ -460,7 +457,7 @@ publicRoutes.post("/refresh", async (c) => {
         createApiResponse({
           error: {
             code: ApiErrorCode.REFRESH_TOKEN_EXPIRED,
-            message: "Refresh token expired",
+            message: 'Refresh token expired',
           },
         }),
         401,
@@ -473,7 +470,7 @@ publicRoutes.post("/refresh", async (c) => {
         createApiResponse({
           error: {
             code: ApiErrorCode.USER_INACTIVE,
-            message: "User account is not active",
+            message: 'User account is not active',
           },
         }),
         401,
@@ -495,15 +492,15 @@ publicRoutes.post("/refresh", async (c) => {
       .where(eq(usersTable.id, user.id));
 
     // Set new refresh token cookie
-    setCookie(c, "auth-app-refreshToken", newRefreshToken, {
+    setCookie(c, 'auth-app-refreshToken', newRefreshToken, {
       httpOnly: true,
-      secure: env.NODE_ENV === "production", // true in production
-      sameSite: "Lax", // or 'Strict' if not dealing with third-party redirects
-      path: "/",
+      secure: env.NODE_ENV === 'production', // true in production
+      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
+      path: '/',
       maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
       // Optional: Use __Host- prefix for additional security in production
-      ...(env.NODE_ENV === "production" && {
-        prefix: "host", // This will prefix the cookie with __Host-
+      ...(env.NODE_ENV === 'production' && {
+        prefix: 'host', // This will prefix the cookie with __Host-
       }),
     });
 
@@ -517,13 +514,12 @@ publicRoutes.post("/refresh", async (c) => {
       }),
       200,
     );
-  }
-  catch (err) {
+  } catch (err) {
     return c.json(
       createApiResponse({
         error: {
           code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: err instanceof Error ? err.message : "Internal server error",
+          message: err instanceof Error ? err.message : 'Internal server error',
         },
       }),
       500,
@@ -533,15 +529,15 @@ publicRoutes.post("/refresh", async (c) => {
 
 // Protected auth routes (auth required)
 const protectedRoutes = new Hono<CustomEnv>();
-protectedRoutes.use("*", authMiddleware);
+protectedRoutes.use('*', authMiddleware);
 
-protectedRoutes.get("/me", async (c) => {
+protectedRoutes.get('/me', async (c) => {
   try {
     // Get db connection
-    const db = c.get("db");
+    const db = c.get('db');
 
     // Get user id from auth middleware context variable
-    const userId = c.get("userId");
+    const userId = c.get('userId');
 
     // Find the user from the database
     const user = await db.query.usersTable.findFirst({
@@ -552,7 +548,7 @@ protectedRoutes.get("/me", async (c) => {
         createApiResponse({
           error: {
             code: ApiErrorCode.USER_NOT_FOUND,
-            message: "User not found",
+            message: 'User not found',
           },
         }),
         404,
@@ -577,9 +573,9 @@ protectedRoutes.get("/me", async (c) => {
 
       // User preferences & settings
       settings: (user.settings as UserSettings) ?? {
-        theme: "system",
-        language: "en",
-        timezone: "UTC",
+        theme: 'system',
+        language: 'en',
+        timezone: 'UTC',
       },
 
       // User preferences & settings
@@ -602,13 +598,12 @@ protectedRoutes.get("/me", async (c) => {
       }),
       200,
     );
-  }
-  catch (err) {
+  } catch (err) {
     return c.json(
       createApiResponse({
         error: {
           code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: err instanceof Error ? err.message : "Internal server error",
+          message: err instanceof Error ? err.message : 'Internal server error',
         },
       }),
       500,
@@ -617,5 +612,5 @@ protectedRoutes.get("/me", async (c) => {
 });
 
 // Mount route groups to authRoutes
-authRoutes.route("", publicRoutes);
-authRoutes.route("", protectedRoutes);
+authRoutes.route('', publicRoutes);
+authRoutes.route('', protectedRoutes);
