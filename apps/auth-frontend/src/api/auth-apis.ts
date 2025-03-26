@@ -1,6 +1,6 @@
-import type { AuthResponse } from "@/types/auth-types";
+import type { AuthResponse } from '@/types/auth-types';
 
-import { BASE_API_URL } from "@/constants";
+import { BASE_API_URL } from '@/constants';
 
 /**
  * Log in a user with email and password
@@ -8,17 +8,17 @@ import { BASE_API_URL } from "@/constants";
  */
 export async function login(email: string, password: string): Promise<AuthResponse> {
   const res = await fetch(`${BASE_API_URL}/api/v1/auth/login`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ email, password }),
-    credentials: "include", // Include cookies in the request
+    credentials: 'include', // Include cookies in the request
   });
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to login");
+    throw new Error(errorData.message || 'Failed to login');
   }
 
   return res.json();
@@ -35,12 +35,12 @@ export async function getCurrentUser(accessToken: string): Promise<AuthResponse 
     }
 
     const res = await fetch(`${BASE_API_URL}/api/v1/auth/me`, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
       },
-      credentials: "include", // Important for cookies
+      credentials: 'include', // Important for cookies
     });
 
     if (!res.ok) {
@@ -48,12 +48,12 @@ export async function getCurrentUser(accessToken: string): Promise<AuthResponse 
       if (res.status === 401) {
         return null;
       }
-      throw new Error("Failed to get current user");
+      throw new Error('Failed to get current user');
     }
 
     return res.json();
   } catch (error) {
-    console.error("Error fetching current user:", error);
+    console.error('Error fetching current user:', error);
     return null;
   }
 }
@@ -63,14 +63,14 @@ export async function getCurrentUser(accessToken: string): Promise<AuthResponse 
  */
 export async function logout(): Promise<void> {
   const res = await fetch(`${BASE_API_URL}/api/v1/auth/logout`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
-    credentials: "include", // Include cookies in the request
+    credentials: 'include', // Include cookies in the request
   });
 
   if (!res.ok) {
-    throw new Error("Failed to logout");
+    throw new Error('Failed to logout');
   }
 }

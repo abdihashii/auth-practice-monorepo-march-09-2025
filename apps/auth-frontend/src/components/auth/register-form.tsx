@@ -1,37 +1,32 @@
-// Third-party libraries
-import { cn } from "@/lib/utils";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import type { z } from 'zod';
 
-// Third-party components
-import { Button } from "@/components/ui/button";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Link } from '@tanstack/react-router';
+import { useForm } from 'react-hook-form';
+
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Link } from "@tanstack/react-router";
-
-// Local libraries
-import { registerFormSchema } from "@/schemas/auth-form-schema";
-
-// Local components
+} from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+import { registerFormSchema } from '@/schemas/auth-form-schema';
 
 export function RegisterForm({
   className,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+}: React.ComponentPropsWithoutRef<'div'>) {
   const {
     register,
     handleSubmit,
@@ -39,17 +34,18 @@ export function RegisterForm({
   } = useForm<z.infer<typeof registerFormSchema>>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
   function onSubmit(data: z.infer<typeof registerFormSchema>) {
+    // eslint-disable-next-line no-console
     console.log(data);
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Register</CardTitle>
@@ -63,7 +59,7 @@ export function RegisterForm({
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
-                  {...register("email")}
+                  {...register('email')}
                   id="email"
                   type="email"
                   placeholder="test@example.com"
@@ -76,7 +72,7 @@ export function RegisterForm({
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
-                  {...register("password")}
+                  {...register('password')}
                   id="password"
                   type="password"
                   required
@@ -85,7 +81,7 @@ export function RegisterForm({
               <div className="grid gap-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input
-                  {...register("confirmPassword")}
+                  {...register('confirmPassword')}
                   id="confirmPassword"
                   type="password"
                   required
@@ -114,7 +110,8 @@ export function RegisterForm({
               </TooltipProvider>
             </div>
             <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
+              Already have an account?
+              {' '}
               <Link
                 to="/login"
                 className="underline underline-offset-4 hover:text-primary"
