@@ -2,6 +2,8 @@ import type { z } from 'zod';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from '@tanstack/react-router';
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -27,6 +29,9 @@ export function RegisterForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<'div'>) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -71,21 +76,61 @@ export function RegisterForm({
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
-                <Input
-                  {...register('password')}
-                  id="password"
-                  type="password"
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    {...register('password')}
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent bg-transparent hover:cursor-pointer text-muted-foreground"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword
+                      ? (
+                          <EyeOffIcon className="h-4 w-4" />
+                        )
+                      : (
+                          <EyeIcon className="h-4 w-4" />
+                        )}
+                  </Button>
+                </div>
+                {errors.password && (
+                  <p className="text-red-500">{errors.password.message}</p>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  {...register('confirmPassword')}
-                  id="confirmPassword"
-                  type="password"
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    {...register('confirmPassword')}
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent bg-transparent hover:cursor-pointer text-muted-foreground"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword
+                      ? (
+                          <EyeOffIcon className="h-4 w-4" />
+                        )
+                      : (
+                          <EyeIcon className="h-4 w-4" />
+                        )}
+                  </Button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-red-500">{errors.confirmPassword.message}</p>
+                )}
               </div>
               <Button type="submit" className="w-full">
                 Register
