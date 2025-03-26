@@ -1,0 +1,17 @@
+{
+  "name": "@roll-your-own-auth/types",
+  "version": "1.0.0",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
+  },
+  "devDependencies": {
+    "@roll-your-own-auth/eslint-config": "workspace:^"
+  }
+}
