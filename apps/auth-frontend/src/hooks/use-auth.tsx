@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { User } from '@roll-your-own-auth/types';
 
-import type { User } from '@/types/auth-types';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { login, logout } from '@/api/auth-apis';
 import { authStorage } from '@/services/auth-storage-service';

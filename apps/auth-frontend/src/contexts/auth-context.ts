@@ -1,6 +1,6 @@
-import { createContext } from 'react';
+import type { User } from '@roll-your-own-auth/types';
 
-import type { User } from '@/types/auth-types';
+import { createContext } from 'react';
 
 // Define the shape of the auth context
 interface AuthContextType {
