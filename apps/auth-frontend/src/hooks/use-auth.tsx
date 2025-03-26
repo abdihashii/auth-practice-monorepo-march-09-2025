@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { AuthResponse, User } from '@/types/auth-types';
+import type { User } from '@/types/auth-types';
 
 import { login, logout } from '@/api/auth-apis';
 import { authStorage } from '@/services/auth-storage-service';
@@ -23,7 +23,7 @@ export function useAuth() {
       const token = authStorage.getToken();
       const user = authStorage.getUser();
       if (token && user) {
-        return { data: { user, accessToken: token } } as AuthResponse;
+        return { user, accessToken: token };
       }
       return null;
     },
@@ -35,7 +35,7 @@ export function useAuth() {
   });
 
   // Extract user from auth data
-  const user = authData?.data;
+  const user = authData?.user;
   const isAuthenticated = !!user;
 
   // Login mutation

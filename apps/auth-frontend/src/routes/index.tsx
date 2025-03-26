@@ -1,14 +1,10 @@
-// React
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router';
 
-// Third-party components
-import { Button } from "@/components/ui/button";
+import { AuthGuard } from '@/components/auth/auth-guard';
+import { Button } from '@/components/ui/button';
+import { useAuthContext } from '@/hooks/use-auth-context';
 
-// Local components
-import { AuthGuard } from "@/components/auth/AuthGuard";
-import { useAuthContext } from "@/providers/auth-context-provider";
-
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute('/')({
   component: App,
 });
 
@@ -23,10 +19,15 @@ function App() {
 
           <div className="mb-6 rounded-lg border bg-card p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-semibold">
-              Welcome, {user?.user?.name ?? "User"}!
+              Welcome,
+              {' '}
+              {user?.name ?? 'User'}
+              !
             </h2>
             <p className="text-muted-foreground">
-              <span className="font-bold">Email:</span> {user?.user?.email}
+              <span className="font-bold">Email:</span>
+              {' '}
+              {user?.email}
             </p>
             <p className="text-muted-foreground">
               You are now authenticated and viewing a protected route.

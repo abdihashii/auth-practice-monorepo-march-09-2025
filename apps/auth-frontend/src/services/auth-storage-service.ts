@@ -11,8 +11,8 @@ export const authStorage = {
    * Save authentication data to storage
    */
   saveAuth: (authResponse: AuthResponse): void => {
-    localStorage.setItem(AUTH_TOKEN_KEY, authResponse.data.accessToken);
-    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authResponse.data.user));
+    localStorage.setItem(AUTH_TOKEN_KEY, authResponse.accessToken);
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authResponse.user));
   },
 
   /**

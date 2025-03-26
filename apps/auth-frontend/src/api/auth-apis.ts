@@ -21,7 +21,9 @@ export async function login(email: string, password: string): Promise<AuthRespon
     throw new Error(errorData.message || 'Failed to login');
   }
 
-  return res.json();
+  const { data } = (await res.json()) as { data: AuthResponse };
+
+  return data;
 }
 
 /**
@@ -51,7 +53,9 @@ export async function getCurrentUser(accessToken: string): Promise<AuthResponse 
       throw new Error('Failed to get current user');
     }
 
-    return res.json();
+    const data = await res.json();
+
+    return data;
   } catch (error) {
     console.error('Error fetching current user:', error);
     return null;
