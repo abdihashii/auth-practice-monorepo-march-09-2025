@@ -18,20 +18,25 @@ function App() {
           <h1 className="mb-6 text-center text-3xl font-bold">Dashboard</h1>
 
           <div className="mb-6 rounded-lg border bg-card p-6 shadow-sm">
-            <h2 className="mb-4 text-xl font-semibold">
+            <h2 className="text-xl font-semibold">
               Welcome,
               {' '}
               {user?.name ?? 'User'}
               !
             </h2>
+            <p className="mb-4 text-muted-foreground">
+              You are now authenticated and viewing a protected route.
+            </p>
+
             <p className="text-muted-foreground">
               <span className="font-bold">Email:</span>
               {' '}
               {user?.email}
             </p>
-            <p className="text-muted-foreground">
-              You are now authenticated and viewing a protected route.
-            </p>
+
+            <pre>
+              <code>{JSON.stringify(user, null, 2)}</code>
+            </pre>
           </div>
 
           <div className="w-full flex justify-center">
