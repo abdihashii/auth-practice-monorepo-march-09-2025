@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from '@tanstack/react-router';
 import { Loader2Icon } from 'lucide-react';
 
-import { useAuthContext } from '@/providers/auth-context-provider';
+import { useAuthContext } from '@/hooks/use-auth-context';
 
 interface AuthGuardProps {
   children: React.ReactNode;

@@ -21,8 +21,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useAuthContext } from '@/hooks/use-auth-context';
 import { cn } from '@/lib/utils';
-import { useAuthContext } from '@/providers/auth-context-provider';
 import { loginFormSchema } from '@/schemas/auth-form-schema';
 
 export function LoginForm({

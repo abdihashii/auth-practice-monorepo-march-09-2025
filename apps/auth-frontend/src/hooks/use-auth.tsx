@@ -1,18 +1,17 @@
-// Third-party imports
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-// Local imports
-import { login, logout } from "@/api/auth-apis";
-import { authStorage } from "@/services/auth-storage-service";
-import type { AuthResponse, User } from "@/types/auth-types";
+import type { AuthResponse, User } from '@/types/auth-types';
+
+import { login, logout } from '@/api/auth-apis';
+import { authStorage } from '@/services/auth-storage-service';
 
 // Key for auth-related queries
-export const AUTH_QUERY_KEY = ["auth"];
+export const AUTH_QUERY_KEY = ['auth'];
 
 /**
  * Hook for authentication functionality
  */
-export const useAuth = () => {
+export function useAuth() {
   // QueryClient instance is used to cache, invalidate, clear, and refetch data
   const queryClient = useQueryClient();
 
@@ -93,4 +92,4 @@ export const useAuth = () => {
     login: loginFn,
     logout: logoutFn,
   };
-};
+}
