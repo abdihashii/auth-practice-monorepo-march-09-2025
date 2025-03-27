@@ -2,13 +2,17 @@ import { z } from 'zod';
 
 import { PASSWORD_REQUIREMENTS } from '@/types';
 
-const emailSchema = z
+export const emailSchema = z
   .string()
   .email('Invalid email format')
   .min(5, 'Email must be at least 5 characters')
   .max(255, 'Email must be less than 255 characters');
 
-const passwordSchema = z
+/**
+ * Validation schema for password
+ * Ensures the password
+ */
+export const passwordSchema = z
   .string()
   .min(
     PASSWORD_REQUIREMENTS.minLength,
