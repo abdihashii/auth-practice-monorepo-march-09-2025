@@ -1,31 +1,4 @@
-import {
-  emailSchema,
-  passwordSchema,
-} from '@roll-your-own-auth/shared';
-import { z } from 'zod';
-
-/**
- * Validation schema for user registration
- * Validates the CreateUserDto structure with proper constraints
- */
-export const createUserSchema = z.object({
-  email: emailSchema,
-  password: passwordSchema,
-  name: z
-    .string()
-    .min(2, 'Name must be at least 2 characters')
-    .max(100, 'Name must be less than 100 characters')
-    .optional(),
-});
-
-/**
- * Validation schema for user login
- * Validates the LoginUserDto structure with proper constraints
- */
-export const loginUserSchema = z.object({
-  email: emailSchema,
-  password: passwordSchema,
-});
+import type { z } from 'zod';
 
 /**
  * Validate user input data against a Zod schema
@@ -56,7 +29,7 @@ export function validateAuthSchema<T extends z.ZodSchema>(
     // Format errors in a consistent way: "field: error message"
     return {
       isValid: false,
-      errors: result.error.errors.map((err) => {
+      errors: result.error.errors.map((err: any) => {
         const field = err.path.length > 0 ? err.path[0] : 'unknown';
         return `${field}: ${err.message}`;
       }),
