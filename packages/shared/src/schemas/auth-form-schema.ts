@@ -2,6 +2,16 @@ import { z } from 'zod';
 
 import { PASSWORD_REQUIREMENTS } from '@/types';
 
+/**
+ **************************************************
+ ******** SHARED AUTH VALIDATION SCHEMAS **********
+ **************************************************
+ */
+
+/**
+ * Validation schema for email
+ * Ensures the email is a valid format
+ */
 export const emailSchema = z
   .string()
   .email('Invalid email format')
@@ -65,6 +75,11 @@ export const passwordSchema = z
     },
   );
 
+/*
+  **************************************************
+  ********** AUTH FORM VALIDATION SCHEMAS **********
+  **************************************************
+  */
 export const loginFormSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
@@ -78,3 +93,32 @@ export const registerFormSchema = loginFormSchema
     message: 'Passwords do not match',
     path: ['confirmPassword'],
   });
+
+/*
+  **************************************************
+  ********** BACKEND AUTH VALIDATION SCHEMAS *******
+  **************************************************
+  */
+
+/**
+ * Validation schema for user registration
+ * Validates the CreateUserDto structure with proper constraints
+ */
+export const createUserSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+  name: z
+    .string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name must be less than 100 characters')
+    .optional(),
+});
+
+/**
+ * Validation schema for user login
+ * Validates the LoginUserDto structure with proper constraints
+ */
+export const loginUserSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+});
