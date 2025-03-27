@@ -1,14 +1,5 @@
+import { PASSWORD_REQUIREMENTS } from '@roll-your-own-auth/types';
 import { z } from 'zod';
-
-export const PASSWORD_REQUIREMENTS = {
-  minLength: 8,
-  maxLength: 128,
-  minLowercase: 1,
-  minUppercase: 1,
-  minNumbers: 1,
-  minSymbols: 1,
-  allowedSymbols: '!@#$%^&*()_+-=[]{}|;:,.<>?',
-} as const;
 
 const emailSchema = z
   .string()
