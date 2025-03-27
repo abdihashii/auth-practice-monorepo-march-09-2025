@@ -12,8 +12,8 @@
     "dev:backend": "pnpm --filter backend run dev:docker",
     "dev:frontend": "pnpm --filter web run dev",
     "deploy:backend": "fly deploy --config ./apps/auth-backend/fly.toml --dockerfile ./apps/auth-backend/Dockerfile.prod",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
+    "lint": "pnpm run -r --parallel lint",
+    "lint:fix": "pnpm run -r --parallel lint:fix",
     "prepare": "husky"
   },
   "dependencies": {
