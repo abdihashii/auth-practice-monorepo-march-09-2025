@@ -1,6 +1,4 @@
-import type {
-  ApiErrorCode,
-} from '@roll-your-own-auth/types';
+import type { ApiErrorCode } from '@roll-your-own-auth/shared';
 
 import type {
   ApiResponse,

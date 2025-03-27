@@ -1,4 +1,4 @@
-import { PASSWORD_REQUIREMENTS } from '@roll-your-own-auth/types';
+import { PASSWORD_REQUIREMENTS } from '@roll-your-own-auth/shared';
 import { z } from 'zod';
 
 export const emailSchema = z

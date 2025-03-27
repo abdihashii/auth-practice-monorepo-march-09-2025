@@ -1,6 +1,7 @@
 import type { z } from 'zod';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { registerFormSchema } from '@roll-your-own-auth/shared';
 import { Link } from '@tanstack/react-router';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -23,7 +24,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { registerFormSchema } from '@/schemas/auth-form-schema';
 
 export function RegisterForm({
   className,

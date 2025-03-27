@@ -1,4 +1,4 @@
-import type { AuthResponse, User } from '@roll-your-own-auth/types';
+import type { AuthResponse, User } from '../../../../packages/shared/src/types';
 
 const AUTH_TOKEN_KEY = 'auth_token';
 const AUTH_USER_KEY = 'auth_user';

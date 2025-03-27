@@ -1,5 +1,6 @@
-import { PASSWORD_REQUIREMENTS } from '@roll-your-own-auth/types';
 import { z } from 'zod';
+
+import { PASSWORD_REQUIREMENTS } from '@/types';
 
 const emailSchema = z
   .string()

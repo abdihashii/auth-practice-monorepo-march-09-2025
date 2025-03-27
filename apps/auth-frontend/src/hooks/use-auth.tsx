@@ -1,4 +1,4 @@
-import type { User } from '@roll-your-own-auth/types';
+import type { User } from '@roll-your-own-auth/shared';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 

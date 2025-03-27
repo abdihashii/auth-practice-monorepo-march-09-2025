@@ -1,5 +1,5 @@
 {
-  "name": "@roll-your-own-auth/types",
+  "name": "@roll-your-own-auth/shared",
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc",

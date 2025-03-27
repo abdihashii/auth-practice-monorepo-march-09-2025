@@ -4,7 +4,12 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "declaration": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "composite": true
   },
   "include": ["src/**/*"],

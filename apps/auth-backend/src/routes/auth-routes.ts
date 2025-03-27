@@ -1,6 +1,6 @@
 import {
   ApiErrorCode,
-} from '@roll-your-own-auth/types';
+} from '@roll-your-own-auth/shared';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { getCookie, setCookie } from 'hono/cookie';
