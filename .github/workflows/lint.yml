@@ -19,4 +19,4 @@ jobs:
         with:
           node-version: 22.x
       - run: pnpm i
-      - run: pnpm lint ./apps/auth-backend
+      - run: pnpm lint
