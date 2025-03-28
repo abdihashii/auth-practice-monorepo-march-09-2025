@@ -1,4 +1,4 @@
-import type { ApiError } from '@roll-your-own-auth/shared';
+import type { ApiError } from '@roll-your-own-auth/shared/types';
 
 import type { User } from '@/lib/types/user-types';
 
