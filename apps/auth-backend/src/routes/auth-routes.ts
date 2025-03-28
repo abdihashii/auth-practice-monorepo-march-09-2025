@@ -16,6 +16,7 @@ import {
   createApiResponse,
   generateTokens,
   hashPassword,
+  verifyGoogleIdToken,
   verifyPassword,
 } from '@/lib/utils';
 import { authMiddleware } from '@/middlewares/auth-middleware';
@@ -296,6 +297,180 @@ publicRoutes.post('/login', async (c) => {
       },
 
       // User preferences & settings
+      notificationPreferences:
+        (user.notificationPreferences as NotificationPreferences) ?? {
+          email: {
+            enabled: false,
+            digest: 'never',
+            marketing: false,
+          },
+          push: {
+            enabled: false,
+            alerts: false,
+          },
+        },
+
+      // Activity tracking
+      lastActivityAt:
+        user.lastActivityAt?.toISOString() ?? new Date().toISOString(),
+      lastSuccessfulLogin:
+        user.lastSuccessfulLogin?.toISOString() ?? new Date().toISOString(),
+      loginCount: (user.loginCount ?? 0) + 1,
+    };
+
+    // Combine user and access token into auth response
+    const authResponse: AuthResponse = {
+      user: safeUser,
+      accessToken,
+    };
+
+    return c.json(
+      createApiResponse({
+        data: authResponse,
+      }),
+      200,
+    );
+  } catch (err) {
+    return c.json(
+      createApiResponse({
+        error: {
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+          message: err instanceof Error ? err.message : 'Internal server error',
+        },
+      }),
+      500,
+    );
+  }
+});
+
+/**
+ * Login a user with Google
+ * POST /api/v1/auth/login/google
+ */
+publicRoutes.post('/login/google', async (c) => {
+  try {
+    // Get db connection
+    const db = c.get('db');
+
+    // Get Google OAuth credentials from environment variables
+    const { GOOGLE_CLIENT_ID } = env;
+
+    // Get token from request body
+    const body = await c.req.json();
+    const { idToken } = body;
+
+    if (!idToken) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: 'Google ID token is required',
+          },
+        }),
+        400,
+      );
+    }
+
+    // Verify the Google ID token
+    let googleUser;
+    try {
+      googleUser = await verifyGoogleIdToken(idToken, GOOGLE_CLIENT_ID);
+    } catch {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INVALID_CREDENTIALS,
+            message: 'Invalid Google token',
+          },
+        }),
+        401,
+      );
+    }
+
+    // Check if user exists in the database
+    let user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.email, googleUser.email),
+    });
+
+    // If user doesn't exist, create a new one
+    if (!user) {
+      // Generate a secure random password for the user (they will never use it)
+      const randomPassword = crypto.randomUUID();
+      const hashedPassword = await hashPassword(randomPassword);
+
+      // Create user in the database
+      const [newUser] = await db
+        .insert(usersTable)
+        .values({
+          email: googleUser.email,
+          hashedPassword,
+          name: googleUser.name,
+          emailVerified: true, // Google already verified the email
+        })
+        .returning();
+
+      if (!newUser) {
+        throw new Error('Failed to create user');
+      }
+
+      user = newUser;
+    }
+
+    // Ensure user is not undefined at this point
+    if (!user) {
+      throw new Error('User not found after creation attempt');
+    }
+
+    // Generate JWT tokens
+    const { accessToken, refreshToken } = await generateTokens(user.id);
+
+    // Update user with refresh token after successful login
+    await db
+      .update(usersTable)
+      .set({
+        refreshToken,
+        refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        lastSuccessfulLogin: new Date(),
+        loginCount: (user.loginCount ?? 0) + 1,
+        lastActivityAt: new Date(),
+      })
+      .where(eq(usersTable.id, user.id));
+
+    // Set refresh token in HTTP-only cookie
+    setCookie(c, 'auth-app-refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production', // true in production
+      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      // Optional: Use __Host- prefix for additional security in production
+      ...(env.NODE_ENV === 'production' && {
+        prefix: 'host', // This will prefix the cookie with __Host-
+      }),
+    });
+
+    // Create a safe user object (excluding sensitive data)
+    const safeUser: User = {
+      // Core user information
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
+      updatedAt: user.updatedAt?.toISOString() ?? new Date().toISOString(),
+
+      // Email verification
+      emailVerified: user.emailVerified ?? true, // Google users are verified by default
+
+      // Account status & management
+      isActive: user.isActive ?? true,
+      deletedAt: user.deletedAt?.toISOString() ?? null,
+
+      // User preferences & settings
+      settings: (user.settings as UserSettings) ?? {
+        theme: 'system',
+        language: 'en',
+        timezone: 'UTC',
+      },
       notificationPreferences:
         (user.notificationPreferences as NotificationPreferences) ?? {
           email: {

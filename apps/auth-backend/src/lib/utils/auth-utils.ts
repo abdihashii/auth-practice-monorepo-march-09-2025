@@ -66,3 +66,45 @@ export async function generateTokens(userId: string): Promise<{
 
   return { accessToken, refreshToken };
 }
+
+/**
+ * Verify a Google ID token and extract user information
+ *
+ * @param {string} token - The Google ID token to verify
+ * @param {string} clientId - The Google client ID to verify the token against
+ * @returns {Promise<{
+ *   email: string;
+ *   name: string | null;
+ *   picture: string | null;
+ * }>} The user information from the verified token
+ * @throws {Error} If the token is invalid or verification fails
+ */
+export async function verifyGoogleIdToken(token: string, clientId: string): Promise<{
+  email: string;
+  name: string | null;
+  picture: string | null;
+}> {
+  const { OAuth2Client } = await import('google-auth-library');
+  const client = new OAuth2Client(clientId);
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: clientId,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      throw new Error('Invalid token payload');
+    }
+
+    return {
+      email: payload.email,
+      name: payload.name || null,
+      picture: payload.picture || null,
+    };
+  } catch (error) {
+    console.error('Google token verification error:', error);
+    throw new Error('Failed to verify Google token');
+  }
+}
