@@ -1,22 +1,28 @@
 import { z } from 'zod';
 
-export const PASSWORD_REQUIREMENTS = {
-  minLength: 8,
-  maxLength: 128,
-  minLowercase: 1,
-  minUppercase: 1,
-  minNumbers: 1,
-  minSymbols: 1,
-  allowedSymbols: '!@#$%^&*()_+-=[]{}|;:,.<>?',
-} as const;
+import { PASSWORD_REQUIREMENTS } from '@/types';
 
-const emailSchema = z
+/**
+ **************************************************
+ ******** SHARED VALIDATION SCHEMAS ***************
+ **************************************************
+ */
+
+/**
+ * Validation schema for email
+ * Ensures the email is a valid format
+ */
+export const emailSchema = z
   .string()
   .email('Invalid email format')
   .min(5, 'Email must be at least 5 characters')
   .max(255, 'Email must be less than 255 characters');
 
-const passwordSchema = z
+/**
+ * Validation schema for password
+ * Ensures the password meets requirements
+ */
+export const passwordSchema = z
   .string()
   .min(
     PASSWORD_REQUIREMENTS.minLength,
@@ -69,6 +75,19 @@ const passwordSchema = z
     },
   );
 
+/**
+ * Validation schema for user ID parameter
+ * Ensures the ID is a valid UUID format
+ */
+export const idParamSchema = z.object({
+  id: z.string().uuid('Invalid user ID format'),
+});
+
+/*
+  **************************************************
+  ********** AUTH FORM VALIDATION SCHEMAS **********
+  **************************************************
+  */
 export const loginFormSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
@@ -82,3 +101,32 @@ export const registerFormSchema = loginFormSchema
     message: 'Passwords do not match',
     path: ['confirmPassword'],
   });
+
+/*
+  **************************************************
+  ********** BACKEND AUTH VALIDATION SCHEMAS *******
+  **************************************************
+  */
+
+/**
+ * Validation schema for user registration
+ * Validates the CreateUserDto structure with proper constraints
+ */
+export const createUserSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+  name: z
+    .string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name must be less than 100 characters')
+    .optional(),
+});
+
+/**
+ * Validation schema for user login
+ * Validates the LoginUserDto structure with proper constraints
+ */
+export const loginUserSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+});

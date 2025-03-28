@@ -4,21 +4,15 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["ESNext", "DOM"],
-
     "baseUrl": ".",
     "module": "ESNext",
-
     "moduleResolution": "bundler",
-
     "paths": {
       "@/*": ["src/*"]
     },
     "allowImportingTsExtensions": true,
-
     "noFallthroughCasesInSwitch": true,
-
     "noPropertyAccessFromIndexSignature": false,
-
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noEmit": true

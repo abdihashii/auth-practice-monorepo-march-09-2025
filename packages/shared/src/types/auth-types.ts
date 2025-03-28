@@ -1,7 +1,5 @@
 /**
  * Type for user settings
- *
- * TODO: move to shared types package
  */
 export interface UserSettings {
   theme: 'system' | 'light' | 'dark';
@@ -11,8 +9,6 @@ export interface UserSettings {
 
 /**
  * Type for user notification preferences
- *
- * TODO: move to shared types package
  */
 export interface NotificationPreferences {
   email: {
@@ -30,8 +26,6 @@ export interface NotificationPreferences {
  * Represents a user in the system.
  * This is the safe user type that excludes sensitive information like passwords and tokens.
  * Used for client-side rendering and API responses.
- *
- * TODO: move to shared types package
  */
 export interface User {
   // Core user information

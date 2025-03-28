@@ -1,3 +1,9 @@
+import {
+  createUserSchema,
+  loginUserSchema,
+} from '@roll-your-own-auth/shared/schemas';
+import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
+import { validateAuthSchema } from '@roll-your-own-auth/shared/validations';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { getCookie, setCookie } from 'hono/cookie';
@@ -7,20 +13,11 @@ import type { AuthResponse, CreateUserDto, CustomEnv, NotificationPreferences, T
 import { usersTable } from '@/db/schema';
 import env from '@/env';
 import {
-  ApiErrorCode,
-
-} from '@/lib/types';
-import {
   createApiResponse,
   generateTokens,
   hashPassword,
   verifyPassword,
 } from '@/lib/utils';
-import {
-  createUserSchema,
-  loginUserSchema,
-  validateAuthSchema,
-} from '@/lib/validation/auth-validation';
 import { authMiddleware } from '@/middlewares/auth-middleware';
 
 export const authRoutes = new Hono<CustomEnv>();

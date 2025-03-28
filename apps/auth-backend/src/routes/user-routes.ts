@@ -1,4 +1,6 @@
 import { zValidator } from '@hono/zod-validator';
+import { idParamSchema } from '@roll-your-own-auth/shared/schemas';
+import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 
@@ -9,12 +11,7 @@ import {
   DEFAULT_USER_DETAIL_COLUMNS,
   DEFAULT_USER_LIST_COLUMNS,
 } from '@/lib/constants';
-import {
-  ApiErrorCode,
-
-} from '@/lib/types';
 import { createApiResponse, createSelectObject } from '@/lib/utils';
-import { idParamSchema } from '@/lib/validation';
 
 export const userRoutes = new Hono<CustomEnv>();
 

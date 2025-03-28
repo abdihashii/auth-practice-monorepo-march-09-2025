@@ -11,3 +11,5 @@ bun-debug.log
 bun-debug.log.2
 
 dist
+
+tsconfig.tsbuildinfo
