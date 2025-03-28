@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loginFormSchema } from '@roll-your-own-auth/shared';
+import { loginFormSchema } from '@roll-your-own-auth/shared/schemas';
 import { Link } from '@tanstack/react-router';
 import { AlertCircle, Eye, EyeOff, Loader2Icon } from 'lucide-react';
 import { useState } from 'react';
