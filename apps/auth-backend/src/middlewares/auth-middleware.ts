@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from 'hono';
 
-import { ApiErrorCode } from '@roll-your-own-auth/shared';
+import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { eq } from 'drizzle-orm';
 import { verify } from 'hono/jwt';
 

@@ -1,8 +1,6 @@
 import { zValidator } from '@hono/zod-validator';
-import {
-  ApiErrorCode,
-  idParamSchema,
-} from '@roll-your-own-auth/shared';
+import { idParamSchema } from '@roll-your-own-auth/shared/schemas';
+import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 

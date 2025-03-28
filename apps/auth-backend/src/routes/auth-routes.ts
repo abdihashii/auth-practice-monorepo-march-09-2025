@@ -1,9 +1,9 @@
 import {
-  ApiErrorCode,
   createUserSchema,
   loginUserSchema,
-  validateAuthSchema,
-} from '@roll-your-own-auth/shared';
+} from '@roll-your-own-auth/shared/schemas';
+import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
+import { validateAuthSchema } from '@roll-your-own-auth/shared/validations';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { getCookie, setCookie } from 'hono/cookie';
