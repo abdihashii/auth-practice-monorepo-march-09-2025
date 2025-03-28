@@ -1,4 +1,4 @@
-import type { AuthResponse } from '@/types/auth-types';
+import type { AuthResponse } from '@roll-your-own-auth/shared/types';
 
 import { BASE_API_URL } from '@/constants';
 
