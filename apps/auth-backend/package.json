@@ -29,6 +29,7 @@
     "@roll-your-own-auth/shared": "workspace:^",
     "@sentry/bun": "^9.5.0",
     "drizzle-orm": "^0.40.0",
+    "google-auth-library": "^9.15.1",
     "hono": "^4.7.4",
     "pg": "^8.13.3"
   },
