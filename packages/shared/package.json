@@ -1,6 +1,7 @@
 {
   "name": "@roll-your-own-auth/shared",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "clean": "rm -rf dist node_modules",
     "build": "tsc",
