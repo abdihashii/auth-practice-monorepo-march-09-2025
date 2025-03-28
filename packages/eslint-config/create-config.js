@@ -17,9 +17,6 @@ export default function createConfig(options, ...userConfigs) {
     rules: {
       'ts/no-redeclare': 'off',
       'ts/consistent-type-definitions': ['error', 'interface'],
-      'ts/no-import-type-side-effects': 'error',
-      'ts/consistent-type-imports': 'error',
-      'import/named': 'error',
       'no-console': ['warn'],
       'antfu/no-top-level-await': ['off'],
       'node/prefer-global/process': ['off'],
