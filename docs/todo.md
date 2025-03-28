@@ -25,7 +25,7 @@ Bonus
 
 ## Frontend TODOs
 
-- [ ] Create a basic public page
+- [x] Create a basic public page
 - [x] Create a basic registration UI
 - [x] Create a basic login UI
 - [x] Create a basic protected page
@@ -34,5 +34,4 @@ Bonus
 - [ ] Implement a way to revoke the refresh token
 - [x] Implement a way to check if the user is authenticated
 - [x] Implement a way to logout the user
-- [ ] Eslint
-- [ ] Prettier
+- [x] Eslint
