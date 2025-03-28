@@ -2,6 +2,7 @@ import {
   ApiErrorCode,
   createUserSchema,
   loginUserSchema,
+  validateAuthSchema,
 } from '@roll-your-own-auth/shared';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
@@ -17,9 +18,6 @@ import {
   hashPassword,
   verifyPassword,
 } from '@/lib/utils';
-import {
-  validateAuthSchema,
-} from '@/lib/validation/auth-validation';
 import { authMiddleware } from '@/middlewares/auth-middleware';
 
 export const authRoutes = new Hono<CustomEnv>();
