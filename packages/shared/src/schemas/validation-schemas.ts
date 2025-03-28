@@ -4,7 +4,7 @@ import { PASSWORD_REQUIREMENTS } from '@/types';
 
 /**
  **************************************************
- ******** SHARED AUTH VALIDATION SCHEMAS **********
+ ******** SHARED VALIDATION SCHEMAS ***************
  **************************************************
  */
 
@@ -20,7 +20,7 @@ export const emailSchema = z
 
 /**
  * Validation schema for password
- * Ensures the password
+ * Ensures the password meets requirements
  */
 export const passwordSchema = z
   .string()
@@ -74,6 +74,14 @@ export const passwordSchema = z
       message: 'Password must contain at least one special character',
     },
   );
+
+/**
+ * Validation schema for user ID parameter
+ * Ensures the ID is a valid UUID format
+ */
+export const idParamSchema = z.object({
+  id: z.string().uuid('Invalid user ID format'),
+});
 
 /*
   **************************************************
