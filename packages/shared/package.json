@@ -2,6 +2,7 @@
   "name": "@roll-your-own-auth/shared",
   "main": "src/index.ts",
   "scripts": {
+    "clean": "rm -rf dist node_modules",
     "build": "tsc",
     "lint": "eslint",
     "lint:fix": "eslint --fix"
