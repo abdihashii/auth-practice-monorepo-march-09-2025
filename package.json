@@ -8,6 +8,7 @@
   "scripts": {
     "clean:all": "pnpm run -r --parallel clean",
     "clean": "rm -rf node_modules pnpm-lock.yaml",
+    "clean:install": "pnpm clean:all && pnpm install && pnpm build:shared",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:backend": "pnpm --filter backend run dev:docker",
     "dev:frontend": "pnpm --filter web run dev",
