@@ -26,7 +26,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "clean": "rm -rf dist node_modules",
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "lint": "eslint",
     "lint:fix": "eslint --fix"
   },
