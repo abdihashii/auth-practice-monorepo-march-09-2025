@@ -1,5 +1,7 @@
 import {
   ApiErrorCode,
+  createUserSchema,
+  loginUserSchema,
 } from '@roll-your-own-auth/shared';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
@@ -16,8 +18,6 @@ import {
   verifyPassword,
 } from '@/lib/utils';
 import {
-  createUserSchema,
-  loginUserSchema,
   validateAuthSchema,
 } from '@/lib/validation/auth-validation';
 import { authMiddleware } from '@/middlewares/auth-middleware';
