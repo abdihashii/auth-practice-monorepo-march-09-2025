@@ -36,3 +36,4 @@ Bonus
 - [x] Implement a way to check if the user is authenticated
 - [x] Implement a way to logout the user
 - [x] Eslint
+- [ ] Link/Unlink social accounts
