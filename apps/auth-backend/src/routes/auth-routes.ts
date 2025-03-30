@@ -1,9 +1,12 @@
+import type { AuthProvider } from '@roll-your-own-auth/shared/types';
+
+import { DEFAULT_AUTH_PROVIDER, VALID_AUTH_PROVIDERS } from '@roll-your-own-auth/shared/constants';
 import {
   createUserSchema,
   loginUserSchema,
 } from '@roll-your-own-auth/shared/schemas';
 import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
-import { validateAuthSchema } from '@roll-your-own-auth/shared/validations';
+import { validateAuthProviders, validateAuthSchema } from '@roll-your-own-auth/shared/validations';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { getCookie, setCookie } from 'hono/cookie';
@@ -78,6 +81,20 @@ publicRoutes.post('/register', async (c) => {
     // Hash user password using Argon2
     const hashedPassword = await hashPassword(password);
 
+    // Validate the default auth provider
+    const defaultAuthProvider = [DEFAULT_AUTH_PROVIDER];
+    if (!validateAuthProviders(defaultAuthProvider)) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+            message: 'Invalid default auth provider',
+          },
+        }),
+        500,
+      );
+    }
+
     // Create user
     const [user] = await db
       .insert(usersTable)
@@ -85,6 +102,8 @@ publicRoutes.post('/register', async (c) => {
         email,
         hashedPassword,
         name: body.name ?? null,
+        authProviders: defaultAuthProvider,
+        providerIds: {}, // No provider IDs for email registration
       })
       .returning();
 
@@ -387,6 +406,18 @@ publicRoutes.post('/login/google', async (c) => {
       );
     }
 
+    if (!googleUser.sub) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INVALID_CREDENTIALS,
+            message: 'Invalid Google token - missing user ID',
+          },
+        }),
+        401,
+      );
+    }
+
     // Check if user exists in the database
     let user = await db.query.usersTable.findFirst({
       where: eq(usersTable.email, googleUser.email),
@@ -398,6 +429,20 @@ publicRoutes.post('/login/google', async (c) => {
       const randomPassword = crypto.randomUUID();
       const hashedPassword = await hashPassword(randomPassword);
 
+      // Validate the auth provider
+      const googleAuthProvider = ['google'];
+      if (!validateAuthProviders(googleAuthProvider)) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+              message: 'Invalid auth provider',
+            },
+          }),
+          500,
+        );
+      }
+
       // Create user in the database
       const [newUser] = await db
         .insert(usersTable)
@@ -406,6 +451,8 @@ publicRoutes.post('/login/google', async (c) => {
           hashedPassword,
           name: googleUser.name,
           emailVerified: true, // Google already verified the email
+          authProviders: googleAuthProvider, // Set Google as the auth provider
+          providerIds: { google: googleUser.sub }, // Store Google user ID
         })
         .returning();
 
@@ -414,11 +461,37 @@ publicRoutes.post('/login/google', async (c) => {
       }
 
       user = newUser;
-    }
+    } else {
+      // If user exists but doesn't have Google as an auth provider, add it
+      const authProviders = user.authProviders as string[] || [];
+      const providerIds = user.providerIds as Record<string, string> || {};
 
-    // Ensure user is not undefined at this point
-    if (!user) {
-      throw new Error('User not found after creation attempt');
+      if (!authProviders.includes('google')) {
+        // Validate the updated providers list
+        const updatedProvidersInclGoogle = [...authProviders, 'google'];
+        if (!validateAuthProviders(updatedProvidersInclGoogle)) {
+          return c.json(
+            createApiResponse({
+              error: {
+                code: ApiErrorCode.VALIDATION_ERROR,
+                message: `Invalid auth provider - must be one of: ${VALID_AUTH_PROVIDERS.join(', ')}`,
+              },
+            }),
+            400,
+          );
+        }
+
+        // Update user to include Google as an auth provider
+        await db
+          .update(usersTable)
+          .set({
+            authProviders: updatedProvidersInclGoogle, // Include Google as an auth provider
+            providerIds: { ...providerIds, google: googleUser.sub }, // Store Google user ID
+            // If email wasn't verified before, verify it now
+            emailVerified: true,
+          })
+          .where(eq(usersTable.id, user.id));
+      }
     }
 
     // Generate JWT tokens
@@ -767,6 +840,260 @@ protectedRoutes.get('/me', async (c) => {
     return c.json(
       createApiResponse({
         data: safeUser,
+      }),
+      200,
+    );
+  } catch (err) {
+    return c.json(
+      createApiResponse({
+        error: {
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+          message: err instanceof Error ? err.message : 'Internal server error',
+        },
+      }),
+      500,
+    );
+  }
+});
+
+/**
+ * Link a Google account to an existing account
+ * POST /api/v1/auth/link/google
+ */
+protectedRoutes.post('/link/google', async (c) => {
+  try {
+    // Get db connection
+    const db = c.get('db');
+
+    // Get user id from auth middleware context variable
+    const userId = c.get('userId');
+
+    // Get Google OAuth credentials from environment variables
+    const { GOOGLE_CLIENT_ID } = env;
+
+    // Get token from request body
+    const body = await c.req.json();
+    const { idToken } = body;
+
+    if (!idToken) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: 'Google ID token is required',
+          },
+        }),
+        400,
+      );
+    }
+
+    // Verify the Google ID token
+    let googleUser;
+    try {
+      googleUser = await verifyGoogleIdToken(idToken, GOOGLE_CLIENT_ID);
+    } catch {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INVALID_CREDENTIALS,
+            message: 'Invalid Google token',
+          },
+        }),
+        401,
+      );
+    }
+
+    // Find the current user
+    const currentUser = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, userId),
+    });
+
+    if (!currentUser) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.USER_NOT_FOUND,
+            message: 'User not found',
+          },
+        }),
+        404,
+      );
+    }
+
+    // Check if this Google account is already linked to another account
+    const existingGoogleUser = await db.query.usersTable.findFirst({
+      where: eq(usersTable.email, googleUser.email),
+    });
+
+    if (existingGoogleUser && existingGoogleUser.id !== userId) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.CONFLICT,
+            message: 'This Google account is already linked to another user',
+          },
+        }),
+        409, // Conflict
+      );
+    }
+
+    // Update auth providers array and provider IDs
+    const authProviders = (currentUser.authProviders as string[]) || [];
+    const providerIds = (currentUser.providerIds as Record<string, string>) || {};
+
+    // Check if the provider is already linked
+    if (authProviders.includes('google')) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.CONFLICT,
+            message: 'Google account already linked',
+          },
+        }),
+        409, // Conflict
+      );
+    }
+
+    // Validate the updated providers list
+    const updatedProvidersInclGoogle = [...authProviders, 'google'];
+    if (!validateAuthProviders(updatedProvidersInclGoogle)) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: `Invalid auth provider - must be one of: ${VALID_AUTH_PROVIDERS.join(', ')}`,
+          },
+        }),
+        400,
+      );
+    }
+
+    // Update the user with the new provider
+    await db
+      .update(usersTable)
+      .set({
+        authProviders: updatedProvidersInclGoogle, // Include Google as an auth provider
+        providerIds: { ...providerIds, google: googleUser.sub }, // Store Google user ID
+        // If the user's email was not verified, verify it now
+        emailVerified: true,
+      })
+      .where(eq(usersTable.id, userId));
+
+    return c.json(
+      createApiResponse({
+        data: {
+          message: 'Google account linked successfully',
+        },
+      }),
+      200,
+    );
+  } catch (err) {
+    return c.json(
+      createApiResponse({
+        error: {
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+          message: err instanceof Error ? err.message : 'Internal server error',
+        },
+      }),
+      500,
+    );
+  }
+});
+
+/**
+ * Unlink a provider from an account
+ * POST /api/v1/auth/unlink/:provider
+ */
+protectedRoutes.post('/unlink/:provider', async (c) => {
+  try {
+    // Get db connection
+    const db = c.get('db');
+
+    // Get user id from auth middleware context variable
+    const userId = c.get('userId');
+
+    // Get provider from URL params
+    const provider = c.req.param('provider');
+
+    // Validate provider is one of the allowed enum values
+    if (!VALID_AUTH_PROVIDERS.includes(provider as AuthProvider)) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: `Invalid provider - must be one of: ${VALID_AUTH_PROVIDERS.join(', ')}`,
+          },
+        }),
+        400,
+      );
+    }
+
+    // Find the current user
+    const currentUser = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, userId),
+    });
+
+    if (!currentUser) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.USER_NOT_FOUND,
+            message: 'User not found',
+          },
+        }),
+        404,
+      );
+    }
+
+    // Get current auth providers
+    const authProviders = (currentUser.authProviders as string[]) || [];
+    const providerIds = (currentUser.providerIds as Record<string, string>) || {};
+
+    // Prevent removing the last auth provider
+    if (authProviders.length <= 1) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: 'Cannot remove the only authentication method',
+          },
+        }),
+        400,
+      );
+    }
+
+    // Check if the provider is linked
+    if (!authProviders.includes(provider)) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: `${provider} is not linked to this account`,
+          },
+        }),
+        400,
+      );
+    }
+
+    // Remove the provider
+    const newAuthProviders = authProviders.filter((p) => p !== provider);
+    const newProviderIds = { ...providerIds };
+    delete newProviderIds[provider];
+
+    // Update the user
+    await db
+      .update(usersTable)
+      .set({
+        authProviders: newAuthProviders,
+        providerIds: newProviderIds,
+      })
+      .where(eq(usersTable.id, userId));
+
+    return c.json(
+      createApiResponse({
+        data: {
+          message: `${provider} account unlinked successfully`,
+        },
       }),
       200,
     );
