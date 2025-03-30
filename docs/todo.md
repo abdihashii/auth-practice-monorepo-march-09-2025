@@ -22,6 +22,7 @@ Bonus
 - [ ] Create token blacklisting/revocation system
 - [ ] Add rate limiting to the API
 - [ ] Delete account
+- [ ] Link/Unlink social accounts
 
 ## Frontend TODOs
 
