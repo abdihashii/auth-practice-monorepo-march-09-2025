@@ -1,3 +1,5 @@
+import type { VALID_AUTH_PROVIDERS } from '@/constants/auth-constants';
+
 /**
  * Type for user settings
  */
@@ -56,3 +58,13 @@ export interface AuthResponse {
   user: User;
   accessToken: string;
 }
+
+/**
+ * Type representing valid authentication providers
+ */
+export type AuthProvider = typeof VALID_AUTH_PROVIDERS[number];
+
+/**
+ * Type for a record mapping provider types to their IDs
+ */
+export type ProviderIdsRecord = Partial<Record<AuthProvider, string>>;
