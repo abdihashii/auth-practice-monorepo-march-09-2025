@@ -6,6 +6,7 @@ const EnvSchema = z.object({
   DATABASE_URL: z.string().url(),
   FRONTEND_URL: z.string().url(),
   JWT_SECRET: z.string(),
+  RESEND_API_KEY: z.string(),
 }).superRefine((input, ctx) => {
   // Ensure JWT_SECRET is strong enough in production
   if (input.NODE_ENV === 'production' && input.JWT_SECRET.length < 256) {
