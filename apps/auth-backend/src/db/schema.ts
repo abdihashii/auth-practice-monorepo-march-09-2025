@@ -18,6 +18,10 @@ export const usersTable = pgTable('users', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 
+  // Authentication providers
+  authProviders: jsonb('auth_providers').default(['email']),
+  providerIds: jsonb('provider_ids').default({}),
+
   // JWT management
   refreshToken: text('refresh_token'), // Using text instead of varchar for tokens as they have variable length with no practical size limit
   refreshTokenExpiresAt: timestamp('refresh_token_expires_at', {
