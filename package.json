@@ -6,7 +6,7 @@
   "license": "MIT",
   "keywords": [],
   "scripts": {
-    "clean:all": "pnpm run -r --parallel clean",
+    "clean:all": "pnpm clean && pnpm run -r --parallel clean",
     "clean": "rm -rf node_modules pnpm-lock.yaml",
     "clean:install": "pnpm clean:all && pnpm install && pnpm build:shared",
     "test": "echo \"Error: no test specified\" && exit 1",
