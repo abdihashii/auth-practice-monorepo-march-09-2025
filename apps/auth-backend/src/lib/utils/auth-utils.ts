@@ -76,6 +76,7 @@ export async function generateTokens(userId: string): Promise<{
  *   email: string;
  *   name: string | null;
  *   picture: string | null;
+ *   sub: string; // Google user ID
  * }>} The user information from the verified token
  * @throws {Error} If the token is invalid or verification fails
  */
@@ -83,6 +84,7 @@ export async function verifyGoogleIdToken(token: string, clientId: string): Prom
   email: string;
   name: string | null;
   picture: string | null;
+  sub: string;
 }> {
   const { OAuth2Client } = await import('google-auth-library');
   const client = new OAuth2Client(clientId);
@@ -94,7 +96,7 @@ export async function verifyGoogleIdToken(token: string, clientId: string): Prom
     });
 
     const payload = ticket.getPayload();
-    if (!payload || !payload.email) {
+    if (!payload || !payload.email || !payload.sub) {
       throw new Error('Invalid token payload');
     }
 
@@ -102,6 +104,7 @@ export async function verifyGoogleIdToken(token: string, clientId: string): Prom
       email: payload.email,
       name: payload.name || null,
       picture: payload.picture || null,
+      sub: payload.sub,
     };
   } catch (error) {
     console.error('Google token verification error:', error);
