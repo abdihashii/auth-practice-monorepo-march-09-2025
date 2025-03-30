@@ -13,6 +13,7 @@ export enum ApiErrorCode {
   INVALID_ACCESS_TOKEN = 'INVALID_ACCESS_TOKEN', // Invalid access token, 401
   ACCESS_TOKEN_EXPIRED = 'ACCESS_TOKEN_EXPIRED', // Access token expired, 401
   TOKEN_INVALIDATED = 'TOKEN_INVALIDATED', // Token invalidated, 401
+  CONFLICT = 'CONFLICT', // Resource conflict, 409
 }
 
 export interface ApiError {
