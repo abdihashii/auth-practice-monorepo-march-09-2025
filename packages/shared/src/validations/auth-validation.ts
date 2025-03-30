@@ -1,5 +1,7 @@
 import type { z } from 'zod';
 
+import { VALID_AUTH_PROVIDERS } from '@/constants';
+
 /**
  * Validate user input data against a Zod schema
  * Returns a boolean indicating success or failure
@@ -35,4 +37,21 @@ export function validateAuthSchema<T extends z.ZodSchema>(
       }),
     };
   }
+}
+
+/**
+ * Validates that all auth providers in an array are valid according to the defined constants
+ *
+ * @param {string[]} providers - Array of auth provider strings to validate
+ * @returns {boolean} - True if all providers are valid, false otherwise
+ */
+export function validateAuthProviders(providers: string[]): boolean {
+  if (!Array.isArray(providers) || providers.length === 0) {
+    return false;
+  }
+
+  // Cast to any to avoid type issues when comparing with the string literals
+  return providers.every((provider) =>
+    (VALID_AUTH_PROVIDERS as readonly string[]).includes(provider),
+  );
 }
