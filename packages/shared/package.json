@@ -20,6 +20,11 @@
       "types": "./dist/validations/index.d.ts",
       "import": "./dist/validations/index.js",
       "require": "./dist/validations/index.js"
+    },
+    "./constants": {
+      "types": "./dist/constants/index.d.ts",
+      "import": "./dist/constants/index.js",
+      "require": "./dist/constants/index.js"
     }
   },
   "main": "dist/index.js",
