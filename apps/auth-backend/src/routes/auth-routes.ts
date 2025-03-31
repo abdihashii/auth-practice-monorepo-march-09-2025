@@ -542,6 +542,101 @@ publicRoutes.post('/refresh', async (c) => {
   }
 });
 
+/**
+ * Verify a user's email address
+ * POST /api/v1/auth/verify-email/:token
+ */
+publicRoutes.post('/verify-email/:token', async (c) => {
+  try {
+    // Get db connection
+    const db = c.get('db');
+
+    // Get the token from the request params
+    const token = c.req.param('token');
+    if (!token) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: 'Invalid input data',
+          },
+        }),
+        400,
+      );
+    }
+
+    // Find the user with this verification token
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.verificationToken, token),
+    });
+    if (!user) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INVALID_EMAIL_VERIFICATION_TOKEN,
+            message: 'Invalid email verification token',
+          },
+        }),
+        401,
+      );
+    }
+
+    // Check if the token has expired
+    if (!user.verificationTokenExpiry || user.verificationTokenExpiry < new Date()) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.EMAIL_VERIFICATION_TOKEN_EXPIRED,
+            message: 'Email verification token expired',
+          },
+        }),
+        401,
+      );
+    }
+
+    // If user is already verified, return success
+    if (user.emailVerified) {
+      return c.json(
+        createApiResponse({
+          data: {
+            message: 'Email already verified',
+            emailVerified: true,
+          },
+        }),
+        200,
+      );
+    }
+
+    // Update user as verified and clear verification token
+    await db
+      .update(usersTable)
+      .set({
+        emailVerified: true,
+        verificationToken: null,
+        verificationTokenExpiry: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(usersTable.id, user.id));
+
+    return c.json(createApiResponse({
+      data: {
+        message: 'Email verified successfully',
+        emailVerified: true,
+      },
+    }), 200);
+  } catch (err) {
+    return c.json(
+      createApiResponse({
+        error: {
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+          message: err instanceof Error ? err.message : 'Internal server error',
+        },
+      }),
+      500,
+    );
+  }
+});
+
 // Protected auth routes (auth required)
 const protectedRoutes = new Hono<CustomEnv>();
 protectedRoutes.use('*', authMiddleware);
