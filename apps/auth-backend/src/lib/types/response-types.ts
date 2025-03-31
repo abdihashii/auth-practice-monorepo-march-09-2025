@@ -32,6 +32,7 @@ export type ApiResponse<T> =
 export interface AuthResponse {
   user: User;
   accessToken: string;
+  verificationRequired?: boolean; // Flag to inform the client
 }
 
 /**
