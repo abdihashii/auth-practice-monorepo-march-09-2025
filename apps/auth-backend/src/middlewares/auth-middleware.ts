@@ -122,7 +122,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
           return c.json(
             {
               error: {
-                code: ApiErrorCode.TOKEN_INVALIDATED,
+                code: ApiErrorCode.ACCESS_TOKEN_INVALIDATED,
                 message: 'Access token invalidated',
               },
             },
