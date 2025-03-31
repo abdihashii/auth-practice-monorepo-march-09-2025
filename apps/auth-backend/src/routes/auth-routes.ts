@@ -15,9 +15,11 @@ import env from '@/env';
 import {
   createApiResponse,
   generateTokens,
+  generateVerificationToken,
   hashPassword,
   verifyPassword,
 } from '@/lib/utils';
+import { sendVerificationEmail } from '@/lib/utils/email';
 import { authMiddleware } from '@/middlewares/auth-middleware';
 
 export const authRoutes = new Hono<CustomEnv>();
@@ -77,6 +79,9 @@ publicRoutes.post('/register', async (c) => {
     // Hash user password using Argon2
     const hashedPassword = await hashPassword(password);
 
+    // Generate verification token and expiration date
+    const { verificationToken, verificationTokenExpiry } = await generateVerificationToken();
+
     // Create user
     const [user] = await db
       .insert(usersTable)
@@ -84,12 +89,24 @@ publicRoutes.post('/register', async (c) => {
         email,
         hashedPassword,
         name: body.name ?? null,
+        emailVerified: false,
+        verificationToken,
+        verificationTokenExpiry,
       })
       .returning();
 
     // If user creation fails, throw error and have it handled in catch block
     if (!user) {
       throw new Error('Failed to create user');
+    }
+
+    // Send verification email
+    try {
+      await sendVerificationEmail(email, verificationToken, env.FRONTEND_URL);
+    } catch (error) {
+      console.error('Failed to send verification email:', error);
+      // TODO: consider whether to fail the registration or just log the error.
+      // For now, we'll just log the error and continue.
     }
 
     // Generate JWT tokens
@@ -164,6 +181,7 @@ publicRoutes.post('/register', async (c) => {
     const authResponse: AuthResponse = {
       user: safeUser,
       accessToken,
+      verificationRequired: true,
     };
 
     return c.json(
