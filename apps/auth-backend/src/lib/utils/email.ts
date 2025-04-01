@@ -1,3 +1,5 @@
+import type { CreateEmailResponseSuccess } from 'resend';
+
 import { Resend } from 'resend';
 
 import env from '@/env';
@@ -11,7 +13,15 @@ const resend = new Resend(env.RESEND_API_KEY);
  * @param token - The token to verify the email
  * @param baseUrl - The base URL of the application
  */
-export async function sendVerificationEmail(email: string, token: string, baseUrl: string) {
+export async function sendVerificationEmail(email: string, token: string, baseUrl: string): Promise<{
+  success: boolean;
+  data: CreateEmailResponseSuccess | null;
+  error?: undefined;
+} | {
+  success: boolean;
+  error: unknown;
+  data?: undefined;
+}> {
   const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
 
   try {
