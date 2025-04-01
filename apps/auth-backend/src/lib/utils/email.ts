@@ -16,7 +16,7 @@ export async function sendVerificationEmail(email: string, token: string, baseUr
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'abdirahman.haji.13@gmail.com',
+      from: 'no-reply@abdirahmanhaji.com',
       to: email,
       subject: 'Verify your email address',
       html: `
