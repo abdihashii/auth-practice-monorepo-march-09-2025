@@ -15,7 +15,7 @@ export function VerifyEmail() {
   const navigate = useNavigate();
 
   const [state, setState] = useState<VerificationState>('idle');
-  const [errorType, setErrorType] = useState<ErrorType>('unknown');
+  const [_, setErrorType] = useState<ErrorType>('unknown');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   const verifyEmail = useCallback(async (signal?: AbortSignal) => {
@@ -74,9 +74,9 @@ export function VerifyEmail() {
     navigate({ to: '/login' });
   };
 
-  const handleResendVerification = () => {
-    navigate({ to: '/login', search: { resendVerification: 'true' } });
-  };
+  // const handleResendVerification = () => {
+  //   navigate({ to: '/resend-verification' });
+  // };
 
   return (
     <div className="flex flex-col gap-6">
@@ -124,11 +124,11 @@ export function VerifyEmail() {
                 </AlertDescription>
               </Alert>
 
-              {errorType === 'token-expired' && (
+              {/* {errorType === 'token-expired' && (
                 <Button variant="outline" className="w-full mt-2" onClick={handleResendVerification}>
                   Request new verification link
                 </Button>
-              )}
+              )} */}
 
               <Button className="w-full mt-2" onClick={handleNavigateToLogin}>
                 Return to Login
@@ -145,9 +145,9 @@ export function VerifyEmail() {
                   No verification token was provided. Please use the link from your verification email.
                 </AlertDescription>
               </Alert>
-              <Button variant="outline" className="w-full mt-2" onClick={handleResendVerification}>
+              {/* <Button variant="outline" className="w-full mt-2" onClick={handleResendVerification}>
                 Request new verification link
-              </Button>
+              </Button> */}
               <Button className="w-full mt-2" onClick={handleNavigateToLogin}>
                 Return to Login
               </Button>
