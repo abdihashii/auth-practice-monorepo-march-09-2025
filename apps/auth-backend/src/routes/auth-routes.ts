@@ -102,11 +102,44 @@ publicRoutes.post('/register', async (c) => {
 
     // Send verification email
     try {
-      await sendVerificationEmail(email, verificationToken, env.FRONTEND_URL);
+      const emailResult = await sendVerificationEmail(email, verificationToken, env.FRONTEND_URL);
+      if (!emailResult.success) {
+        // Delete the user if email sending fails
+        await db.delete(usersTable).where(eq(usersTable.id, user.id));
+
+        const errorDetails = emailResult.error as { message?: string; name?: string; code?: string };
+
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
+              message: 'Failed to send verification email. Registration canceled.',
+              details: errorDetails
+                ? {
+                    message: errorDetails.message || 'Unknown error',
+                    name: errorDetails.name || 'Error',
+                    ...(errorDetails.code && { code: errorDetails.code }),
+                  }
+                : undefined,
+            },
+          }),
+          400,
+        );
+      }
     } catch (error) {
+      // Delete the user if email sending fails
+      await db.delete(usersTable).where(eq(usersTable.id, user.id));
+
       console.error('Failed to send verification email:', error);
-      // TODO: consider whether to fail the registration or just log the error.
-      // For now, we'll just log the error and continue.
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
+            message: 'Failed to send verification email. Registration canceled.',
+          },
+        }),
+        400,
+      );
     }
 
     // Generate JWT tokens
@@ -622,6 +655,100 @@ publicRoutes.post('/verify-email/:token', async (c) => {
       data: {
         message: 'Email verified successfully',
         emailVerified: true,
+      },
+    }), 200);
+  } catch (err) {
+    return c.json(
+      createApiResponse({
+        error: {
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+          message: err instanceof Error ? err.message : 'Internal server error',
+        },
+      }),
+      500,
+    );
+  }
+});
+
+/**
+ * Resend verification email
+ * POST /api/v1/auth/resend-verification-email
+ */
+publicRoutes.post('/resend-verification-email', async (c) => {
+  try {
+    // Get db connection
+    const db = c.get('db');
+
+    // Get email from request body
+    const { email } = await c.req.json();
+    if (!email || typeof email !== 'string') {
+      return c.json(createApiResponse({
+        error: {
+          code: ApiErrorCode.VALIDATION_ERROR,
+          message: 'Valid email is required',
+        },
+      }), 400);
+    }
+
+    // Find the user with this email
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.email, email),
+    });
+    // For security reasons, don't reveal if user exists or not
+    // We'll return the same message either way
+    if (!user || user.emailVerified) {
+      return c.json(createApiResponse({
+        data: {
+          message: 'If your email exists in our system, a verification link has been sent to you.',
+        },
+      }), 200);
+    }
+
+    // Generate verification token and expiration date
+    const { verificationToken, verificationTokenExpiry } = await generateVerificationToken();
+
+    // Update user with new verification token
+    await db.update(usersTable).set({
+      verificationToken,
+      verificationTokenExpiry,
+      updatedAt: new Date(),
+    }).where(eq(usersTable.id, user.id));
+
+    // Send verification email
+    try {
+      const emailResult = await sendVerificationEmail(email, verificationToken, env.FRONTEND_URL);
+      if (!emailResult.success) {
+        console.error('Failed to send verification email:', emailResult.error);
+
+        const errorDetails = emailResult.error as { message?: string; name?: string; code?: string };
+
+        return c.json(createApiResponse({
+          error: {
+            code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
+            message: 'Failed to send verification email',
+            details: errorDetails
+              ? {
+                  message: errorDetails.message || 'Unknown error',
+                  name: errorDetails.name || 'Error',
+                  ...(errorDetails.code && { code: errorDetails.code }),
+                }
+              : undefined,
+          },
+        }), 400);
+      }
+    } catch (error) {
+      console.error('Failed to send verification email:', error);
+      return c.json(createApiResponse({
+        error: {
+          code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
+          message: 'Failed to send verification email',
+        },
+      }), 400);
+    }
+
+    return c.json(createApiResponse({
+      data: {
+        message: 'If your email exists in our system, a verification link has been sent to you.',
       },
     }), 200);
   } catch (err) {

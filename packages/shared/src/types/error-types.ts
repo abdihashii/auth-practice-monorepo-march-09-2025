@@ -16,6 +16,7 @@ export enum ApiErrorCode {
   REFRESH_TOKEN_INVALIDATED = 'REFRESH_TOKEN_INVALIDATED', // Refresh token invalidated, 401
   INVALID_EMAIL_VERIFICATION_TOKEN = 'INVALID_EMAIL_VERIFICATION_TOKEN', // Invalid email verification token, 401
   EMAIL_VERIFICATION_TOKEN_EXPIRED = 'EMAIL_VERIFICATION_TOKEN_EXPIRED', // Email verification token expired, 401
+  EMAIL_VERIFICATION_FAILED = 'EMAIL_VERIFICATION_FAILED', // Failed to send verification email, 400
 }
 
 export interface ApiError {
