@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { VerifyEmail } from '@/components/auth/verify-email';
 
 const verifyTokenSchema = z.object({
-  token: z.string().min(1),
+  token: z.string().min(1).optional(),
 });
 
 export const Route = createFileRoute('/verify/')({
