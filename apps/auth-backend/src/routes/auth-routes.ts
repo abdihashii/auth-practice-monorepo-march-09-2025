@@ -295,6 +295,24 @@ publicRoutes.post('/login', async (c) => {
       );
     }
 
+    // Check if email is verified
+    if (!user.emailVerified) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.EMAIL_NOT_VERIFIED,
+            message: 'Please verify your email before logging in',
+            details: {
+              email: user.email,
+              verificationRequired: true,
+              // Don't include registered date for security reasons
+            },
+          },
+        }),
+        403,
+      );
+    }
+
     // Generate JWT tokens
     const { accessToken, refreshToken } = await generateTokens(user.id);
 
