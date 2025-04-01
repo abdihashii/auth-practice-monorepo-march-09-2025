@@ -22,7 +22,7 @@ export async function sendVerificationEmail(email: string, token: string, baseUr
   error: unknown;
   data?: undefined;
 }> {
-  const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
+  const verificationUrl = `${baseUrl}/verify?token=${token}`;
 
   try {
     const { data, error } = await resend.emails.send({
