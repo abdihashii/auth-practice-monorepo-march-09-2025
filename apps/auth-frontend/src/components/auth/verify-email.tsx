@@ -2,6 +2,7 @@ import { useNavigate, useSearch } from '@tanstack/react-router';
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
+import { verifyEmail } from '@/api/auth-apis';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,57 +19,42 @@ export function VerifyEmail() {
   const [_, setErrorType] = useState<ErrorType>('unknown');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  const verifyEmail = useCallback(async (signal?: AbortSignal) => {
+  const verifyUserEmail = useCallback(async (signal?: AbortSignal) => {
     if (!token) {
       setState('no-token');
       return;
     }
 
     setState('loading');
-    try {
-      const response = await fetch(`/api/v1/auth/verify-email/${token}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        signal,
-      });
 
-      const data = await response.json();
+    const result = await verifyEmail(token, signal);
 
-      if (!response.ok) {
-        setState('error');
+    if (!result.success) {
+      setState('error');
 
-        if (data.error?.code === 'EMAIL_VERIFICATION_TOKEN_EXPIRED') {
-          setErrorType('token-expired');
-        } else if (data.error?.code === 'INVALID_EMAIL_VERIFICATION_TOKEN') {
-          setErrorType('invalid-token');
-        } else {
-          setErrorType('unknown');
-        }
-
-        setErrorMessage(data.error?.message || 'Failed to verify email');
-        return;
+      if (result.error?.code === 'EMAIL_VERIFICATION_TOKEN_EXPIRED') {
+        setErrorType('token-expired');
+      } else if (result.error?.code === 'INVALID_EMAIL_VERIFICATION_TOKEN') {
+        setErrorType('invalid-token');
+      } else {
+        setErrorType('unknown');
       }
 
-      setState('success');
-    } catch (error) {
-      console.error(error);
-      setState('error');
-      setErrorType('unknown');
-      setErrorMessage('An unexpected error occurred');
+      setErrorMessage(result.error?.message || 'Failed to verify email');
+      return;
     }
+
+    setState('success');
   }, [token]);
 
   useEffect(() => {
     const abortController = new AbortController();
-
-    verifyEmail(abortController.signal);
+    verifyUserEmail(abortController.signal);
 
     return () => {
       abortController.abort();
     };
-  }, [verifyEmail]);
+  }, [verifyUserEmail]);
 
   const handleNavigateToLogin = () => {
     navigate({ to: '/login' });
