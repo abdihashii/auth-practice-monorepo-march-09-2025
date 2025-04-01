@@ -1,4 +1,4 @@
-import type { AuthResponse } from '@/types/auth-types';
+import type { AuthResponse } from '@roll-your-own-auth/shared/types';
 
 import { BASE_API_URL } from '@/constants';
 
@@ -76,5 +76,51 @@ export async function logout(): Promise<void> {
 
   if (!res.ok) {
     throw new Error('Failed to logout');
+  }
+}
+
+/**
+ * Verify a user's email with a token
+ * @returns Result of email verification attempt
+ */
+export async function verifyEmail(token: string, signal?: AbortSignal): Promise<{
+  success: boolean;
+  error?: {
+    code?: string;
+    message: string;
+  };
+}> {
+  try {
+    const res = await fetch(`${BASE_API_URL}/api/v1/auth/verify-email/${token}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return {
+        success: false,
+        error: {
+          code: data.error?.code,
+          message: data.error?.message || 'Failed to verify email',
+        },
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error('Error verifying email:', error);
+    return {
+      success: false,
+      error: {
+        message: 'An unexpected error occurred',
+      },
+    };
   }
 }
