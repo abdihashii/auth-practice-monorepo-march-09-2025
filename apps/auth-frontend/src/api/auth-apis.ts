@@ -28,6 +28,33 @@ export async function login(email: string, password: string): Promise<AuthRespon
   return data;
 }
 
+export async function register(email: string, password: string, confirmPassword: string): Promise<AuthResponse> {
+  // Double validate the password and confirm password
+  if (password !== confirmPassword) {
+    throw new Error('Passwords do not match');
+  }
+
+  const res = await fetch(`${BASE_API_URL}/api/v1/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password }),
+    credentials: 'include',
+  });
+
+  const response = await res.json();
+
+  if (!res.ok) {
+    const error = response.error || { message: 'Failed to register' };
+    throw new Error(error.message);
+  }
+
+  const { data } = response as { data: AuthResponse };
+
+  return data;
+}
+
 /**
  * Get the current authenticated user
  * @returns AuthResponse if authenticated, null otherwise
