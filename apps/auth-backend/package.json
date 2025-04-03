@@ -30,6 +30,7 @@
     "@sentry/bun": "^9.5.0",
     "drizzle-orm": "^0.40.0",
     "hono": "^4.7.4",
+    "hono-rate-limiter": "^0.4.2",
     "pg": "^8.13.3",
     "resend": "^4.2.0"
   },
