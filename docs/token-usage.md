@@ -116,17 +116,17 @@ To protect against brute force attacks and abuse, the API implements rate limiti
 
 1. **Global Rate Limiter**:
    - Applies to all API endpoints
-   - 60 requests per minute per IP address
+   - 60 requests per minute per unique key
    - Affects all routes including protected ones
 
 2. **Authentication Rate Limiter**:
    - Applies to sensitive auth endpoints (`/login`, `/register`, `/refresh`)
-   - 5 requests per 15 minutes per IP address
+   - 5 requests per 15 minutes per unique key
    - Provides extra protection for authentication operations
 
 3. **API Rate Limiter**:
    - Applies to general API endpoints
-   - 30 requests per minute per IP address
+   - 30 requests per minute per unique key
    - Balanced protection for normal API usage
 
 ### Intelligent Request Identification
@@ -134,14 +134,18 @@ To protect against brute force attacks and abuse, the API implements rate limiti
 Our rate limiting uses a sophisticated identification strategy to ensure fair limits:
 
 1. **For authenticated users**: Uses the user's ID to track limits individually
-   - Prevents legitimate users from being affected by others sharing the same IP
+   - Ensures each authenticated user gets their own rate limit quota
 
-2. **For public requests**: Uses a combination of:
-   - IP address
+2. **For login/register operations**: Uses the email address from the request body
+   - Prevents credential stuffing and brute force attacks on specific accounts
+   - Limits login/registration attempts per email address rather than by IP
+
+3. **For public requests**: Uses a composite fingerprint based on:
    - Request path
-   - Truncated user agent signature
+   - Browser characteristics (user agent, accepted languages, browser identification)
+   - Does NOT rely solely on IP addresses which can affect multiple legitimate users
 
-This approach prevents shared IP issues (corporate networks, VPNs) while still protecting against distributed attacks.
+This approach provides more precise rate limiting while avoiding the pitfalls of shared IPs (corporate networks, NATs, VPNs) that could unintentionally rate-limit groups of users.
 
 ### Rate Limit Response Headers
 
