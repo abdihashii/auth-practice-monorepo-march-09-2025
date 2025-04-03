@@ -16,12 +16,14 @@ export async function login(email: string, password: string): Promise<AuthRespon
     credentials: 'include', // Include cookies in the request
   });
 
+  const response = await res.json();
+
   if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to login');
+    const error = response.error || { message: 'Failed to login' };
+    throw new Error(error.message);
   }
 
-  const { data } = (await res.json()) as { data: AuthResponse };
+  const { data } = response as { data: AuthResponse };
 
   return data;
 }
