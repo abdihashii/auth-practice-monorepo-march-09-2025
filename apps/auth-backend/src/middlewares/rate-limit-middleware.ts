@@ -22,12 +22,22 @@ const redis = new Redis({
  */
 function keyGenerator(c: Context<Env, string, Input>) {
   try {
+    // Create URL object once and reuse
+    const url = new URL(c.req.url);
+    const path = url.pathname;
+
+    // Define exact path patterns for auth routes
+    const loginRegex = /^\/api\/v1\/auth\/login$/;
+    const registerRegex = /^\/api\/v1\/auth\/register$/;
+    const isAuthRoute = loginRegex.test(path) || registerRegex.test(path);
+
     // Try to get user ID for authenticated requests
     // Safely check if the get method exists and try to use it
     if (c.get && typeof c.get === 'function') {
       try {
         const userId = c.get('userId') as string | undefined;
-        if (userId) {
+        // Validate the userId before using it
+        if (userId && typeof userId === 'string' && userId.trim().length > 0) {
           return `user:${userId}`;
         }
       } catch {
@@ -35,13 +45,13 @@ function keyGenerator(c: Context<Env, string, Input>) {
       }
     }
 
-    const path = new URL(c.req.url).pathname;
-
     // For login/register attempts, use email if it was extracted and stored in a header
     // This requires a preprocessing middleware to extract and store the email before rate limiting
-    const extractedEmail = c.req.header('x-rate-limit-email');
-    if (extractedEmail && (path.includes('/login') || path.includes('/register'))) {
-      return `email:${extractedEmail}:${path}`;
+    if (isAuthRoute) {
+      const extractedEmail = c.req.header('x-rate-limit-email');
+      if (extractedEmail && extractedEmail.trim().length > 0) {
+        return `email:${extractedEmail}:${path}`;
+      }
     }
 
     // Fallback to a session/request identifier that doesn't solely rely on IP
@@ -56,7 +66,12 @@ function keyGenerator(c: Context<Env, string, Input>) {
   } catch (error) {
     // If any error occurs during key generation, fall back to a simple path-based key
     console.error('Error generating rate limit key:', error);
-    return `path:${new URL(c.req.url).pathname}`;
+    try {
+      return `path:${new URL(c.req.url).pathname}`;
+    } catch {
+      // Ultimate fallback if even URL parsing fails
+      return 'fallback:rate:limit:key';
+    }
   }
 }
 
