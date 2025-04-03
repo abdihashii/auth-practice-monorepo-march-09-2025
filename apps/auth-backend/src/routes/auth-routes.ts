@@ -21,6 +21,7 @@ import {
 } from '@/lib/utils';
 import { sendVerificationEmail } from '@/lib/utils/email';
 import { authMiddleware } from '@/middlewares/auth-middleware';
+import { extractEmailMiddleware } from '@/middlewares/extract-email-middleware';
 import { authRateLimiter } from '@/middlewares/rate-limit-middleware';
 
 export const authRoutes = new Hono<CustomEnv>();
@@ -32,7 +33,7 @@ const publicRoutes = new Hono<CustomEnv>();
  * Register a new user
  * POST /api/v1/auth/register
  */
-publicRoutes.post('/register', authRateLimiter, async (c) => {
+publicRoutes.post('/register', extractEmailMiddleware, authRateLimiter, async (c) => {
   try {
     // Get db connection
     const db = c.get('db');
@@ -172,7 +173,7 @@ publicRoutes.post('/register', authRateLimiter, async (c) => {
  * Login a user
  * POST /api/v1/auth/login
  */
-publicRoutes.post('/login', authRateLimiter, async (c) => {
+publicRoutes.post('/login', extractEmailMiddleware, authRateLimiter, async (c) => {
   try {
     // Get db connection
     const db = c.get('db');
