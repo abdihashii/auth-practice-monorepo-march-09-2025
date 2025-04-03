@@ -86,7 +86,7 @@ function keyGenerator(c: Context<Env, string, Input>) {
 const redisStore = new RedisStore({ client: redis });
 
 // Global rate limiter - applies to all routes
-// Limit to 60 requests per minute per IP
+// Limit to 60 requests per minute per user/fingerprint
 export const globalRateLimiter: MiddlewareHandler<CustomEnv> = rateLimiter({
   windowMs: 60 * 1000, // 1 minute window
   limit: 60, // 60 requests per minute
@@ -97,7 +97,7 @@ export const globalRateLimiter: MiddlewareHandler<CustomEnv> = rateLimiter({
 }) as MiddlewareHandler<CustomEnv>;
 
 // Strict rate limiter for authentication endpoints
-// Limit to 10 attempts per 15 minutes per IP
+// Limit to 10 attempts per 15 minutes per user/email/fingerprint
 export const authRateLimiter: MiddlewareHandler<CustomEnv> = rateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes window
   limit: 10, // 10 attempts per 15 minutes
@@ -108,7 +108,7 @@ export const authRateLimiter: MiddlewareHandler<CustomEnv> = rateLimiter({
 }) as MiddlewareHandler<CustomEnv>;
 
 // API rate limiter for API endpoints
-// Limit to 100 requests per minute per IP
+// Limit to 100 requests per minute per user/fingerprint
 // Unused for now, but can be used to limit API requests in the future
 export const apiRateLimiter: MiddlewareHandler<CustomEnv> = rateLimiter({
   windowMs: 60 * 1000, // 1 minute window
