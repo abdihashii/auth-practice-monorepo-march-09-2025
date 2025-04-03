@@ -73,6 +73,7 @@ export const authRateLimiter: MiddlewareHandler<CustomEnv> = rateLimiter({
 
 // API rate limiter for API endpoints
 // Limit to 30 requests per minute per IP
+// Unused for now, but can be used to limit API requests in the future
 export const apiRateLimiter: MiddlewareHandler<CustomEnv> = rateLimiter({
   windowMs: 60 * 1000, // 1 minute window
   limit: 30, // 30 requests per minute
