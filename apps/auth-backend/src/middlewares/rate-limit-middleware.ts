@@ -21,30 +21,43 @@ const redis = new Redis({
  * - Fallback: Uses route path + partial fingerprint
  */
 function keyGenerator(c: Context<Env, string, Input>) {
-  // Try to get user ID for authenticated requests
-  const userId = c.get('userId') as string | undefined;
-  if (userId) {
-    return `user:${userId}`;
+  try {
+    // Try to get user ID for authenticated requests
+    // Safely check if the get method exists and try to use it
+    if (c.get && typeof c.get === 'function') {
+      try {
+        const userId = c.get('userId') as string | undefined;
+        if (userId) {
+          return `user:${userId}`;
+        }
+      } catch {
+        // userId might not exist in the context, continue with fallbacks
+      }
+    }
+
+    const path = new URL(c.req.url).pathname;
+
+    // For login/register attempts, use email if it was extracted and stored in a header
+    // This requires a preprocessing middleware to extract and store the email before rate limiting
+    const extractedEmail = c.req.header('x-rate-limit-email');
+    if (extractedEmail && (path.includes('/login') || path.includes('/register'))) {
+      return `email:${extractedEmail}:${path}`;
+    }
+
+    // Fallback to a session/request identifier that doesn't solely rely on IP
+    // Use a combination of factors for better request characterization
+    const userAgent = c.req.header('user-agent') || 'unknown';
+    const acceptLang = c.req.header('accept-language') || 'unknown';
+    const secChUa = c.req.header('sec-ch-ua') || ''; // Browser identification
+
+    // Create a fingerprint based on path and browser characteristics
+    // Avoiding sole reliance on IP addresses which can affect multiple users
+    return `path:${path}:fingerprint:${userAgent.substring(0, 20)}:${acceptLang.substring(0, 5)}:${secChUa.substring(0, 10)}`;
+  } catch (error) {
+    // If any error occurs during key generation, fall back to a simple path-based key
+    console.error('Error generating rate limit key:', error);
+    return `path:${new URL(c.req.url).pathname}`;
   }
-
-  const path = new URL(c.req.url).pathname;
-
-  // For login/register attempts, use email if it was extracted and stored in a header
-  // This requires a preprocessing middleware to extract and store the email before rate limiting
-  const extractedEmail = c.req.header('x-rate-limit-email');
-  if (extractedEmail && (path.includes('/login') || path.includes('/register'))) {
-    return `email:${extractedEmail}:${path}`;
-  }
-
-  // Fallback to a session/request identifier that doesn't solely rely on IP
-  // Use a combination of factors for better request characterization
-  const userAgent = c.req.header('user-agent') || 'unknown';
-  const acceptLang = c.req.header('accept-language') || 'unknown';
-  const secChUa = c.req.header('sec-ch-ua') || ''; // Browser identification
-
-  // Create a fingerprint based on path and browser characteristics
-  // Avoiding sole reliance on IP addresses which can affect multiple users
-  return `path:${path}:fingerprint:${userAgent.substring(0, 20)}:${acceptLang.substring(0, 5)}:${secChUa.substring(0, 10)}`;
 }
 
 const redisStore = new RedisStore({ client: redis });
