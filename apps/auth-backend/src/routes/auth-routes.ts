@@ -142,33 +142,6 @@ publicRoutes.post('/register', async (c) => {
       );
     }
 
-    // Generate JWT tokens
-    const { accessToken, refreshToken } = await generateTokens(user.id);
-
-    // Update user with refresh token after successful registration
-    await db
-      .update(usersTable)
-      .set({
-        refreshToken,
-        refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-        lastSuccessfulLogin: new Date(),
-        loginCount: 1,
-      })
-      .where(eq(usersTable.id, user.id));
-
-    // Set refresh token in HTTP-only cookie
-    setCookie(c, 'auth-app-refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: env.NODE_ENV === 'production', // true in production
-      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-      path: '/',
-      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-      // Optional: Use __Host- prefix for additional security in production
-      ...(env.NODE_ENV === 'production' && {
-        prefix: 'host', // This will prefix the cookie with __Host-
-      }),
-    });
-
     // Create a safe user object (excluding sensitive data)
     const safeUser: User = {
       // Core user information
@@ -213,8 +186,8 @@ publicRoutes.post('/register', async (c) => {
     // Combine user and access token into auth response
     const authResponse: AuthResponse = {
       user: safeUser,
-      accessToken,
-      verificationRequired: true,
+      message: 'Registration successful. Please verify your email before logging in.',
+      emailVerified: true,
     };
 
     return c.json(
@@ -658,22 +631,78 @@ publicRoutes.post('/verify-email/:token', async (c) => {
       );
     }
 
-    // Update user as verified and clear verification token
+    // Generate JWT tokens now that email is verified
+    const { accessToken, refreshToken } = await generateTokens(user.id);
+
+    // Update user as verified, clear verification token, and set refresh token
     await db
       .update(usersTable)
       .set({
         emailVerified: true,
         verificationToken: null,
         verificationTokenExpiry: null,
+        refreshToken,
+        refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        lastSuccessfulLogin: new Date(),
+        loginCount: 1,
         updatedAt: new Date(),
       })
       .where(eq(usersTable.id, user.id));
 
-    return c.json(createApiResponse({
-      data: {
-        message: 'Email verified successfully',
-        emailVerified: true,
+    // Set refresh token in HTTP-only cookie
+    setCookie(c, 'auth-app-refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production', // true in production
+      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      // Optional: Use __Host- prefix for additional security in production
+      ...(env.NODE_ENV === 'production' && {
+        prefix: 'host', // This will prefix the cookie with __Host-
+      }),
+    });
+
+    // Create a safe user object
+    const safeUser: User = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      emailVerified: true,
+      isActive: user.isActive ?? true,
+      deletedAt: user.deletedAt?.toISOString() ?? null,
+      settings: (user.settings as UserSettings) ?? {
+        theme: 'system',
+        language: 'en',
+        timezone: 'UTC',
       },
+      notificationPreferences:
+        (user.notificationPreferences as NotificationPreferences) ?? {
+          email: {
+            enabled: false,
+            digest: 'never',
+            marketing: false,
+          },
+          push: {
+            enabled: false,
+            alerts: false,
+          },
+        },
+      lastActivityAt: new Date().toISOString(),
+      lastSuccessfulLogin: new Date().toISOString(),
+      loginCount: 1,
+    };
+
+    const authResponse: AuthResponse = {
+      user: safeUser,
+      accessToken,
+      message: 'Email verified successfully',
+      emailVerified: true,
+    };
+
+    return c.json(createApiResponse({
+      data: authResponse,
     }), 200);
   } catch (err) {
     return c.json(
