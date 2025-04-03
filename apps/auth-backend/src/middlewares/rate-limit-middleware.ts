@@ -35,7 +35,8 @@ function keyGenerator(c: Context<Env, string, Input>) {
     // Safely check if the get method exists and try to use it
     if (c.get && typeof c.get === 'function') {
       try {
-        const userId = c.get('userId') as string | undefined;
+        // Get the userId from the context
+        const userId = c.get('userId');
         // Validate the userId before using it
         if (userId && typeof userId === 'string' && userId.trim().length > 0) {
           return `user:${userId}`;
@@ -48,9 +49,16 @@ function keyGenerator(c: Context<Env, string, Input>) {
     // For login/register attempts, use email if it was extracted and stored in a header
     // This requires a preprocessing middleware to extract and store the email before rate limiting
     if (isAuthRoute) {
-      const extractedEmail = c.req.header('x-rate-limit-email');
-      if (extractedEmail && extractedEmail.trim().length > 0) {
-        return `email:${extractedEmail}:${path}`;
+      // Get the email from context instead of headers
+      try {
+        // Cast to CustomEnv to access our custom variables
+        const customContext = c as Context<CustomEnv>;
+        const rateLimitEmail = customContext.get('rateLimitEmail');
+        if (rateLimitEmail && typeof rateLimitEmail === 'string' && rateLimitEmail.trim().length > 0) {
+          return `email:${rateLimitEmail}:${path}`;
+        }
+      } catch {
+        // Silently continue to the fallback method if context access fails
       }
     }
 
