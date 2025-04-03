@@ -1,7 +1,6 @@
 import type { User } from '@roll-your-own-auth/shared/types';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-// import { useNavigate } from '@tanstack/react-router';
 
 import { login, logout, register } from '@/api/auth-apis';
 import { authStorage } from '@/services/auth-storage-service';
@@ -13,9 +12,6 @@ export const AUTH_QUERY_KEY = ['auth'];
  * Hook for authentication functionality
  */
 export function useAuth() {
-  // Get the navigate function from the router
-  // const navigate = useNavigate();
-
   // QueryClient instance is used to cache, invalidate, clear, and refetch data
   const queryClient = useQueryClient();
 
@@ -62,10 +58,6 @@ export function useAuth() {
   const registerMutation = useMutation({
     mutationFn: (credentials: { email: string; password: string; confirmPassword: string }) =>
       register(credentials.email, credentials.password, credentials.confirmPassword),
-    onSuccess: () => {
-      // Navigate to verify email page
-      // navigate('/verify-email');
-    },
     onError: (error) => {
       console.error(error);
     },
