@@ -32,7 +32,7 @@ export type ApiResponse<T> =
 export interface AuthResponse {
   user: User;
   accessToken?: string; // Present after successful authentication
-  verificationRequired?: boolean; // Indicates if email verification is needed
+  emailVerificationRequired?: boolean; // Indicates if email verification is needed
   message?: string; // Optional message for the client
 }
 

@@ -187,7 +187,7 @@ publicRoutes.post('/register', async (c) => {
     const authResponse: AuthResponse = {
       user: safeUser,
       message: 'Registration successful. Please verify your email before logging in.',
-      verificationRequired: true,
+      emailVerificationRequired: true,
     };
 
     return c.json(
@@ -277,7 +277,7 @@ publicRoutes.post('/login', async (c) => {
             message: 'Please verify your email before logging in',
             details: {
               email: user.email,
-              verificationRequired: true,
+              emailVerificationRequired: true,
               // Don't include registered date for security reasons
             },
           },
