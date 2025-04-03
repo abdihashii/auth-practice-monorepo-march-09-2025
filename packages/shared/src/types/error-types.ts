@@ -12,7 +12,12 @@ export enum ApiErrorCode {
   UNAUTHORIZED = 'UNAUTHORIZED', // Unauthorized, 401
   INVALID_ACCESS_TOKEN = 'INVALID_ACCESS_TOKEN', // Invalid access token, 401
   ACCESS_TOKEN_EXPIRED = 'ACCESS_TOKEN_EXPIRED', // Access token expired, 401
-  TOKEN_INVALIDATED = 'TOKEN_INVALIDATED', // Token invalidated, 401
+  ACCESS_TOKEN_INVALIDATED = 'ACCESS_TOKEN_INVALIDATED', // Access token invalidated, 401
+  REFRESH_TOKEN_INVALIDATED = 'REFRESH_TOKEN_INVALIDATED', // Refresh token invalidated, 401
+  INVALID_EMAIL_VERIFICATION_TOKEN = 'INVALID_EMAIL_VERIFICATION_TOKEN', // Invalid email verification token, 401
+  EMAIL_VERIFICATION_TOKEN_EXPIRED = 'EMAIL_VERIFICATION_TOKEN_EXPIRED', // Email verification token expired, 401
+  EMAIL_VERIFICATION_FAILED = 'EMAIL_VERIFICATION_FAILED', // Failed to send verification email, 400
+  EMAIL_NOT_VERIFIED = 'EMAIL_NOT_VERIFIED', // User email not verified, 403
 }
 
 export interface ApiError {

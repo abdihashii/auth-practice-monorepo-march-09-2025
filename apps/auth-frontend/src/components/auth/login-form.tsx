@@ -146,7 +146,7 @@ export function LoginForm({
                   <p className="text-red-500">{errors.password.message}</p>
                 )}
               </div>
-              <Button type="submit" className="w-full" disabled={isLoggingIn}>
+              <Button type="submit" className="w-full hover:cursor-pointer" disabled={isLoggingIn}>
                 {isLoggingIn
                   ? (
                       <>
@@ -163,6 +163,7 @@ export function LoginForm({
                   <TooltipTrigger asChild>
                     <div className="hover:cursor-not-allowed ">
                       <Button
+                        type="button"
                         variant="outline"
                         className="w-full"
                         disabled

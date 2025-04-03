@@ -30,7 +30,8 @@
     "@sentry/bun": "^9.5.0",
     "drizzle-orm": "^0.40.0",
     "hono": "^4.7.4",
-    "pg": "^8.13.3"
+    "pg": "^8.13.3",
+    "resend": "^4.2.0"
   },
   "devDependencies": {
     "@types/bun": "^1.2.4",

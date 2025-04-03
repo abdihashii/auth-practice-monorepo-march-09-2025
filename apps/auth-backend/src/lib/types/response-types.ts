@@ -30,8 +30,10 @@ export type ApiResponse<T> =
  * TODO: move to shared types package
  */
 export interface AuthResponse {
-  user: User;
-  accessToken: string;
+  user?: User; // Present after successful authentication
+  accessToken?: string; // Present after successful authentication
+  emailVerificationRequired?: boolean; // Indicates if email verification is needed
+  message?: string; // Optional message for the client
 }
 
 /**

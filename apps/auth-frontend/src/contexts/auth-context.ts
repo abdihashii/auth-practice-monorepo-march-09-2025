@@ -10,11 +10,14 @@ interface AuthContextType {
   isAuthPending: boolean;
   isLoggingIn: boolean;
   loginError: unknown;
+  isRegistering: boolean;
+  registerError: unknown;
   isLoggingOut: boolean;
   logoutError: unknown;
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, confirmPassword: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 

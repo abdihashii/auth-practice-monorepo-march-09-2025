@@ -2,7 +2,7 @@ import type { User } from '@roll-your-own-auth/shared/types';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { login, logout } from '@/api/auth-apis';
+import { login, logout, register } from '@/api/auth-apis';
 import { authStorage } from '@/services/auth-storage-service';
 
 // Key for auth-related queries
@@ -54,6 +54,15 @@ export function useAuth() {
     },
   });
 
+  // Register mutation
+  const registerMutation = useMutation({
+    mutationFn: (credentials: { email: string; password: string; confirmPassword: string }) =>
+      register(credentials.email, credentials.password, credentials.confirmPassword),
+    onError: (error) => {
+      console.error(error);
+    },
+  });
+
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: logout,
@@ -72,6 +81,12 @@ export function useAuth() {
     await loginMutation.mutateAsync({ email, password });
   };
 
+  // Register function that returns a promise
+  const registerFn = async (email: string, password: string, confirmPassword: string): Promise<void> => {
+    // Call the register mutation
+    await registerMutation.mutateAsync({ email, password, confirmPassword });
+  };
+
   // Logout function that returns a promise
   const logoutFn = async (): Promise<void> => {
     // Call the logout mutation
@@ -85,11 +100,14 @@ export function useAuth() {
     isAuthPending,
     isLoggingIn: loginMutation.isPending,
     loginError: loginMutation.error,
+    isRegistering: registerMutation.isPending,
+    registerError: registerMutation.error,
     isLoggingOut: logoutMutation.isPending,
     logoutError: logoutMutation.error,
 
     // Actions
     login: loginFn,
+    register: registerFn,
     logout: logoutFn,
   };
 }
