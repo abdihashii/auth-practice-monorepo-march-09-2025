@@ -6,6 +6,7 @@ import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { validateAuthSchema } from '@roll-your-own-auth/shared/validations';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
+import { every } from 'hono/combine';
 import { getCookie, setCookie } from 'hono/cookie';
 
 import type { AuthResponse, CreateUserDto, CustomEnv, NotificationPreferences, TokenResponse, User, UserSettings } from '@/lib/types';
@@ -33,7 +34,7 @@ const publicRoutes = new Hono<CustomEnv>();
  * Register a new user
  * POST /api/v1/auth/register
  */
-publicRoutes.post('/register', extractEmailMiddleware, authRateLimiter, async (c) => {
+publicRoutes.post('/register', every(extractEmailMiddleware, authRateLimiter), async (c) => {
   try {
     // Get db connection
     const db = c.get('db');
@@ -173,7 +174,7 @@ publicRoutes.post('/register', extractEmailMiddleware, authRateLimiter, async (c
  * Login a user
  * POST /api/v1/auth/login
  */
-publicRoutes.post('/login', extractEmailMiddleware, authRateLimiter, async (c) => {
+publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), async (c) => {
   try {
     // Get db connection
     const db = c.get('db');
