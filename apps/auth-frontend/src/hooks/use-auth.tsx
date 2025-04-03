@@ -108,6 +108,8 @@ export function useAuth() {
     isAuthPending,
     isLoggingIn: loginMutation.isPending,
     loginError: loginMutation.error,
+    isRegistering: registerMutation.isPending,
+    registerError: registerMutation.error,
     isLoggingOut: logoutMutation.isPending,
     logoutError: logoutMutation.error,
 

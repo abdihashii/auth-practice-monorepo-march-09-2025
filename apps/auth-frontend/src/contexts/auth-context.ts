@@ -10,6 +10,8 @@ interface AuthContextType {
   isAuthPending: boolean;
   isLoggingIn: boolean;
   loginError: unknown;
+  isRegistering: boolean;
+  registerError: unknown;
   isLoggingOut: boolean;
   logoutError: unknown;
 
