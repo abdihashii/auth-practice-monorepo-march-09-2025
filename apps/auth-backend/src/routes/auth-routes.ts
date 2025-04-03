@@ -187,7 +187,7 @@ publicRoutes.post('/register', async (c) => {
     const authResponse: AuthResponse = {
       user: safeUser,
       message: 'Registration successful. Please verify your email before logging in.',
-      emailVerified: false,
+      verificationRequired: true,
     };
 
     return c.json(
@@ -698,7 +698,6 @@ publicRoutes.post('/verify-email/:token', async (c) => {
       user: safeUser,
       accessToken,
       message: 'Email verified successfully',
-      emailVerified: true,
     };
 
     return c.json(createApiResponse({

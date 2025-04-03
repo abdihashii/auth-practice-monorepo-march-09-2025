@@ -31,9 +31,9 @@ export type ApiResponse<T> =
  */
 export interface AuthResponse {
   user: User;
-  accessToken?: string; // Only present if the user is authenticated, otherwise it's a registration response
-  emailVerified?: boolean; // Flag to inform the client
-  message?: string;
+  accessToken?: string; // Present after successful authentication
+  verificationRequired?: boolean; // Indicates if email verification is needed
+  message?: string; // Optional message for the client
 }
 
 /**
