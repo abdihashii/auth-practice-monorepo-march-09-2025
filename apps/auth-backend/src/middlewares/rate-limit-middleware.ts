@@ -17,8 +17,8 @@ const redis = new Redis({
 /**
  * Creates a more intelligent key for rate limiting
  * - For authenticated users: Uses userId from auth context if available
- * - For login/registration: Uses email from request body if available
- * - Fallback: Uses IP address + route path
+ * - For login/registration: Attempts to extract email from request body via headers
+ * - Fallback: Uses route path + partial fingerprint
  */
 function keyGenerator(c: Context<Env, string, Input>) {
   // Try to get user ID for authenticated requests
@@ -27,27 +27,24 @@ function keyGenerator(c: Context<Env, string, Input>) {
     return `user:${userId}`;
   }
 
-  // For login/register attempts, use email if available in body
   const path = new URL(c.req.url).pathname;
-  if (path.includes('/login') || path.includes('/register')) {
-    try {
-      // Clone the request to read the body without consuming it
-      // Note: This assumes JSON body and isn't perfect, but helps with rate limiting
-      const request = c.req.raw.clone();
-      request.json().then((body) => {
-        if (body && typeof body === 'object' && 'email' in body && typeof body.email === 'string') {
-          return `email:${body.email}:${path}`;
-        }
-      }).catch(() => {});
-    } catch {
-      // Silently fail if we can't parse the body
-    }
+
+  // For login/register attempts, use email if it was extracted and stored in a header
+  // This requires a preprocessing middleware to extract and store the email before rate limiting
+  const extractedEmail = c.req.header('x-rate-limit-email');
+  if (extractedEmail && (path.includes('/login') || path.includes('/register'))) {
+    return `email:${extractedEmail}:${path}`;
   }
 
-  // Fallback to IP + path + user agent for better fingerprinting
-  const ip = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown';
+  // Fallback to a session/request identifier that doesn't solely rely on IP
+  // Use a combination of factors for better request characterization
   const userAgent = c.req.header('user-agent') || 'unknown';
-  return `ip:${ip}:path:${path}:ua:${userAgent.substring(0, 20)}`;
+  const acceptLang = c.req.header('accept-language') || 'unknown';
+  const secChUa = c.req.header('sec-ch-ua') || ''; // Browser identification
+
+  // Create a fingerprint based on path and browser characteristics
+  // Avoiding sole reliance on IP addresses which can affect multiple users
+  return `path:${path}:fingerprint:${userAgent.substring(0, 20)}:${acceptLang.substring(0, 5)}:${secChUa.substring(0, 10)}`;
 }
 
 const redisStore = new RedisStore({ client: redis });
