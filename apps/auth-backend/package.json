@@ -24,6 +24,7 @@
     "lint:fix": "eslint --fix"
   },
   "dependencies": {
+    "@hono-rate-limiter/cloudflare": "^0.2.2",
     "@hono/zod-validator": "^0.4.3",
     "@roll-your-own-auth/eslint-config": "workspace:^",
     "@roll-your-own-auth/shared": "workspace:^",
