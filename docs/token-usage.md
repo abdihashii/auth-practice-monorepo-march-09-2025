@@ -128,6 +128,7 @@ To protect against brute force attacks and abuse, the API implements rate limiti
    - Applies to general API endpoints
    - 30 requests per minute per unique key
    - Balanced protection for normal API usage
+   - *Unused for now, but can be used to limit API requests in the future*
 
 ### Intelligent Request Identification
 
