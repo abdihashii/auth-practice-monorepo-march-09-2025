@@ -153,3 +153,59 @@ export async function verifyEmail(token: string, signal?: AbortSignal): Promise<
     };
   }
 }
+
+/**
+ * Resend verification email to the specified email address
+ * @returns Result of the resend attempt
+ */
+export async function resendVerificationEmail(email: string): Promise<{
+  success: boolean;
+  message?: string;
+  error?: {
+    code?: string;
+    message: string;
+    details?: {
+      message?: string;
+      name?: string;
+      code?: string;
+    };
+  };
+}> {
+  try {
+    const res = await fetch(`${BASE_API_URL}/api/v1/auth/resend-verification-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const response = await res.json();
+
+    if (!res.ok) {
+      return {
+        success: false,
+        error: {
+          code: response.error?.code,
+          message: response.error?.message || 'Failed to resend verification email',
+          details: response.error?.details || undefined,
+        },
+      };
+    }
+
+    const { data } = response as { data: { message: string } };
+
+    return {
+      success: true,
+      message: data.message || 'Verification email sent successfully',
+    };
+  } catch (error) {
+    console.error('Error resending verification email:', error);
+    return {
+      success: false,
+      error: {
+        message: 'An unexpected error occurred',
+      },
+    };
+  }
+}
