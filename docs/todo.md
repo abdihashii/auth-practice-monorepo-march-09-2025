@@ -4,7 +4,7 @@
 - [x] Log in
 - [x] Log out
 - [ ] Forgot password
-- [ ] Verify email
+- [x] Verify email
 - [x] Refresh token endpoint
 - [x] HTTP-only cookie
 - [x] CSRF protection
