@@ -108,6 +108,61 @@ Requires a valid access token to:
 - Clears the refresh token cookie
 - Invalidates tokens for the user
 
+## Rate Limiting
+
+To protect against brute force attacks and abuse, the API implements rate limiting on authentication endpoints:
+
+### Rate Limit Types
+
+1. **Global Rate Limiter**:
+   - Applies to all API endpoints
+   - 60 requests per minute per IP address
+   - Affects all routes including protected ones
+
+2. **Authentication Rate Limiter**:
+   - Applies to sensitive auth endpoints (`/login`, `/register`, `/refresh`)
+   - 5 requests per 15 minutes per IP address
+   - Provides extra protection for authentication operations
+
+3. **API Rate Limiter**:
+   - Applies to general API endpoints
+   - 30 requests per minute per IP address
+   - Balanced protection for normal API usage
+
+### Intelligent Request Identification
+
+Our rate limiting uses a sophisticated identification strategy to ensure fair limits:
+
+1. **For authenticated users**: Uses the user's ID to track limits individually
+   - Prevents legitimate users from being affected by others sharing the same IP
+
+2. **For public requests**: Uses a combination of:
+   - IP address
+   - Request path
+   - Truncated user agent signature
+
+This approach prevents shared IP issues (corporate networks, VPNs) while still protecting against distributed attacks.
+
+### Rate Limit Response Headers
+
+When a request is made, these headers are included in the response:
+
+- `X-RateLimit-Limit`: Maximum number of requests allowed in the window
+- `X-RateLimit-Remaining`: Number of requests remaining in the current window
+- `X-RateLimit-Reset`: Time (in seconds) until the rate limit window resets
+
+### Rate Limit Exceeded Response
+
+When a rate limit is exceeded, the API returns:
+
+```json
+{
+  "error": "Too many requests, please try again later"
+}
+```
+
+With HTTP status code 429 (Too Many Requests).
+
 ## Error Responses
 
 Authentication failures return appropriate 401/403 status codes with the following error formats:
