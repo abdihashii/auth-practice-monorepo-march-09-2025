@@ -54,5 +54,7 @@ export interface User {
 
 export interface AuthResponse {
   user: User;
-  accessToken: string;
+  accessToken?: string; // Present after successful authentication
+  emailVerificationRequired?: boolean; // Indicates if email verification is needed
+  message?: string; // Optional message for the client
 }
