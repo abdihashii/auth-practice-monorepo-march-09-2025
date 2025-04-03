@@ -163,6 +163,7 @@ export function LoginForm({
                   <TooltipTrigger asChild>
                     <div className="hover:cursor-not-allowed ">
                       <Button
+                        type="button"
                         variant="outline"
                         className="w-full"
                         disabled
