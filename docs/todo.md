@@ -14,7 +14,7 @@
   - [x] Create authorization middleware to verify tokens on protected routes
   - [x] Add token validation checks (expiration, signature, etc.)
   - [x] Implement proper error responses for authorization failures (401/403)
-  - [ ] Add documentation for token usage in API responses
+  - [x] Add documentation for token usage in API responses
 
 Bonus
 
