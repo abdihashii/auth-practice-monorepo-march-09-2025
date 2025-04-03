@@ -24,14 +24,12 @@
     "lint:fix": "eslint --fix"
   },
   "dependencies": {
-    "@hono-rate-limiter/cloudflare": "^0.2.2",
     "@hono/zod-validator": "^0.4.3",
     "@roll-your-own-auth/eslint-config": "workspace:^",
     "@roll-your-own-auth/shared": "workspace:^",
     "@sentry/bun": "^9.5.0",
     "drizzle-orm": "^0.40.0",
     "hono": "^4.7.4",
-    "hono-rate-limiter": "^0.4.2",
     "pg": "^8.13.3",
     "resend": "^4.2.0"
   },

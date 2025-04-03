@@ -45,9 +45,6 @@ importers:
 
   apps/auth-backend:
     dependencies:
-      '@hono-rate-limiter/cloudflare':
-        specifier: ^0.2.2
-        version: 0.2.2(@cloudflare/workers-types@4.20250403.0)(hono@4.7.5)
       '@hono/zod-validator':
         specifier: ^0.4.3
         version: 0.4.3(hono@4.7.5)(zod@3.24.2)
@@ -66,9 +63,6 @@ importers:
       hono:
         specifier: ^4.7.4
         version: 4.7.5
-      hono-rate-limiter:
-        specifier: ^0.4.2
-        version: 0.4.2(hono@4.7.5)
       pg:
         specifier: ^8.13.3
         version: 8.14.1
@@ -967,12 +961,6 @@ packages:
 
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
-
-  '@hono-rate-limiter/cloudflare@0.2.2':
-    resolution: {integrity: sha512-wMnqeV+cb5Wov2npLIMFtCVm3tiNMtqw9LhPWSzSMwHOzh2qbhI3mCS6s962fxcJ6UUNJhRqDbVMEsB/NinCIQ==}
-    peerDependencies:
-      '@cloudflare/workers-types': ^4.20240529.0
-      hono: ^4.4.8
 
   '@hono/zod-validator@0.4.3':
     resolution: {integrity: sha512-xIgMYXDyJ4Hj6ekm9T9Y27s080Nl9NXHcJkOvkXPhubOLj8hZkOL8pDnnXfvCf5xEE8Q4oMFenQUZZREUY2gqQ==}
@@ -3033,11 +3021,6 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  hono-rate-limiter@0.4.2:
-    resolution: {integrity: sha512-AAtFqgADyrmbDijcRTT/HJfwqfvhalya2Zo+MgfdrMPas3zSMD8SU03cv+ZsYwRU1swv7zgVt0shwN059yzhjw==}
-    peerDependencies:
-      hono: ^4.1.1
-
   hono@4.7.5:
     resolution: {integrity: sha512-fDOK5W2C1vZACsgLONigdZTRZxuBqFtcKh7bUQ5cVSbwI2RWjloJDcgFOVzbQrlI6pCmhlTsVYZ7zpLj4m4qMQ==}
     engines: {node: '>=16.9.0'}
@@ -4578,7 +4561,8 @@ snapshots:
       picocolors: 1.1.1
       sisteransi: 1.0.5
 
-  '@cloudflare/workers-types@4.20250403.0': {}
+  '@cloudflare/workers-types@4.20250403.0':
+    optional: true
 
   '@csstools/color-helpers@5.0.2': {}
 
@@ -5049,11 +5033,6 @@ snapshots:
       react-dom: 19.1.0(react@19.1.0)
 
   '@floating-ui/utils@0.2.9': {}
-
-  '@hono-rate-limiter/cloudflare@0.2.2(@cloudflare/workers-types@4.20250403.0)(hono@4.7.5)':
-    dependencies:
-      '@cloudflare/workers-types': 4.20250403.0
-      hono: 4.7.5
 
   '@hono/zod-validator@0.4.3(hono@4.7.5)(zod@3.24.2)':
     dependencies:
@@ -7277,10 +7256,6 @@ snapshots:
   hasown@2.0.2:
     dependencies:
       function-bind: 1.1.2
-
-  hono-rate-limiter@0.4.2(hono@4.7.5):
-    dependencies:
-      hono: 4.7.5
 
   hono@4.7.5: {}
 
