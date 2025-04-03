@@ -1,8 +1,9 @@
 import type { User } from '@roll-your-own-auth/shared/types';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+// import { useNavigate } from '@tanstack/react-router';
 
-import { login, logout } from '@/api/auth-apis';
+import { login, logout, register } from '@/api/auth-apis';
 import { authStorage } from '@/services/auth-storage-service';
 
 // Key for auth-related queries
@@ -12,6 +13,9 @@ export const AUTH_QUERY_KEY = ['auth'];
  * Hook for authentication functionality
  */
 export function useAuth() {
+  // Get the navigate function from the router
+  // const navigate = useNavigate();
+
   // QueryClient instance is used to cache, invalidate, clear, and refetch data
   const queryClient = useQueryClient();
 
@@ -54,6 +58,19 @@ export function useAuth() {
     },
   });
 
+  // Register mutation
+  const registerMutation = useMutation({
+    mutationFn: (credentials: { email: string; password: string; confirmPassword: string }) =>
+      register(credentials.email, credentials.password, credentials.confirmPassword),
+    onSuccess: () => {
+      // Navigate to verify email page
+      // navigate('/verify-email');
+    },
+    onError: (error) => {
+      console.error(error);
+    },
+  });
+
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: logout,
@@ -70,6 +87,12 @@ export function useAuth() {
   const loginFn = async (email: string, password: string): Promise<void> => {
     // Call the login mutation
     await loginMutation.mutateAsync({ email, password });
+  };
+
+  // Register function that returns a promise
+  const registerFn = async (email: string, password: string, confirmPassword: string): Promise<void> => {
+    // Call the register mutation
+    await registerMutation.mutateAsync({ email, password, confirmPassword });
   };
 
   // Logout function that returns a promise
@@ -90,6 +113,7 @@ export function useAuth() {
 
     // Actions
     login: loginFn,
+    register: registerFn,
     logout: logoutFn,
   };
 }
