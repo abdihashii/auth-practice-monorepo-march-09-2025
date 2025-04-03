@@ -45,6 +45,9 @@ importers:
 
   apps/auth-backend:
     dependencies:
+      '@hono-rate-limiter/redis':
+        specifier: ^0.1.4
+        version: 0.1.4(hono-rate-limiter@0.4.2(hono@4.7.5))
       '@hono/zod-validator':
         specifier: ^0.4.3
         version: 0.4.3(hono@4.7.5)(zod@3.24.2)
@@ -57,12 +60,18 @@ importers:
       '@sentry/bun':
         specifier: ^9.5.0
         version: 9.10.1(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.30.0)
+      '@upstash/redis':
+        specifier: ^1.34.6
+        version: 1.34.6
       drizzle-orm:
         specifier: ^0.40.0
         version: 0.40.1(@cloudflare/workers-types@4.20250403.0)(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.7)(gel@2.0.1)(pg@8.14.1)
       hono:
         specifier: ^4.7.4
         version: 4.7.5
+      hono-rate-limiter:
+        specifier: ^0.4.2
+        version: 0.4.2(hono@4.7.5)
       pg:
         specifier: ^8.13.3
         version: 8.14.1
@@ -961,6 +970,11 @@ packages:
 
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
+
+  '@hono-rate-limiter/redis@0.1.4':
+    resolution: {integrity: sha512-RSrVX5N2Oo/xXApskegu667cBVHyr8RXGWnbRDGjU2py8pN4BttEKSHA0iKi3BAwh1xSkENgDRng4tpFD9DbKg==}
+    peerDependencies:
+      hono-rate-limiter: ^0.2.1
 
   '@hono/zod-validator@0.4.3':
     resolution: {integrity: sha512-xIgMYXDyJ4Hj6ekm9T9Y27s080Nl9NXHcJkOvkXPhubOLj8hZkOL8pDnnXfvCf5xEE8Q4oMFenQUZZREUY2gqQ==}
@@ -2004,6 +2018,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@upstash/redis@1.34.6':
+    resolution: {integrity: sha512-/ic+NszsXyIl2P8aExL7xETxgmzyhn6txG4senGDgd524bypGEJs1TMzLDeOV+PFVuacc10wZVJLIj6aRZZNaw==}
+
   '@vitejs/plugin-react@4.3.4':
     resolution: {integrity: sha512-SCCPBJtYLdE8PX/7ZQAs1QAZ8Jqwih+0VBLum1EGqmCCQal+MIUqLCzj3ZUy8ufbC0cAM4LRlSTm7IQJwWT4ug==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -2297,6 +2314,9 @@ packages:
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
+
+  crypto-js@4.2.0:
+    resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
 
   cssesc@3.0.0:
     resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
@@ -3020,6 +3040,11 @@ packages:
   hasown@2.0.2:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
+
+  hono-rate-limiter@0.4.2:
+    resolution: {integrity: sha512-AAtFqgADyrmbDijcRTT/HJfwqfvhalya2Zo+MgfdrMPas3zSMD8SU03cv+ZsYwRU1swv7zgVt0shwN059yzhjw==}
+    peerDependencies:
+      hono: ^4.1.1
 
   hono@4.7.5:
     resolution: {integrity: sha512-fDOK5W2C1vZACsgLONigdZTRZxuBqFtcKh7bUQ5cVSbwI2RWjloJDcgFOVzbQrlI6pCmhlTsVYZ7zpLj4m4qMQ==}
@@ -5034,6 +5059,10 @@ snapshots:
 
   '@floating-ui/utils@0.2.9': {}
 
+  '@hono-rate-limiter/redis@0.1.4(hono-rate-limiter@0.4.2(hono@4.7.5))':
+    dependencies:
+      hono-rate-limiter: 0.4.2(hono@4.7.5)
+
   '@hono/zod-validator@0.4.3(hono@4.7.5)(zod@3.24.2)':
     dependencies:
       hono: 4.7.5
@@ -6116,6 +6145,10 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.3.3':
     optional: true
 
+  '@upstash/redis@1.34.6':
+    dependencies:
+      crypto-js: 4.2.0
+
   '@vitejs/plugin-react@4.3.4(vite@6.2.3(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.29.2)(tsx@4.19.3)(yaml@2.7.1))':
     dependencies:
       '@babel/core': 7.26.10
@@ -6413,6 +6446,8 @@ snapshots:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+
+  crypto-js@4.2.0: {}
 
   cssesc@3.0.0: {}
 
@@ -7256,6 +7291,10 @@ snapshots:
   hasown@2.0.2:
     dependencies:
       function-bind: 1.1.2
+
+  hono-rate-limiter@0.4.2(hono@4.7.5):
+    dependencies:
+      hono: 4.7.5
 
   hono@4.7.5: {}
 
