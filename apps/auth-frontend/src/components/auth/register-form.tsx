@@ -3,7 +3,7 @@ import type { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerFormSchema } from '@roll-your-own-auth/shared/schemas';
 import { Link } from '@tanstack/react-router';
-import { EyeIcon, EyeOffIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -23,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useAuthContext } from '@/hooks/use-auth-context';
 import { cn } from '@/lib/utils';
 
 export function RegisterForm({
@@ -32,10 +33,13 @@ export function RegisterForm({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const { register: registerAuth, isRegistering } = useAuthContext();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm<z.infer<typeof registerFormSchema>>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
@@ -44,9 +48,19 @@ export function RegisterForm({
     },
   });
 
-  function onSubmit(data: z.infer<typeof registerFormSchema>) {
-    // eslint-disable-next-line no-console
-    console.log(data);
+  async function onSubmit(data: z.infer<typeof registerFormSchema>) {
+    try {
+      await registerAuth(data.email, data.password, data.confirmPassword);
+    } catch (error) {
+      // Set form error for server-side errors
+      setError('root', {
+        type: 'server',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to register. Please try again.',
+      });
+    }
   }
 
   return (
@@ -132,17 +146,27 @@ export function RegisterForm({
                   <p className="text-red-500">{errors.confirmPassword.message}</p>
                 )}
               </div>
-              <Button type="submit" className="w-full">
-                Register
+              <Button type="submit" className="w-full hover:cursor-pointer" disabled={isRegistering}>
+                {isRegistering
+                  ? (
+                      <>
+                        <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                        Registering...
+                      </>
+                    )
+                  : (
+                      'Register'
+                    )}
               </Button>
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="hover:cursor-not-allowed ">
                       <Button
+                        type="button"
                         variant="outline"
                         className="w-full"
-                        disabled={true}
+                        disabled
                       >
                         Register with Google
                       </Button>
