@@ -7,7 +7,7 @@ type VerificationState = 'idle' | 'loading' | 'success' | 'error' | 'no-token';
 type ErrorType = 'token-expired' | 'invalid-token' | 'unknown';
 type ResendState = 'idle' | 'submitting' | 'success' | 'error';
 
-export function useVerifyEmail(token: string) {
+export function useVerifyEmail(token?: string) {
   // States for the verify email form
   const [verificationState, setVerificationState] = useState<VerificationState>('idle');
   const [verificationErrorType, setVerificationErrorType] = useState<ErrorType>('unknown');
