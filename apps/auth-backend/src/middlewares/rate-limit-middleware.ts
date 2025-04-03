@@ -97,10 +97,10 @@ export const globalRateLimiter: MiddlewareHandler<CustomEnv> = rateLimiter({
 }) as MiddlewareHandler<CustomEnv>;
 
 // Strict rate limiter for authentication endpoints
-// Limit to 5 attempts per 15 minutes per IP
+// Limit to 10 attempts per 15 minutes per IP
 export const authRateLimiter: MiddlewareHandler<CustomEnv> = rateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes window
-  limit: 5, // 5 attempts per 15 minutes
+  limit: 10, // 10 attempts per 15 minutes
   standardHeaders: true,
   message: 'Too many authentication attempts, please try again later',
   keyGenerator,
@@ -108,11 +108,11 @@ export const authRateLimiter: MiddlewareHandler<CustomEnv> = rateLimiter({
 }) as MiddlewareHandler<CustomEnv>;
 
 // API rate limiter for API endpoints
-// Limit to 30 requests per minute per IP
+// Limit to 100 requests per minute per IP
 // Unused for now, but can be used to limit API requests in the future
 export const apiRateLimiter: MiddlewareHandler<CustomEnv> = rateLimiter({
   windowMs: 60 * 1000, // 1 minute window
-  limit: 30, // 30 requests per minute
+  limit: 100, // 100 requests per minute
   standardHeaders: true,
   message: 'Too many API requests, please try again later',
   keyGenerator,
