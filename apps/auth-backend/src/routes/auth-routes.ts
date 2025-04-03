@@ -142,50 +142,8 @@ publicRoutes.post('/register', async (c) => {
       );
     }
 
-    // Create a safe user object (excluding sensitive data)
-    const safeUser: User = {
-      // Core user information
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
-      updatedAt: user.updatedAt?.toISOString() ?? new Date().toISOString(),
-
-      // Email verification
-      emailVerified: user.emailVerified ?? false,
-
-      // Account status & managemetn
-      isActive: user.isActive ?? true,
-      deletedAt: user.deletedAt?.toISOString() ?? null,
-
-      // User preferences & settings
-      settings: (user.settings as UserSettings) ?? {
-        theme: 'system',
-        language: 'en',
-        timezone: 'UTC',
-      },
-      notificationPreferences:
-        (user.notificationPreferences as NotificationPreferences) ?? {
-          email: {
-            enabled: false,
-            digest: 'never',
-            marketing: false,
-          },
-          push: {
-            enabled: false,
-            alerts: false,
-          },
-        },
-
-      // Activity tracking
-      lastActivityAt: user.lastActivityAt?.toISOString() ?? null,
-      lastSuccessfulLogin: user.lastSuccessfulLogin?.toISOString() ?? null,
-      loginCount: user.loginCount ?? 0,
-    };
-
     // Combine user and access token into auth response
     const authResponse: AuthResponse = {
-      user: safeUser,
       message: 'Registration successful. Please verify your email before logging in.',
       emailVerificationRequired: true,
     };
