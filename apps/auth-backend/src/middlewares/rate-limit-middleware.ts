@@ -9,7 +9,7 @@ import type { CustomEnv } from '@/lib/types';
 import env from '@/env';
 
 // Create Redis client using environment variables
-const redis = new Redis({
+const redisClient = new Redis({
   url: env.REDIS_URL,
   token: env.REDIS_TOKEN,
 });
@@ -83,7 +83,7 @@ function keyGenerator(c: Context<Env, string, Input>) {
   }
 }
 
-const redisStore = new RedisStore({ client: redis });
+const redisStore = new RedisStore({ client: redisClient });
 
 // Global rate limiter - applies to all routes
 // Limit to 60 requests per minute per user/fingerprint
