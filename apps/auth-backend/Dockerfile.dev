@@ -6,20 +6,20 @@ RUN bun install -g pnpm
 # Set working directory
 WORKDIR /app
 
-# Copy package.json files from workspace root
+# Copy monorepo root config files
 COPY package.json pnpm-workspace.yaml* pnpm-lock.yaml* ./
 
-# Copy auth-backend package.json
+# Copy just the package.json from the auth-backend package without the code yet
 COPY apps/auth-backend/package.json ./apps/auth-backend/
 
-# Copy shared dependencies from root if they exist
+# Copy build config files needed by the monorepo
 COPY tsconfig*.json ./
 COPY eslint.config.mjs ./
 
 # Copy shared packages
 COPY packages ./packages
 
-# Install dependencies
+# Install dependencies defined in the root package.json
 RUN pnpm install
 
 # Build shared package
@@ -32,7 +32,7 @@ COPY apps/auth-backend/eslint.config.mjs ./apps/auth-backend/
 COPY apps/auth-backend/drizzle.config.ts ./apps/auth-backend/
 COPY apps/auth-backend/drizzle ./apps/auth-backend/drizzle
 
-# Set working directory to the auth-backend app
+# Set working directory to the auth-backend app directory
 WORKDIR /app/apps/auth-backend
 
 # Expose the port the app runs on
