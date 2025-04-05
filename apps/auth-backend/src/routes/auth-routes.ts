@@ -6,6 +6,7 @@ import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { validateAuthSchema } from '@roll-your-own-auth/shared/validations';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
+import { every } from 'hono/combine';
 import { getCookie, setCookie } from 'hono/cookie';
 
 import type { AuthResponse, CreateUserDto, CustomEnv, NotificationPreferences, TokenResponse, User, UserSettings } from '@/lib/types';
@@ -21,6 +22,8 @@ import {
 } from '@/lib/utils';
 import { sendVerificationEmail } from '@/lib/utils/email';
 import { authMiddleware } from '@/middlewares/auth-middleware';
+import { extractEmailMiddleware } from '@/middlewares/extract-email-middleware';
+import { authRateLimiter } from '@/middlewares/rate-limit-middleware';
 
 export const authRoutes = new Hono<CustomEnv>();
 
@@ -31,7 +34,7 @@ const publicRoutes = new Hono<CustomEnv>();
  * Register a new user
  * POST /api/v1/auth/register
  */
-publicRoutes.post('/register', async (c) => {
+publicRoutes.post('/register', every(extractEmailMiddleware, authRateLimiter), async (c) => {
   try {
     // Get db connection
     const db = c.get('db');
@@ -171,7 +174,7 @@ publicRoutes.post('/register', async (c) => {
  * Login a user
  * POST /api/v1/auth/login
  */
-publicRoutes.post('/login', async (c) => {
+publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), async (c) => {
   try {
     // Get db connection
     const db = c.get('db');
@@ -413,7 +416,7 @@ publicRoutes.post('/logout', async (c) => {
  * Refresh a user's access token
  * POST /api/v1/auth/refresh
  */
-publicRoutes.post('/refresh', async (c) => {
+publicRoutes.post('/refresh', authRateLimiter, async (c) => {
   try {
     // Get db connection
     const db = c.get('db');

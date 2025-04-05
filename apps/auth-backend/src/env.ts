@@ -7,6 +7,8 @@ const EnvSchema = z.object({
   FRONTEND_URL: z.string().url(),
   JWT_SECRET: z.string(),
   RESEND_API_KEY: z.string(),
+  REDIS_URL: z.string().url().optional(),
+  REDIS_TOKEN: z.string().optional(),
 }).superRefine((input, ctx) => {
   // Ensure JWT_SECRET is strong enough in production
   if (input.NODE_ENV === 'production' && input.JWT_SECRET.length < 256) {
@@ -36,6 +38,11 @@ const EnvSchema = z.object({
         message: 'FRONTEND_URL should use HTTPS in production',
         path: ['FRONTEND_URL'],
       });
+    }
+
+    // Ensure Redis URL and token are provided in production if rate limiting is used
+    if (!input.REDIS_URL || !input.REDIS_TOKEN) {
+      console.warn('⚠️ Rate limiting with Redis requires REDIS_URL and REDIS_TOKEN in production');
     }
   }
 });

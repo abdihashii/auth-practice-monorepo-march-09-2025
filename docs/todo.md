@@ -20,7 +20,7 @@ Bonus
 
 - [ ] Add role-based access control (RBAC) for different user types
 - [ ] Create token blacklisting/revocation system
-- [ ] Add rate limiting to the API
+- [x] Add rate limiting to the API
 - [ ] Delete account
 
 ## Frontend TODOs

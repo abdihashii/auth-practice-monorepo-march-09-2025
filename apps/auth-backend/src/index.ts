@@ -5,7 +5,7 @@ import type { CustomEnv } from '@/lib/types';
 
 import { dbConnect } from '@/db';
 import { usersTable } from '@/db/schema';
-import { corsMiddleware } from '@/middlewares';
+import { corsMiddleware, globalRateLimiter } from '@/middlewares';
 import { dbMiddleware } from '@/middlewares/db-middleware';
 import { securityMiddlewares } from '@/middlewares/security-middlewares';
 import { authRoutes } from '@/routes/auth-routes';
@@ -26,6 +26,9 @@ app.use('*', corsMiddleware);
 
 // Apply all security middlewares
 app.use('*', ...securityMiddlewares);
+
+// Apply global rate limiter to all routes
+app.use('*', globalRateLimiter);
 
 // Add request logging
 app.use('*', async (c, next) => {
