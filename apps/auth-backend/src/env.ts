@@ -7,8 +7,9 @@ const EnvSchema = z.object({
   FRONTEND_URL: z.string().url(),
   JWT_SECRET: z.string(),
   RESEND_API_KEY: z.string(),
-  REDIS_URL: z.string().url().optional(),
-  REDIS_TOKEN: z.string().optional(),
+  REDIS_URL: z.string().url().optional(), // Used in both development and production
+  REDIS_TOKEN: z.string().optional(), // Only used in production
+  REDIS_HOST: z.string().optional(), // Only used in development
 }).superRefine((input, ctx) => {
   // Ensure JWT_SECRET is strong enough in production
   if (input.NODE_ENV === 'production' && input.JWT_SECRET.length < 256) {
