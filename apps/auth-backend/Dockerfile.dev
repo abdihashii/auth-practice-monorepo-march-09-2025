@@ -6,12 +6,17 @@ RUN bun install -g pnpm
 # Set working directory
 WORKDIR /app
 
-# Copy package.json files for workspace
-COPY package.json pnpm-workspace.yaml* ./
+# Copy package.json files from workspace root
+COPY package.json pnpm-workspace.yaml* pnpm-lock.yaml* ./
+
+# Copy auth-backend package.json
 COPY apps/auth-backend/package.json ./apps/auth-backend/
 
 # Copy shared dependencies from root if they exist
 COPY tsconfig*.json ./
+COPY eslint.config.mjs ./
+
+# Copy shared packages
 COPY packages ./packages
 
 # Install dependencies
@@ -19,6 +24,13 @@ RUN pnpm install
 
 # Build shared package
 RUN pnpm build:shared
+
+# Copy application code
+COPY apps/auth-backend/src ./apps/auth-backend/src
+COPY apps/auth-backend/tsconfig.json ./apps/auth-backend/
+COPY apps/auth-backend/eslint.config.mjs ./apps/auth-backend/
+COPY apps/auth-backend/drizzle.config.ts ./apps/auth-backend/
+COPY apps/auth-backend/drizzle ./apps/auth-backend/drizzle
 
 # Set working directory to the auth-backend app
 WORKDIR /app/apps/auth-backend
