@@ -51,6 +51,15 @@ WORKDIR /app
 COPY --from=builder /app/apps/auth-backend/dist ./dist
 COPY --from=builder /app/apps/auth-backend/package.json ./
 
+# Copy database migration files needed at runtime for:
+# - Automatic database schema initialization on first run
+# - Runtime schema validation to ensure DB matches expected structure
+# - Self-healing database repairs for schema inconsistencies 
+# - Database version checking before application startup
+# - Support for API endpoints that might manage database schema
+COPY --from=builder /app/apps/auth-backend/drizzle ./drizzle
+COPY --from=builder /app/apps/auth-backend/drizzle.config.ts ./
+
 # Copy node_modules from builder stage including workspace dependencies
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages ./packages
@@ -60,6 +69,23 @@ ENV NODE_ENV=production
 
 # Expose the port the app runs on
 EXPOSE 8000
+
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y curl && apt-get clean
+
+# Add multi-level health check - try app health first, then DB health
+# The DB health endpoint will verify database connectivity
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/health || curl -f http://localhost:8000/health/db || exit 1
+
+# Security enhancement: Create non-root user for running the application
+# This follows security best practices to not run containers as root
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 appuser && \
+    chown -R appuser:nodejs /app
+
+# Switch to non-root user
+USER appuser
 
 # Command to run the app in production mode
 CMD ["bun", "run", "dist/index.js"]
