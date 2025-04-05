@@ -17,11 +17,9 @@ let redisClient: any;
 (async () => {
   try {
     if (env.NODE_ENV === 'development') {
-      // Use REDIS_HOST from env (defaults to localhost in .env, overridden in docker-compose)
-      const redisHost = env.REDIS_HOST;
-
       redisClient = createClient({
-        url: `redis://${redisHost}:6379`,
+        // Use REDIS_URL from env (defaults to redis://localhost:6379 in .env, overridden in docker-compose)
+        url: env.REDIS_URL,
       });
 
       // Connect to Redis and handle events
@@ -29,12 +27,12 @@ let redisClient: any;
       await redisClient.connect();
 
       // eslint-disable-next-line no-console
-      console.log('Connected to Redis (development)');
+      console.log('Connected to Redis (development)', env.REDIS_URL);
     } else {
       // For production, use Upstash Redis
       redisClient = new UpstashRedis({
-        url: env.REDIS_URL!,
-        token: env.REDIS_TOKEN!,
+        url: env.REDIS_URL,
+        token: env.REDIS_TOKEN,
       });
 
       // eslint-disable-next-line no-console
