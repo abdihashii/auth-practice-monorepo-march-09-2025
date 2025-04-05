@@ -1,37 +1,48 @@
-# Build stage: Use the latest Bun image as base
+###### Build stage ######
+# Use the latest Bun image as JavaScript runtime for building the app
 FROM oven/bun:latest as builder
 
-# Install pnpm
+# Install pnpm. 
+# Uses pnpm instead of bun as a package manager because of the monorepo setup.
 RUN bun install -g pnpm
 
 # Set working directory for the app
 WORKDIR /app
 
-# Copy package.json files for workspace from the root of the monorepo
-COPY package.json pnpm-workspace.yaml* ./
+# Copy monorepo root config files
+COPY package.json pnpm-workspace.yaml* pnpm-lock.yaml* ./
 
-# Copy the package.json for the auth-backend package
+# Copy just the package.json from the auth-backend package without the code yet
 COPY apps/auth-backend/package.json ./apps/auth-backend/
 
-# Copy shared dependencies from root if they exist
+# Copy build config files needed by the monorepo
 COPY tsconfig*.json ./
+COPY eslint.config.mjs ./ 
+
+# Copy shared packages
 COPY packages ./packages
 
-# Install dependencies
+# Install dependencies defined in the root package.json
 RUN pnpm install
 
-# Copy the auth-backend app code, excluding node_modules
+# Build shared package
+RUN pnpm build:shared
+
+# Copy application code
 COPY apps/auth-backend/src ./apps/auth-backend/src
 COPY apps/auth-backend/tsconfig.json ./apps/auth-backend/
+COPY apps/auth-backend/eslint.config.mjs ./apps/auth-backend/
+COPY apps/auth-backend/drizzle.config.ts ./apps/auth-backend/
+COPY apps/auth-backend/drizzle ./apps/auth-backend/drizzle
 
-# Build the app if needed (for TypeScript compilation)
+# Set working directory to the auth-backend app directory and build the 
+# TypeScript code into optimized JavaScript.
 WORKDIR /app/apps/auth-backend
 RUN bun build --target=bun src/index.ts --outdir=./dist
 
-# Production stage: Start fresh with minimal image
+###### Production stage ######
+# Use the latest Bun image as JavaScript runtime for running the app
 FROM oven/bun:latest as production
-
-# No need for pnpm in production since we'll copy the built app
 
 # Set working directory
 WORKDIR /app
@@ -40,8 +51,9 @@ WORKDIR /app
 COPY --from=builder /app/apps/auth-backend/dist ./dist
 COPY --from=builder /app/apps/auth-backend/package.json ./
 
-# Instead of running bun install, we'll simply copy the node_modules from the builder stage
-COPY --from=builder /app/apps/auth-backend/node_modules ./node_modules
+# Copy node_modules from builder stage including workspace dependencies
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
 
 # Set production environment
 ENV NODE_ENV=production
