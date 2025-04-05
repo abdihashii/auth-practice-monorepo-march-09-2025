@@ -1,18 +1,53 @@
 import type { Context, Env, Input, MiddlewareHandler } from 'hono';
 
 import { RedisStore } from '@hono-rate-limiter/redis';
-import { Redis } from '@upstash/redis';
+import { Redis as UpstashRedis } from '@upstash/redis';
 import { rateLimiter } from 'hono-rate-limiter';
+import { createClient } from 'redis';
 
 import type { CustomEnv } from '@/lib/types';
 
 import env from '@/env';
 
-// Create Redis client using environment variables
-const redisClient = new Redis({
-  url: env.REDIS_URL,
-  token: env.REDIS_TOKEN,
-});
+// Redis store for rate limiters
+let redisStore: any;
+let redisClient: any;
+
+// Setup Redis client
+(async () => {
+  try {
+    if (env.NODE_ENV === 'development') {
+      // Use REDIS_HOST from env (defaults to localhost in .env, overridden in docker-compose)
+      const redisHost = env.REDIS_HOST;
+
+      redisClient = createClient({
+        url: `redis://${redisHost}:6379`,
+      });
+
+      // Connect to Redis and handle events
+      redisClient.on('error', (err: any) => console.error('Redis Client Error:', err));
+      await redisClient.connect();
+
+      // eslint-disable-next-line no-console
+      console.log('Connected to Redis (development)');
+    } else {
+      // For production, use Upstash Redis
+      redisClient = new UpstashRedis({
+        url: env.REDIS_URL!,
+        token: env.REDIS_TOKEN!,
+      });
+
+      // eslint-disable-next-line no-console
+      console.log('Connected to Redis (production)');
+    }
+
+    redisStore = new RedisStore({ client: redisClient });
+  } catch (error) {
+    console.error('Failed to initialize Redis client:', error);
+    // No fallback store, rate limiting will not work if Redis is down
+    redisStore = null;
+  }
+})();
 
 /**
  * Creates a more intelligent key for rate limiting
@@ -82,8 +117,6 @@ function keyGenerator(c: Context<Env, string, Input>) {
     }
   }
 }
-
-const redisStore = new RedisStore({ client: redisClient });
 
 // Global rate limiter - applies to all routes
 // Limit to 60 requests per minute per user/fingerprint
