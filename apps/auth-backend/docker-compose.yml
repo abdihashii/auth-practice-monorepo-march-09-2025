@@ -18,6 +18,21 @@ services:
       timeout: 5s
       retries: 5
 
+  # Redis service
+  auth-backend-redis:
+    image: redis:7.4-alpine
+    container_name: auth-backend-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    restart: always
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   # Development service with live reloading
   auth-backend-dev:
     build:
@@ -40,9 +55,12 @@ services:
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@auth-backend-db:5432/auth-backend-db
+      - REDIS_HOST=auth-backend-redis
     restart: unless-stopped
     depends_on:
       auth-backend-db:
+        condition: service_healthy
+      auth-backend-redis:
         condition: service_healthy
     healthcheck:
       test: [CMD, curl, -f, 'http://localhost:8000/health || curl -f http://localhost:8000/health/db']
@@ -70,3 +88,5 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
+    driver: local
