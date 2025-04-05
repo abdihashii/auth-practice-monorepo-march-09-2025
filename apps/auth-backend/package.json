@@ -34,11 +34,13 @@
     "hono": "^4.7.4",
     "hono-rate-limiter": "^0.4.2",
     "pg": "^8.13.3",
+    "redis": "^4.7.0",
     "resend": "^4.2.0"
   },
   "devDependencies": {
     "@types/bun": "^1.2.4",
     "@types/pg": "^8.11.11",
+    "@types/redis": "^4.0.11",
     "drizzle-kit": "^0.30.5",
     "eslint-plugin-drizzle": "^0.2.3"
   }
