@@ -1,37 +1,54 @@
-# Build stage: Use the latest Bun image as base
+###### Build stage ######
+# Use the latest Bun image as JavaScript runtime for building the app
 FROM oven/bun:latest as builder
 
-# Install pnpm
+# Install pnpm. 
+# Uses pnpm instead of bun as a package manager because of the monorepo setup.
 RUN bun install -g pnpm
 
 # Set working directory for the app
 WORKDIR /app
 
-# Copy package.json files for workspace from the root of the monorepo
-COPY package.json pnpm-workspace.yaml* ./
+# Set environment variables for the build process
+ENV NODE_ENV=production
 
-# Copy the package.json for the auth-backend package
+# Copy monorepo root config files
+COPY package.json pnpm-workspace.yaml* pnpm-lock.yaml* ./
+
+# Copy just the package.json from the auth-backend package without the code yet
 COPY apps/auth-backend/package.json ./apps/auth-backend/
 
-# Copy shared dependencies from root if they exist
+# Copy build config files needed by the monorepo
 COPY tsconfig*.json ./
+COPY eslint.config.mjs ./ 
+
+# Copy shared packages
 COPY packages ./packages
 
-# Install dependencies
+# Install dependencies defined in the root package.json
 RUN pnpm install
 
-# Copy the auth-backend app code, excluding node_modules
+# Build shared package
+RUN pnpm build:shared
+
+# Copy application code
 COPY apps/auth-backend/src ./apps/auth-backend/src
+COPY apps/auth-backend/scripts ./apps/auth-backend/scripts
 COPY apps/auth-backend/tsconfig.json ./apps/auth-backend/
+COPY apps/auth-backend/eslint.config.mjs ./apps/auth-backend/
+COPY apps/auth-backend/drizzle.config.ts ./apps/auth-backend/
+COPY apps/auth-backend/drizzle ./apps/auth-backend/drizzle
 
-# Build the app if needed (for TypeScript compilation)
+# Set working directory to the auth-backend app directory and build the 
+# TypeScript code into optimized JavaScript.
 WORKDIR /app/apps/auth-backend
-RUN bun build --target=bun src/index.ts --outdir=./dist
 
-# Production stage: Start fresh with minimal image
+# Build the app using CI mode to skip environment schema validation
+RUN bun run build:ci
+
+###### Production stage ######
+# Use the latest Bun image as JavaScript runtime for running the app
 FROM oven/bun:latest as production
-
-# No need for pnpm in production since we'll copy the built app
 
 # Set working directory
 WORKDIR /app
@@ -40,8 +57,18 @@ WORKDIR /app
 COPY --from=builder /app/apps/auth-backend/dist ./dist
 COPY --from=builder /app/apps/auth-backend/package.json ./
 
-# Instead of running bun install, we'll simply copy the node_modules from the builder stage
-COPY --from=builder /app/apps/auth-backend/node_modules ./node_modules
+# Copy database migration files needed at runtime for:
+# - Automatic database schema initialization on first run
+# - Runtime schema validation to ensure DB matches expected structure
+# - Self-healing database repairs for schema inconsistencies 
+# - Database version checking before application startup
+# - Support for API endpoints that might manage database schema
+COPY --from=builder /app/apps/auth-backend/drizzle ./drizzle
+COPY --from=builder /app/apps/auth-backend/drizzle.config.ts ./
+
+# Copy node_modules from builder stage including workspace dependencies
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
 
 # Set production environment
 ENV NODE_ENV=production
@@ -49,5 +76,22 @@ ENV NODE_ENV=production
 # Expose the port the app runs on
 EXPOSE 8000
 
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y curl && apt-get clean
+
+# Add multi-level health check - try app health first, then DB health
+# The DB health endpoint will verify database connectivity
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/health || curl -f http://localhost:8000/health/db || exit 1
+
+# Security enhancement: Create non-root user for running the application
+# This follows security best practices to not run containers as root
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 appuser && \
+    chown -R appuser:nodejs /app
+
+# Switch to non-root user
+USER appuser
+
 # Command to run the app in production mode
-CMD ["bun", "run", "dist/index.js"]
+CMD ["bun", "run", "start"]

@@ -33,6 +33,15 @@ export default function createConfig(options, ...userConfigs) {
       }],
       'style/arrow-parens': ['error', 'always'],
       'antfu/if-newline': ['off'],
+      // 'style/max-len': ['error', {
+      //   code: 40,
+      //   tabWidth: 2,
+      //   ignoreUrls: true,
+      //   ignoreComments: false,
+      //   ignoreTrailingComments: true,
+      //   ignoreStrings: true,
+      //   ignoreTemplateLiterals: true,
+      // }],
     },
   }, ...userConfigs);
 }

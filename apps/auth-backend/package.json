@@ -15,7 +15,13 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "// =============== PRODUCTION COMMANDS ===============": "",
-    "start": "bun run src/index.ts",
+    "validate:env": "bun run scripts/validate-env.ts",
+    "validate:env-build": "bun run dist/scripts/validate-env.js",
+    "prebuild": "bun run validate:env",
+    "build": "bun build --target=bun src/index.ts --outdir=./dist && bun build --target=bun scripts/validate-env.ts --outdir=./dist/scripts",
+    "build:ci": "CI=true bun build --target=bun src/index.ts --outdir=./dist && bun build --target=bun scripts/validate-env.ts --outdir=./dist/scripts",
+    "prestart": "bun run validate:env-build",
+    "start": "bun run dist/index.js",
     "start:docker": "docker compose up auth-backend",
     "// ================ UTILITY COMMANDS ================": "",
     "clean": "rm -rf node_modules pnpm-lock.yaml",
@@ -24,18 +30,23 @@
     "lint:fix": "eslint --fix"
   },
   "dependencies": {
+    "@hono-rate-limiter/redis": "^0.1.4",
     "@hono/zod-validator": "^0.4.3",
     "@roll-your-own-auth/eslint-config": "workspace:^",
     "@roll-your-own-auth/shared": "workspace:^",
     "@sentry/bun": "^9.5.0",
+    "@upstash/redis": "^1.34.6",
     "drizzle-orm": "^0.40.0",
     "hono": "^4.7.4",
+    "hono-rate-limiter": "^0.4.2",
     "pg": "^8.13.3",
+    "redis": "^4.7.0",
     "resend": "^4.2.0"
   },
   "devDependencies": {
     "@types/bun": "^1.2.4",
     "@types/pg": "^8.11.11",
+    "@types/redis": "^4.0.11",
     "drizzle-kit": "^0.30.5",
     "eslint-plugin-drizzle": "^0.2.3"
   }
