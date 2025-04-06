@@ -1,15 +1,24 @@
 /* eslint-disable node/no-process-env */
 import { z } from 'zod';
 
-const EnvSchema = z.object({
+// Determine if this is being run at build time
+const isBuildTime = process.argv.includes('--build');
+
+// Base schema with required fields for both build and runtime
+const BaseEnvSchema = z.object({
   NODE_ENV: z.string().default('development'),
   DATABASE_URL: z.string().url(),
   FRONTEND_URL: z.string().url(),
   JWT_SECRET: z.string(),
-  RESEND_API_KEY: z.string(),
-  REDIS_URL: z.string().url().optional(), // Used in both development and production
-  REDIS_TOKEN: z.string().optional(), // Only used in production
+  // Build time doesn't need these, but runtime does
+  RESEND_API_KEY: isBuildTime ? z.string().optional() : z.string(),
+  REDIS_URL: z.string().url(),
+  // Only required in production runtime
+  REDIS_TOKEN: z.string().optional(),
 }).superRefine((input, ctx) => {
+  // Skip production-specific validations at build time
+  if (isBuildTime) return;
+
   // Ensure JWT_SECRET is strong enough in production
   if (input.NODE_ENV === 'production' && input.JWT_SECRET.length < 256) {
     ctx.addIssue({
@@ -40,12 +49,19 @@ const EnvSchema = z.object({
       });
     }
 
-    // Ensure Redis URL and token are provided in production if rate limiting is used
-    if (!input.REDIS_URL || !input.REDIS_TOKEN) {
-      console.warn('⚠️ Rate limiting with Redis requires REDIS_URL and REDIS_TOKEN in production');
+    // Ensure Redis token is provided in production runtime
+    if (!input.REDIS_TOKEN) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'REDIS_TOKEN is required in production for rate limiting',
+        path: ['REDIS_TOKEN'],
+      });
     }
   }
 });
+
+// Choose schema based on context
+const EnvSchema = BaseEnvSchema;
 
 export type Env = z.infer<typeof EnvSchema>;
 
