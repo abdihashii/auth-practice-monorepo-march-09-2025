@@ -4,8 +4,8 @@ import { z } from 'zod';
 // Determine if this is being run at build time
 const isBuildTime = process.argv.includes('--build');
 
-// Base schema with required fields for both build and runtime
-const BaseEnvSchema = z.object({
+// Schema with required fields for both build and runtime
+const EnvSchema = z.object({
   NODE_ENV: z.string().default('development'),
   DATABASE_URL: z.string().url(),
   FRONTEND_URL: z.string().url(),
@@ -59,9 +59,6 @@ const BaseEnvSchema = z.object({
     }
   }
 });
-
-// Choose schema based on context
-const EnvSchema = BaseEnvSchema;
 
 export type Env = z.infer<typeof EnvSchema>;
 
