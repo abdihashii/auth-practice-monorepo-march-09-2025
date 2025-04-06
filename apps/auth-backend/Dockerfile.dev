@@ -27,6 +27,7 @@ RUN pnpm build:shared
 
 # Copy application code
 COPY apps/auth-backend/src ./apps/auth-backend/src
+COPY apps/auth-backend/scripts ./apps/auth-backend/scripts
 COPY apps/auth-backend/tsconfig.json ./apps/auth-backend/
 COPY apps/auth-backend/eslint.config.mjs ./apps/auth-backend/
 COPY apps/auth-backend/drizzle.config.ts ./apps/auth-backend/
