@@ -9,6 +9,9 @@ RUN bun install -g pnpm
 # Set working directory for the app
 WORKDIR /app
 
+# Set environment variables for the build process
+ENV NODE_ENV=production
+
 # Copy monorepo root config files
 COPY package.json pnpm-workspace.yaml* pnpm-lock.yaml* ./
 
@@ -30,6 +33,7 @@ RUN pnpm build:shared
 
 # Copy application code
 COPY apps/auth-backend/src ./apps/auth-backend/src
+COPY apps/auth-backend/scripts ./apps/auth-backend/scripts
 COPY apps/auth-backend/tsconfig.json ./apps/auth-backend/
 COPY apps/auth-backend/eslint.config.mjs ./apps/auth-backend/
 COPY apps/auth-backend/drizzle.config.ts ./apps/auth-backend/
@@ -38,7 +42,9 @@ COPY apps/auth-backend/drizzle ./apps/auth-backend/drizzle
 # Set working directory to the auth-backend app directory and build the 
 # TypeScript code into optimized JavaScript.
 WORKDIR /app/apps/auth-backend
-RUN bun build --target=bun src/index.ts --outdir=./dist
+
+# Build the app using CI mode to skip environment schema validation
+RUN bun run build:ci
 
 ###### Production stage ######
 # Use the latest Bun image as JavaScript runtime for running the app
@@ -88,4 +94,4 @@ RUN addgroup --system --gid 1001 nodejs && \
 USER appuser
 
 # Command to run the app in production mode
-CMD ["bun", "run", "dist/index.js"]
+CMD ["bun", "run", "start"]
