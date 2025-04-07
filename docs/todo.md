@@ -35,3 +35,10 @@ Bonus
 - [x] Implement a way to check if the user is authenticated
 - [x] Implement a way to logout the user
 - [x] Eslint
+- Create a basic user management UI
+  - [ ] User profile page
+  - [ ] Change password page
+  - [ ] 2FA page
+  - [ ] Connected accounts page (social logins)
+  - [ ] User preferences page
+  - [ ] Delete account page
