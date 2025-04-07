@@ -15,6 +15,7 @@
   - [x] Add token validation checks (expiration, signature, etc.)
   - [x] Implement proper error responses for authorization failures (401/403)
   - [x] Add documentation for token usage in API responses
+- [ ] Add Row Level Security (RLS) to the database
 
 Bonus
 
