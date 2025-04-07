@@ -13,7 +13,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Navigation Sidebar */}
-      <NavigationSidebar />
+      <div className="w-64 shrink-0">
+        <NavigationSidebar />
+      </div>
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden">
