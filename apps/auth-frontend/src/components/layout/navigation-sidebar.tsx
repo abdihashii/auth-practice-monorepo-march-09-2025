@@ -26,7 +26,7 @@ export function NavigationSidebar() {
   ];
 
   const sidebarClasses = cn(
-    'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-background transition-transform duration-300 ease-in-out',
+    'h-full flex flex-col border-r bg-background',
   );
 
   return (
