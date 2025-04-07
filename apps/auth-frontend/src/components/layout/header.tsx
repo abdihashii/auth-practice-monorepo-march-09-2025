@@ -29,7 +29,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           <span className="sr-only">Toggle menu</span>
         </Button>
 
-        <div className="hidden md:block">
+        <div className="flex-1">
           <h1 className="text-xl font-semibold">User Management Dashboard</h1>
         </div>
 
