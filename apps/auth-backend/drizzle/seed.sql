@@ -39,7 +39,7 @@ INSERT INTO users (
 ) VALUES
   (
     'test+1@example.com',
-    '$argon2id$v=19$m=65536,t=3,p=4$SOME_SALT$SOME_HASH', -- This would be 'Test=123' hashed with Argon2
+    'Test=123', -- This is hardcoded for testing purposes
     'Test User',
     NOW(),
     NOW(),
