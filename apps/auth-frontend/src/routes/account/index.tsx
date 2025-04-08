@@ -1,5 +1,6 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 
+import { ProfileCard } from '@/components/account/profile-card';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { AppLayout } from '@/components/layout/app-layout';
 
@@ -11,7 +12,7 @@ function RouteComponent() {
   return (
     <AuthGuard requireAuth={true}>
       <AppLayout>
-        <Outlet />
+        <ProfileCard />
       </AppLayout>
     </AuthGuard>
   );
