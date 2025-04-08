@@ -123,6 +123,43 @@ export const createUserSchema = z.object({
 });
 
 /**
+ * Validation schema for user update
+ * Validates the UpdateUserDto structure with proper constraints
+ */
+export const updateUserSchema = z.object({
+  // Core user information
+  name: z
+    .string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name must be less than 100 characters')
+    .optional(),
+  bio: z
+    .string()
+    .min(2, 'Bio must be at least 2 characters')
+    .max(1000, 'Bio must be less than 1000 characters')
+    .optional(),
+  profilePicture: z
+    .string()
+    .url('Invalid profile picture URL')
+    .optional(),
+
+  // User preferences & settings
+  settings: z
+    .object({
+      theme: z.enum(['light', 'dark', 'system']).optional(),
+      language: z.string().optional(),
+      timezone: z.string().optional(),
+    })
+    .optional(),
+  notificationPreferences: z
+    .object({
+      email: z.boolean().optional(),
+      push: z.boolean().optional(),
+    })
+    .optional(),
+}).strict();
+
+/**
  * Validation schema for user login
  * Validates the LoginUserDto structure with proper constraints
  */
