@@ -24,7 +24,7 @@ export function ProfileCard() {
 
   // Local state for form fields
   const [name, setName] = useState(user?.name || '');
-  const [bio, setBio] = useState(''); // Assuming bio is not in the current user object
+  const [bio, setBio] = useState(user?.bio || '');
 
   // Handle profile picture updates
   const handleProfilePictureUpload = () => {

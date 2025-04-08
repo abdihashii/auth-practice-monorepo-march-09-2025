@@ -77,6 +77,8 @@ export interface User {
   id: string;
   email: string;
   name: string | null;
+  bio: string | null;
+  profilePicture: string | null;
   createdAt: string;
   updatedAt: string;
 
@@ -108,4 +110,21 @@ export interface CreateUserDto {
   email: string;
   password: string;
   name?: string;
+}
+
+/**
+ * Data Transfer Object (DTO) for user update.
+ * Contains only the fields that can be updated for a user.
+ *
+ * TODO: move to shared types package
+ */
+export interface UpdateUserDto {
+  // Core user information
+  name?: string;
+  bio?: string;
+  profilePicture?: string;
+
+  // User preferences & settings
+  settings?: UserSettings;
+  notificationPreferences?: NotificationPreferences;
 }
