@@ -17,6 +17,7 @@ import { Route as RegisterIndexImport } from './routes/register/index'
 import { Route as PublicIndexImport } from './routes/public/index'
 import { Route as LoginIndexImport } from './routes/login/index'
 import { Route as AccountIndexImport } from './routes/account/index'
+import { Route as AccountPasswordIndexImport } from './routes/account/password/index'
 
 // Create/Update Routes
 
@@ -53,6 +54,12 @@ const LoginIndexRoute = LoginIndexImport.update({
 const AccountIndexRoute = AccountIndexImport.update({
   id: '/account/',
   path: '/account/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AccountPasswordIndexRoute = AccountPasswordIndexImport.update({
+  id: '/account/password/',
+  path: '/account/password/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -102,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyIndexImport
       parentRoute: typeof rootRoute
     }
+    '/account/password/': {
+      id: '/account/password/'
+      path: '/account/password'
+      fullPath: '/account/password'
+      preLoaderRoute: typeof AccountPasswordIndexImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -114,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/public': typeof PublicIndexRoute
   '/register': typeof RegisterIndexRoute
   '/verify': typeof VerifyIndexRoute
+  '/account/password': typeof AccountPasswordIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -123,6 +138,7 @@ export interface FileRoutesByTo {
   '/public': typeof PublicIndexRoute
   '/register': typeof RegisterIndexRoute
   '/verify': typeof VerifyIndexRoute
+  '/account/password': typeof AccountPasswordIndexRoute
 }
 
 export interface FileRoutesById {
@@ -133,13 +149,28 @@ export interface FileRoutesById {
   '/public/': typeof PublicIndexRoute
   '/register/': typeof RegisterIndexRoute
   '/verify/': typeof VerifyIndexRoute
+  '/account/password/': typeof AccountPasswordIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/account' | '/login' | '/public' | '/register' | '/verify'
+  fullPaths:
+    | '/'
+    | '/account'
+    | '/login'
+    | '/public'
+    | '/register'
+    | '/verify'
+    | '/account/password'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/login' | '/public' | '/register' | '/verify'
+  to:
+    | '/'
+    | '/account'
+    | '/login'
+    | '/public'
+    | '/register'
+    | '/verify'
+    | '/account/password'
   id:
     | '__root__'
     | '/'
@@ -148,6 +179,7 @@ export interface FileRouteTypes {
     | '/public/'
     | '/register/'
     | '/verify/'
+    | '/account/password/'
   fileRoutesById: FileRoutesById
 }
 
@@ -158,6 +190,7 @@ export interface RootRouteChildren {
   PublicIndexRoute: typeof PublicIndexRoute
   RegisterIndexRoute: typeof RegisterIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
+  AccountPasswordIndexRoute: typeof AccountPasswordIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -167,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   PublicIndexRoute: PublicIndexRoute,
   RegisterIndexRoute: RegisterIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,
+  AccountPasswordIndexRoute: AccountPasswordIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -184,7 +218,8 @@ export const routeTree = rootRoute
         "/login/",
         "/public/",
         "/register/",
-        "/verify/"
+        "/verify/",
+        "/account/password/"
       ]
     },
     "/": {
@@ -204,6 +239,9 @@ export const routeTree = rootRoute
     },
     "/verify/": {
       "filePath": "verify/index.tsx"
+    },
+    "/account/password/": {
+      "filePath": "account/password/index.tsx"
     }
   }
 }
