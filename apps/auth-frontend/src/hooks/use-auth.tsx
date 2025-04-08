@@ -2,11 +2,11 @@ import type { User } from '@roll-your-own-auth/shared/types';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { login, logout, register } from '@/api/auth-apis';
+import { getCurrentUser, login, logout, register } from '@/api/auth-apis';
 import { authStorage } from '@/services/auth-storage-service';
 
 // Key for auth-related queries
-export const AUTH_QUERY_KEY = ['auth'];
+export const AUTH_QUERY_KEY = ['user'];
 
 /**
  * Hook for authentication functionality
@@ -18,13 +18,33 @@ export function useAuth() {
   // Query for managing auth state - loads from localStorage in queryFn
   const { data: authData, isPending: isAuthPending } = useQuery({
     queryKey: AUTH_QUERY_KEY,
-    // Use queryFn as the source of truth for auth data from localStorage
-    queryFn: () => {
-      const token = authStorage.getToken();
-      const user = authStorage.getUser();
-      if (token && user) {
-        return { user, accessToken: token };
+    // Use queryFn as the source of truth for auth data from localStorage and /me endpoint
+    queryFn: async () => {
+      // First, try to get data from localStorage
+      const token = authStorage.getAccessToken();
+      const localUser = authStorage.getUser();
+
+      // If we have both token and user data in localStorage
+      if (token && localUser) {
+        try {
+          // Then fetch fresh user data from /me endpoint to ensure it's up to date
+          const serverData = await getCurrentUser(token);
+
+          // If server data is valid, use it (with token from localStorage)
+          if (serverData) {
+            return { user: serverData, accessToken: token };
+          }
+
+          // If server request fails but we have local data, use that as fallback
+          return { user: localUser, accessToken: token };
+        } catch (error) {
+          console.error('Error fetching user data from server:', error);
+          // Fall back to localStorage data
+          return { user: localUser, accessToken: token };
+        }
       }
+
+      // If no localStorage data, return null (user not authenticated)
       return null;
     },
     // Only run once on mount - no refetching
