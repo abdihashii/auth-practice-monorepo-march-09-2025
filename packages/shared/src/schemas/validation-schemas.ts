@@ -128,6 +128,8 @@ export const createUserSchema = z.object({
  */
 export const updateUserSchema = z.object({
   // Core user information
+  old_password: passwordSchema.optional(),
+  new_password: passwordSchema.optional(),
   name: z
     .string()
     .min(2, 'Name must be at least 2 characters')
