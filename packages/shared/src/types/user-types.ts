@@ -101,6 +101,8 @@ export interface CreateUserDto {
  */
 export interface UpdateUserDto {
   // Core user information
+  old_password?: string;
+  new_password?: string;
   name?: string;
   bio?: string;
   profilePicture?: string;
