@@ -11,6 +11,10 @@ export const authStorage = {
    * Save authentication data to storage
    */
   saveAuth: (authResponse: AuthResponse): void => {
+    if (!authResponse.accessToken) {
+      throw new Error('Access token is required');
+    }
+
     localStorage.setItem(AUTH_TOKEN_KEY, authResponse.accessToken);
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authResponse.user));
   },

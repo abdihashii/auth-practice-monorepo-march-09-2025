@@ -1,4 +1,4 @@
-import type { CreateUserDto, NotificationPreferences, User, UserSettings } from '@roll-your-own-auth/shared/types';
+import type { AuthResponse, CreateUserDto, NotificationPreferences, TokenResponse, User, UserSettings } from '@roll-your-own-auth/shared/types';
 
 import {
   createUserSchema,
@@ -11,7 +11,7 @@ import { Hono } from 'hono';
 import { every } from 'hono/combine';
 import { getCookie, setCookie } from 'hono/cookie';
 
-import type { AuthResponse, CustomEnv, TokenResponse } from '@/lib/types';
+import type { CustomEnv } from '@/lib/types';
 
 import { usersTable } from '@/db/schema';
 import env from '@/env';
