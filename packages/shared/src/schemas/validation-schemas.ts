@@ -123,13 +123,20 @@ export const createUserSchema = z.object({
 });
 
 /**
+ * Validation schema for password updates
+ * Ensures both old and new passwords are required
+ */
+export const updatePasswordSchema = z.object({
+  old_password: passwordSchema,
+  new_password: passwordSchema,
+}).strict();
+
+/**
  * Validation schema for user update
  * Validates the UpdateUserDto structure with proper constraints
  */
 export const updateUserSchema = z.object({
   // Core user information
-  old_password: passwordSchema.optional(),
-  new_password: passwordSchema.optional(),
   name: z
     .string()
     .min(2, 'Name must be at least 2 characters')
