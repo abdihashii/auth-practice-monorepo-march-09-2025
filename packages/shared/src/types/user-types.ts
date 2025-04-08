@@ -2,12 +2,15 @@
  * Type for basic user information shown in lists
  */
 export interface UserListItem {
+  // Core user information
   id: string;
   email: string;
   name: string | null;
   bio: string | null;
   profilePicture: string | null;
   createdAt: Date;
+
+  // Account status & management
   isActive: boolean;
 }
 
@@ -15,8 +18,13 @@ export interface UserListItem {
  * Type for detailed user information shown in single user view
  */
 export type UserDetail = UserListItem & {
+  // Email verification
   emailVerified: boolean;
+
+  // Activity tracking
   lastActivityAt: Date | null;
+
+  // User preferences & settings
   settings: Record<string, unknown>;
 };
 
