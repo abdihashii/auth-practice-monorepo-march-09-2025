@@ -1,6 +1,4 @@
-import type { ApiError } from '@roll-your-own-auth/shared/types';
-
-import type { User } from '@/lib/types/user-types';
+import type { ApiError, User } from '@roll-your-own-auth/shared/types';
 
 /**
  * Standard successful response format for single resources
