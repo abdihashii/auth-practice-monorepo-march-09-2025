@@ -1,7 +1,7 @@
 import type { UserDetail, UserListItem } from '@roll-your-own-auth/shared/types';
 
 import { zValidator } from '@hono/zod-validator';
-import { idParamSchema, updateUserSchema } from '@roll-your-own-auth/shared/schemas';
+import { idParamSchema, updatePasswordSchema, updateUserSchema } from '@roll-your-own-auth/shared/schemas';
 import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
@@ -162,7 +162,7 @@ userRoutes.put('/:id', every(zValidator('param', idParamSchema), zValidator('jso
  * Change a user's password
  * PUT /users/:id/password
  */
-userRoutes.put('/:id/password', every(zValidator('param', idParamSchema), zValidator('json', updateUserSchema)), async (c) => {
+userRoutes.put('/:id/password', every(zValidator('param', idParamSchema), zValidator('json', updatePasswordSchema)), async (c) => {
   try {
     // Get the database connection from the context
     const db = c.get('db');
