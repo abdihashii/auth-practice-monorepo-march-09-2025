@@ -16,6 +16,8 @@ export interface UserListItem {
   id: string;
   email: string;
   name: string | null;
+  bio: string | null;
+  profilePicture: string | null;
   createdAt: Date;
   isActive: boolean;
 }
