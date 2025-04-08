@@ -6,7 +6,7 @@
     "// ============== DEVELOPMENT COMMANDS ===============": "",
     "dev": "pnpm run dev:local",
     "dev:local": "pnpm run db:start && bun run --hot src/index.ts",
-    "dev:docker": "docker compose up auth-backend-db auth-backend-dev",
+    "dev:docker": "docker compose up auth-backend-redis auth-backend-db auth-backend-dev",
     "// ================ DATABASE COMMANDS ================": "",
     "db:start": "docker compose up auth-backend-db -d",
     "db:stop": "docker compose down auth-backend-db",
