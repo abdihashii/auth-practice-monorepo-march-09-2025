@@ -109,3 +109,12 @@ export interface UpdateUserDto {
   settings?: UserSettings;
   notificationPreferences?: NotificationPreferences;
 }
+
+/**
+ * Data Transfer Object (DTO) for user password update.
+ * Contains only the fields that can be updated for a user's password.
+ */
+export interface UpdateUserPasswordDto {
+  old_password?: string;
+  new_password: string;
+}
