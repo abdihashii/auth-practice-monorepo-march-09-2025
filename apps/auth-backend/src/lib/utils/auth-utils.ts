@@ -37,6 +37,17 @@ export async function verifyPassword(
 }
 
 /**
+ * Compare a plain text password against a hashed password
+ *
+ * @param {string} passwordOne - The plain text password from user input
+ * @param {string} passwordTwo - The hashed password from the database
+ * @returns {Promise<boolean>} True if the password is valid, false otherwise
+ */
+export async function comparePasswords(passwordOne: string, passwordTwo: string): Promise<boolean> {
+  return await verifyPassword(passwordOne, passwordTwo);
+}
+
+/**
  * Generate JWT tokens for authentication
  *
  * @param {string} userId - The user ID (uuid) to generate tokens for
