@@ -1,8 +1,10 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { Pencil, Trash2, Upload } from 'lucide-react';
 import { useState } from 'react';
 
+import { updateUser } from '@/api/user-apis';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +22,7 @@ import { useAuthContext } from '@/hooks/use-auth-context';
 
 export function ProfileCard() {
   const { user } = useAuthContext();
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
 
   // Local state for form fields
@@ -43,13 +46,26 @@ export function ProfileCard() {
   };
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: Implement update logic
 
-    // eslint-disable-next-line no-console
-    console.log('Update profile', { name, bio });
-    setIsEditing(false);
+    // Ensure the user is authenticated
+    if (!user?.id) {
+      throw new Error('User ID is required');
+    }
+
+    try {
+      // Update the user via the API
+      await updateUser(user.id, { name, bio });
+
+      // Invalidate the user query to refresh the data on successful update
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    } catch (error) {
+      console.error('Error updating user:', error);
+    } finally {
+      // Reset the editing state after submission to "close" the form
+      setIsEditing(false);
+    }
   };
 
   return (
