@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu } from 'lucide-react';
+import { MenuIcon, MoonIcon, SunIcon } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuthContext } from '@/hooks/use-auth-context';
+import { useTheme } from '@/hooks/use-theme';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -20,12 +21,13 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout } = useAuthContext();
+  const { theme, setTheme } = useTheme();
 
   return (
     <header className="border-b bg-background">
       <div className="flex h-16 items-center px-4 md:px-6">
         <Button variant="ghost" size="icon" className="mr-2 md:hidden" onClick={onMenuClick}>
-          <Menu className="h-5 w-5" />
+          <MenuIcon className="h-5 w-5" />
           <span className="sr-only">Toggle menu</span>
         </Button>
 
@@ -67,7 +69,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal hov">
+              <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   {user?.name && (
                     <p className="text-sm font-medium leading-none">
@@ -91,6 +93,19 @@ export function Header({ onMenuClick }: HeaderProps) {
                   <span>Settings</span>
                 </Link>
               </DropdownMenuItem> */}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <>
+                  <Button type="button" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                    {theme === 'dark' ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
+                  </Button>
+                  <span className="ml-2 text-sm font-medium">
+                    Switch to
+                    {' '}
+                    {theme === 'dark' ? 'light' : 'dark'}
+                  </span>
+                </>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer" onClick={logout}>Log out</DropdownMenuItem>
             </DropdownMenuContent>
