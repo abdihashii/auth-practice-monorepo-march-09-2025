@@ -20,6 +20,16 @@ export const authStorage = {
   },
 
   /**
+   * Save the access token to storage
+   */
+  saveAccessToken: (accessToken: string): void => {
+    if (!accessToken) {
+      throw new Error('Access token is required');
+    }
+    localStorage.setItem(AUTH_ACCESS_TOKEN_KEY, accessToken);
+  },
+
+  /**
    * Get the stored access token
    */
   getAccessToken: (): string | null => {
