@@ -2,7 +2,10 @@ import type { User } from '@roll-your-own-auth/shared/types';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { getCurrentUser, login, logout, register } from '@/api/auth-apis';
+import { refreshAccessToken } from '@/api/api-client';
+import { getCurrentUser, login, register } from '@/api/auth-apis';
+import { isAccessTokenExpired } from '@/lib/utils';
+import { handleLogout } from '@/services/auth-service';
 import { authStorage } from '@/services/auth-storage-service';
 
 // Key for auth-related queries
@@ -21,26 +24,39 @@ export function useAuth() {
     // Use queryFn as the source of truth for auth data from localStorage and /me endpoint
     queryFn: async () => {
       // First, try to get data from localStorage
-      const token = authStorage.getAccessToken();
+      let accessToken = authStorage.getAccessToken();
       const localUser = authStorage.getUser();
 
+      // If we have both the access token and user data in localStorage, but
+      // the token is expired, try to refresh the access token first to
+      // retrieve a new access token.
+      if (accessToken && localUser && isAccessTokenExpired(accessToken)) {
+        try {
+          // Generate a new access token using the refresh token cookie
+          accessToken = await refreshAccessToken();
+        } catch {
+          console.error('Failed during auth initialization');
+          return null;
+        }
+      }
+
       // If we have both token and user data in localStorage
-      if (token && localUser) {
+      if (accessToken && localUser) {
         try {
           // Then fetch fresh user data from /me endpoint to ensure it's up to date
-          const serverData = await getCurrentUser(token);
+          const serverData = await getCurrentUser(accessToken);
 
           // If server data is valid, use it (with token from localStorage)
           if (serverData) {
-            return { user: serverData, accessToken: token };
+            return { user: serverData, accessToken };
           }
 
           // If server request fails but we have local data, use that as fallback
-          return { user: localUser, accessToken: token };
+          return { user: localUser, accessToken };
         } catch (error) {
           console.error('Error fetching user data from server:', error);
           // Fall back to localStorage data
-          return { user: localUser, accessToken: token };
+          return { user: localUser, accessToken };
         }
       }
 
@@ -85,13 +101,12 @@ export function useAuth() {
 
   // Logout mutation
   const logoutMutation = useMutation({
-    mutationFn: logout,
-    onSuccess: () => {
-      // Clear auth data from storage on successful logout
-      authStorage.clearAuth();
-
-      // Clear query cache authData query to remove the auth data
-      queryClient.setQueryData(AUTH_QUERY_KEY, null);
+    mutationFn: async () => {
+      // Use the centralized logout utility
+      await handleLogout();
+    },
+    onError: () => {
+      console.error('Logout failed during user-initiated logout');
     },
   });
 
