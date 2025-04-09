@@ -125,6 +125,7 @@ export async function verifyEmail(token: string, signal?: AbortSignal): Promise<
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       signal,
     });
 
@@ -177,6 +178,7 @@ export async function resendVerificationEmail(email: string): Promise<{
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({ email }),
     });
 
