@@ -36,7 +36,10 @@ Bonus
 - [x] Implement a way to logout the user
 - [x] Eslint
 - Create a basic user management UI
-  - [x] User profile page
+  - User profile page
+    - [ ] User profile picture support
+    - [x] User name support
+    - [x] User bio support
   - [x] Change password page
   - [ ] 2FA page
   - [ ] Connected accounts page (social logins)
