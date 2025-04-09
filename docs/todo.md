@@ -8,6 +8,8 @@
 - [x] Refresh token endpoint
 - [x] HTTP-only cookie
 - [x] CSRF protection
+- [x] Rate limiting
+- [x] Change password
 - Authorization
   - [x] Separate public and protected routes
   - [x] Create protected route examples
@@ -20,7 +22,6 @@ Bonus
 
 - [ ] Add role-based access control (RBAC) for different user types
 - [ ] Create token blacklisting/revocation system
-- [x] Add rate limiting to the API
 - [ ] Delete account
 
 ## Frontend TODOs
