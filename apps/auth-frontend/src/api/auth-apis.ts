@@ -1,4 +1,4 @@
-import type { AuthResponse } from '@roll-your-own-auth/shared/types';
+import type { AuthResponse, User } from '@roll-your-own-auth/shared/types';
 
 import { BASE_API_URL } from '@/constants';
 
@@ -59,7 +59,7 @@ export async function register(email: string, password: string, confirmPassword:
  * Get the current authenticated user
  * @returns AuthResponse if authenticated, null otherwise
  */
-export async function getCurrentUser(accessToken: string): Promise<AuthResponse | null> {
+export async function getCurrentUser(accessToken: string): Promise<User | null> {
   try {
     if (!accessToken) {
       return null;
@@ -82,7 +82,7 @@ export async function getCurrentUser(accessToken: string): Promise<AuthResponse 
       throw new Error('Failed to get current user');
     }
 
-    const data = await res.json();
+    const { data } = await res.json() as { data: User };
 
     return data;
   } catch (error) {
@@ -125,6 +125,7 @@ export async function verifyEmail(token: string, signal?: AbortSignal): Promise<
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       signal,
     });
 
@@ -177,6 +178,7 @@ export async function resendVerificationEmail(email: string): Promise<{
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({ email }),
     });
 

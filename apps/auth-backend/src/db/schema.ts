@@ -15,6 +15,8 @@ export const usersTable = pgTable('users', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   hashedPassword: varchar('hashed_password', { length: 255 }).notNull(),
   name: varchar('name', { length: 255 }),
+  bio: text('bio'),
+  profilePicture: varchar('profile_picture', { length: 255 }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 

@@ -1,6 +1,6 @@
 import type { AuthResponse, User } from '@roll-your-own-auth/shared/types';
 
-const AUTH_TOKEN_KEY = 'auth_token';
+const AUTH_ACCESS_TOKEN_KEY = 'auth_access_token';
 const AUTH_USER_KEY = 'auth_user';
 
 /**
@@ -11,15 +11,19 @@ export const authStorage = {
    * Save authentication data to storage
    */
   saveAuth: (authResponse: AuthResponse): void => {
-    localStorage.setItem(AUTH_TOKEN_KEY, authResponse.accessToken);
+    if (!authResponse.accessToken) {
+      throw new Error('Access token is required');
+    }
+
+    localStorage.setItem(AUTH_ACCESS_TOKEN_KEY, authResponse.accessToken);
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authResponse.user));
   },
 
   /**
    * Get the stored access token
    */
-  getToken: (): string | null => {
-    return localStorage.getItem(AUTH_TOKEN_KEY);
+  getAccessToken: (): string | null => {
+    return localStorage.getItem(AUTH_ACCESS_TOKEN_KEY);
   },
 
   /**
@@ -41,7 +45,7 @@ export const authStorage = {
    * Clear all authentication data from storage
    */
   clearAuth: (): void => {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_ACCESS_TOKEN_KEY);
     localStorage.removeItem(AUTH_USER_KEY);
   },
 
@@ -49,6 +53,6 @@ export const authStorage = {
    * Check if user is authenticated based on storage
    */
   isAuthenticated: (): boolean => {
-    return !!authStorage.getToken();
+    return !!authStorage.getAccessToken();
   },
 };

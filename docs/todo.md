@@ -8,6 +8,8 @@
 - [x] Refresh token endpoint
 - [x] HTTP-only cookie
 - [x] CSRF protection
+- [x] Rate limiting
+- [x] Change password
 - Authorization
   - [x] Separate public and protected routes
   - [x] Create protected route examples
@@ -20,7 +22,6 @@ Bonus
 
 - [ ] Add role-based access control (RBAC) for different user types
 - [ ] Create token blacklisting/revocation system
-- [x] Add rate limiting to the API
 - [ ] Delete account
 
 ## Frontend TODOs
@@ -35,3 +36,13 @@ Bonus
 - [x] Implement a way to check if the user is authenticated
 - [x] Implement a way to logout the user
 - [x] Eslint
+- Create a basic user management UI
+  - User profile page
+    - [ ] User profile picture support
+    - [x] User name support
+    - [x] User bio support
+  - [x] Change password page
+  - [ ] 2FA page
+  - [ ] Connected accounts page (social logins)
+  - [ ] User preferences page
+  - [ ] Delete account page

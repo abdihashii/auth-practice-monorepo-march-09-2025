@@ -7,6 +7,8 @@ export const DEFAULT_USER_LIST_COLUMNS: SelectableUserColumns = {
   id: true,
   email: true,
   name: true,
+  bio: true,
+  profilePicture: true,
   createdAt: true,
   isActive: true,
 };

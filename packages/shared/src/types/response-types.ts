@@ -1,6 +1,5 @@
-import type { ApiError } from '@roll-your-own-auth/shared/types';
-
-import type { User } from '@/lib/types/user-types';
+import type { ApiError } from './error-types';
+import type { User } from './user-types';
 
 /**
  * Standard successful response format for single resources
@@ -26,8 +25,6 @@ export type ApiResponse<T> =
 
 /**
  * Standard successful response format for authentication
- *
- * TODO: move to shared types package
  */
 export interface AuthResponse {
   user?: User; // Present after successful authentication

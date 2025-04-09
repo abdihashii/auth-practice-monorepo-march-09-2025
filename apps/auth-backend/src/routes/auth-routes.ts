@@ -1,3 +1,5 @@
+import type { AuthResponse, CreateUserDto, NotificationPreferences, TokenResponse, User, UserSettings } from '@roll-your-own-auth/shared/types';
+
 import {
   createUserSchema,
   loginUserSchema,
@@ -9,7 +11,7 @@ import { Hono } from 'hono';
 import { every } from 'hono/combine';
 import { getCookie, setCookie } from 'hono/cookie';
 
-import type { AuthResponse, CreateUserDto, CustomEnv, NotificationPreferences, TokenResponse, User, UserSettings } from '@/lib/types';
+import type { CustomEnv } from '@/lib/types';
 
 import { usersTable } from '@/db/schema';
 import env from '@/env';
@@ -281,6 +283,8 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
       id: user.id,
       email: user.email,
       name: user.name,
+      bio: user.bio,
+      profilePicture: user.profilePicture,
       createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
       updatedAt: user.updatedAt?.toISOString() ?? new Date().toISOString(),
 
@@ -625,14 +629,23 @@ publicRoutes.post('/verify-email/:token', async (c) => {
 
     // Create a safe user object
     const safeUser: User = {
+      // Core user information
       id: user.id,
       email: user.email,
       name: user.name,
+      bio: user.bio,
+      profilePicture: user.profilePicture,
       createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+
+      // Email verification
       emailVerified: true,
+
+      // Account status & management
       isActive: user.isActive ?? true,
       deletedAt: user.deletedAt?.toISOString() ?? null,
+
+      // User preferences & settings
       settings: (user.settings as UserSettings) ?? {
         theme: 'system',
         language: 'en',
@@ -650,6 +663,8 @@ publicRoutes.post('/verify-email/:token', async (c) => {
             alerts: false,
           },
         },
+
+      // Activity tracking
       lastActivityAt: new Date().toISOString(),
       lastSuccessfulLogin: new Date().toISOString(),
       loginCount: 1,
@@ -805,6 +820,8 @@ protectedRoutes.get('/me', async (c) => {
       id: user.id,
       email: user.email,
       name: user.name,
+      bio: user.bio,
+      profilePicture: user.profilePicture,
       createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
       updatedAt: user.updatedAt?.toISOString() ?? new Date().toISOString(),
 
