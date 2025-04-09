@@ -37,7 +37,7 @@ Bonus
 - [x] Eslint
 - Create a basic user management UI
   - [x] User profile page
-  - [ ] Change password page
+  - [x] Change password page
   - [ ] 2FA page
   - [ ] Connected accounts page (social logins)
   - [ ] User preferences page
