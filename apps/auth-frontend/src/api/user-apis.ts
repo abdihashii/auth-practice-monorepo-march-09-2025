@@ -19,6 +19,7 @@ export async function updateUser(userId: string, user: UpdateUserDto) {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include',
     body: JSON.stringify({ name, bio, profilePicture }),
   });
 
@@ -49,6 +50,7 @@ export async function updateUserPassword(userId: string, passwords: UpdateUserPa
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include',
     body: JSON.stringify(passwords),
   });
 
