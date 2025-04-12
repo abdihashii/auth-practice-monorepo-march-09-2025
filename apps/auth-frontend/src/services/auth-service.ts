@@ -24,7 +24,7 @@ export async function handleLogout(options = { silent: false }): Promise<void> {
     // fails
   } finally {
     // Clear user data from storage
-    authStorage.clearLocalStorageAuth();
+    authStorage.clearLocalStorageUserData();
 
     // Update React Query state
     queryClient.setQueryData(AUTH_QUERY_KEY, null);
