@@ -1,6 +1,5 @@
-import type { AuthResponse, User } from '@roll-your-own-auth/shared/types';
+import type { User } from '@roll-your-own-auth/shared/types';
 
-const AUTH_ACCESS_TOKEN_KEY = 'auth_access_token';
 const AUTH_USER_KEY = 'auth_user';
 
 /**
@@ -8,38 +7,20 @@ const AUTH_USER_KEY = 'auth_user';
  */
 export const authStorage = {
   /**
-   * Save authentication data to storage
+   * Save user data to storage
    */
-  saveAuth: (authResponse: AuthResponse): void => {
-    if (!authResponse.accessToken) {
-      throw new Error('Access token is required');
+  saveUserDataToLocalStorage: (user: User): void => {
+    if (!user) {
+      throw new Error('User data is required');
     }
 
-    localStorage.setItem(AUTH_ACCESS_TOKEN_KEY, authResponse.accessToken);
-    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authResponse.user));
-  },
-
-  /**
-   * Save the access token to storage
-   */
-  saveAccessToken: (accessToken: string): void => {
-    if (!accessToken) {
-      throw new Error('Access token is required');
-    }
-    localStorage.setItem(AUTH_ACCESS_TOKEN_KEY, accessToken);
-  },
-
-  /**
-   * Get the stored access token
-   */
-  getAccessToken: (): string | null => {
-    return localStorage.getItem(AUTH_ACCESS_TOKEN_KEY);
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
   },
 
   /**
    * Get the stored user data
    */
-  getUser: (): User | null => {
+  getUserDataFromLocalStorage: (): User | null => {
     const userJson = localStorage.getItem(AUTH_USER_KEY);
     if (!userJson) return null;
 
@@ -54,15 +35,7 @@ export const authStorage = {
   /**
    * Clear all authentication data from storage
    */
-  clearAuth: (): void => {
-    localStorage.removeItem(AUTH_ACCESS_TOKEN_KEY);
+  clearLocalStorageUserData: (): void => {
     localStorage.removeItem(AUTH_USER_KEY);
-  },
-
-  /**
-   * Check if user is authenticated based on storage
-   */
-  isAuthenticated: (): boolean => {
-    return !!authStorage.getAccessToken();
   },
 };
