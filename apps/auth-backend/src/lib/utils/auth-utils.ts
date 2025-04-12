@@ -48,6 +48,52 @@ export async function comparePasswords(passwordOne: string, passwordTwo: string)
 }
 
 /**
+ * Generate an access token for a user with a 15 minute expiration. This uses the
+ * JWT_SECRET environment variable to sign the token.
+ *
+ * @param {string} userId - The user ID (uuid) to generate tokens for
+ * @param {string} secret - The secret key to use for generating the token
+ * @returns {Promise<string>} The access token
+ */
+export async function generateAccessToken(userId: string, secret: string): Promise<string> {
+  const accessToken = await sign(
+    { userId, exp: Math.floor(Date.now() / 1000) + 15 * 60 },
+    secret,
+  );
+
+  if (!accessToken) {
+    throw new Error('Failed to generate access token');
+  }
+
+  return accessToken;
+}
+
+/**
+ * Generate a refresh token for a user with a 7 day expiration. This uses the
+ * JWT_SECRET environment variable to sign the token.
+ *
+ * @param {string} userId - The user ID (uuid) to generate tokens for
+ * @param {string} secret - The secret key to use for generating the token
+ * @returns {Promise<string>} The refresh token
+ */
+export async function generateRefreshToken(userId: string, secret: string): Promise<string> {
+  const refreshToken = await sign(
+    {
+      userId,
+      type: 'refresh',
+      exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+    },
+    secret,
+  );
+
+  if (!refreshToken) {
+    throw new Error('Failed to generate refresh token');
+  }
+
+  return refreshToken;
+}
+
+/**
  * Generate JWT tokens for authentication
  *
  * @param {string} userId - The user ID (uuid) to generate tokens for
@@ -62,18 +108,12 @@ export async function generateTokens(userId: string): Promise<{
     throw new Error('JWT_SECRET is not defined');
   }
 
-  const accessToken = await sign(
-    { userId, exp: Math.floor(Date.now() / 1000) + 15 * 60 },
-    secret,
-  );
-  const refreshToken = await sign(
-    {
-      userId,
-      type: 'refresh',
-      exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
-    },
-    secret,
-  );
+  const accessToken = await generateAccessToken(userId, secret);
+  const refreshToken = await generateRefreshToken(userId, secret);
+
+  if (!accessToken || !refreshToken) {
+    throw new Error('Failed to generate tokens');
+  }
 
   return { accessToken, refreshToken };
 }
