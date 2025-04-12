@@ -2,6 +2,7 @@ import type { MiddlewareHandler } from 'hono';
 
 import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { eq } from 'drizzle-orm';
+import { getCookie } from 'hono/cookie';
 import { verify } from 'hono/jwt';
 
 import { usersTable } from '@/db/schema';
@@ -21,8 +22,8 @@ declare module 'hono' {
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
   try {
-    // Get the auth token from the header
-    const authToken = c.req.header('Authorization')?.split(' ')[1];
+    // Get the auth token from the cookies
+    const authToken = getCookie(c, 'auth-app-accessToken');
     if (!authToken) {
       return c.json(
         {
