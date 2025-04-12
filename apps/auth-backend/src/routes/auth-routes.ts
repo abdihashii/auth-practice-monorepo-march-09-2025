@@ -497,8 +497,24 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
       );
     }
 
-    // Generate new refresh token for rotation
-    const { refreshToken: newRefreshToken } = await generateTokens(user.id);
+    // Generate a new refresh token for rotation
+    let newRefreshToken: string;
+    try {
+      newRefreshToken = await generateRefreshToken(user.id, env.JWT_SECRET);
+    } catch (error) {
+      // Log the error
+      console.error('Failed to generate tokens:', error);
+
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+            message: 'Failed to generate a new refresh token',
+          },
+        }),
+        500,
+      );
+    }
 
     // Update user with new refresh token (rotation)
     await db
