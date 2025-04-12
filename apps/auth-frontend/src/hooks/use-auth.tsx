@@ -31,18 +31,21 @@ export function useAuth() {
           // to date
           const serverData = await getCurrentUser();
 
-          // If server data is valid, set this queryFn's return value to the
-          // server data
+          // If server data is valid, update localStorage and use server data
           if (serverData) {
+            // Always keep localStorage in sync with server data
+            authStorage.saveUserDataToLocalStorage(serverData);
             return { user: serverData };
           }
 
-          // If server request fails but we have local data, set this queryFn's
-          // return value to the local data as a fallback
-          return { user: localUser };
+          // If server returns null (unauthorized), clear localStorage and return null
+          // This ensures we don't keep stale auth data when the server session is invalid
+          authStorage.clearLocalStorageUserData();
+          return null;
         } catch (error) {
           console.error('Error fetching user data from server:', error);
-          // Fall back to localStorage data
+          // For network/server errors (not auth errors), fall back to localStorage
+          // This prevents users from being logged out during temporary network issues
           return { user: localUser };
         }
       }
