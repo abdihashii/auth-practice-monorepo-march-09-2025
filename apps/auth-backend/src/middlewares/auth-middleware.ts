@@ -7,7 +7,7 @@ import { verify } from 'hono/jwt';
 
 import { usersTable } from '@/db/schema';
 import env from '@/env';
-import { refreshAccessToken } from '@/lib/utils';
+import { createApiResponse, refreshAccessToken } from '@/lib/utils';
 
 interface AccessTokenJWTPayload {
   userId: string;
@@ -31,12 +31,12 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
     // allowed to access the resource
     if (!refreshToken) {
       return c.json(
-        {
+        createApiResponse({
           error: {
             code: ApiErrorCode.UNAUTHORIZED,
             message: 'Authentication required',
           },
-        },
+        }),
         401,
       );
     }
@@ -45,12 +45,12 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
     const jwtSecret = env.JWT_SECRET;
     if (!jwtSecret) {
       return c.json(
-        {
+        createApiResponse({
           error: {
             code: ApiErrorCode.INTERNAL_SERVER_ERROR,
             message: 'JWT secret not found',
           },
-        },
+        }),
         500,
       );
     }
@@ -83,14 +83,15 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
         const decodedAccessToken = await verify(newAccessToken, jwtSecret);
         const accessTokenPayload = decodedAccessToken as unknown as AccessTokenJWTPayload;
         userId = accessTokenPayload.userId;
-      } catch {
+      } catch (error) {
+        console.error('Failed to refresh access token:', error);
         return c.json(
-          {
+          createApiResponse({
             error: {
               code: ApiErrorCode.UNAUTHORIZED,
               message: 'Session expired. Please log in again.',
             },
-          },
+          }),
           401,
         );
       }
@@ -112,12 +113,12 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
         // Check if the user id is present in the payload
         if (!accessTokenPayload.userId) {
           return c.json(
-            {
+            createApiResponse({
               error: {
                 code: ApiErrorCode.INVALID_ACCESS_TOKEN,
                 message: 'Invalid access token',
               },
-            },
+            }),
             401,
           );
         }
@@ -145,14 +146,15 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 
             // Use the user ID from the payload
             userId = accessTokenPayload.userId;
-          } catch {
+          } catch (error) {
+            console.error('Failed to refresh access token:', error);
             return c.json(
-              {
+              createApiResponse({
                 error: {
                   code: ApiErrorCode.ACCESS_TOKEN_EXPIRED,
                   message: 'Session expired. Please log in again.',
                 },
-              },
+              }),
               401,
             );
           }
@@ -169,7 +171,6 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
           const newAccessToken = await refreshAccessToken(refreshToken);
 
           // Set the new access token cookie
-          const { setCookie } = await import('hono/cookie');
           setCookie(c, 'auth-app-accessToken', newAccessToken, {
             httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
             secure: env.NODE_ENV === 'production', // true in production
@@ -188,17 +189,18 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 
           // Use the user ID from the payload
           userId = accessTokenPayload.userId;
-        } catch {
+        } catch (error) {
           // If all attempts to refresh the token fail, return a 401
           // Unauthorized status. This will be handled by the client to log
           // the user out or whatever else is appropriate client-side.
+          console.error('Failed to refresh access token:', error);
           return c.json(
-            {
+            createApiResponse({
               error: {
                 code: ApiErrorCode.INVALID_ACCESS_TOKEN,
                 message: 'Invalid access token',
               },
-            },
+            }),
             401,
           );
         }
@@ -214,24 +216,24 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 
     if (!user) {
       return c.json(
-        {
+        createApiResponse({
           error: {
             code: ApiErrorCode.USER_NOT_FOUND,
             message: 'User not found',
           },
-        },
+        }),
         404,
       );
     }
 
     if (!user.isActive) {
       return c.json(
-        {
+        createApiResponse({
           error: {
             code: ApiErrorCode.USER_INACTIVE,
             message: 'User is inactive',
           },
-        },
+        }),
         401,
       );
     }
@@ -264,27 +266,36 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 
       if (tokenIssuedAt < invalidationTime) {
         return c.json(
-          {
+          createApiResponse({
             error: {
               code: ApiErrorCode.ACCESS_TOKEN_INVALIDATED,
               message: 'Access token invalidated',
             },
-          },
+          }),
           401,
         );
       }
     }
 
+    // Update the user's last activity time
+    await db
+      .update(usersTable)
+      .set({
+        lastActivityAt: new Date(),
+      })
+      .where(eq(usersTable.id, user.id));
+
     // Call the next middleware
     await next();
-  } catch {
+  } catch (error) {
+    console.error('Auth middleware error:', error);
     return c.json(
-      {
+      createApiResponse({
         error: {
           code: ApiErrorCode.UNAUTHORIZED,
           message: 'Unauthorized',
         },
-      },
+      }),
       401,
     );
   }
