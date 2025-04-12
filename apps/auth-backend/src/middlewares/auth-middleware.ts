@@ -33,8 +33,8 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
       return c.json(
         createApiResponse({
           error: {
-            code: ApiErrorCode.UNAUTHORIZED,
-            message: 'Authentication required',
+            code: ApiErrorCode.NO_REFRESH_TOKEN,
+            message: 'Session expired. Please log in again.',
           },
         }),
         401,
@@ -88,7 +88,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
         return c.json(
           createApiResponse({
             error: {
-              code: ApiErrorCode.UNAUTHORIZED,
+              code: ApiErrorCode.REFRESH_TOKEN_EXPIRED,
               message: 'Session expired. Please log in again.',
             },
           }),
