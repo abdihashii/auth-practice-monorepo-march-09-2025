@@ -48,49 +48,45 @@ export async function comparePasswords(passwordOne: string, passwordTwo: string)
 }
 
 /**
- * Generate an access token for a user with a 15 minute expiration. This uses the
- * JWT_SECRET environment variable to sign the token.
+ * Generate an access token for a user with a 15 minute expiration.
  *
  * @param {string} userId - The user ID (uuid) to generate tokens for
  * @param {string} secret - The secret key to use for generating the token
  * @returns {Promise<string>} The access token
+ * @throws {Error} If token generation fails
  */
-export async function generateAccessToken(userId: string, secret: string): Promise<string> {
-  const accessToken = await sign(
-    { userId, exp: Math.floor(Date.now() / 1000) + 15 * 60 },
-    secret,
-  );
-
-  if (!accessToken) {
-    throw new Error('Failed to generate access token');
+export async function generateAccessToken(userId: string, secret: string) {
+  try {
+    return await sign(
+      { userId, exp: Math.floor(Date.now() / 1000) + 15 * 60 },
+      secret,
+    );
+  } catch (error) {
+    throw new Error(`Failed to generate access token: ${error instanceof Error ? error.message : 'unknown error'}`);
   }
-
-  return accessToken;
 }
 
 /**
- * Generate a refresh token for a user with a 7 day expiration. This uses the
- * JWT_SECRET environment variable to sign the token.
+ * Generate a refresh token for a user with a 7 day expiration.
  *
  * @param {string} userId - The user ID (uuid) to generate tokens for
  * @param {string} secret - The secret key to use for generating the token
  * @returns {Promise<string>} The refresh token
+ * @throws {Error} If token generation fails
  */
-export async function generateRefreshToken(userId: string, secret: string): Promise<string> {
-  const refreshToken = await sign(
-    {
-      userId,
-      type: 'refresh',
-      exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
-    },
-    secret,
-  );
-
-  if (!refreshToken) {
-    throw new Error('Failed to generate refresh token');
+export async function generateRefreshToken(userId: string, secret: string) {
+  try {
+    return await sign(
+      {
+        userId,
+        type: 'refresh',
+        exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+      },
+      secret,
+    );
+  } catch (error) {
+    throw new Error(`Failed to generate refresh token: ${error instanceof Error ? error.message : 'unknown error'}`);
   }
-
-  return refreshToken;
 }
 
 /**
@@ -98,6 +94,7 @@ export async function generateRefreshToken(userId: string, secret: string): Prom
  *
  * @param {string} userId - The user ID (uuid) to generate tokens for
  * @returns {Promise<{ accessToken: string; refreshToken: string }>} An object containing the access token and refresh token
+ * @throws {Error} With specific error messages that can be mapped to ApiErrorCode
  */
 export async function generateTokens(userId: string): Promise<{
   accessToken: string;
@@ -110,10 +107,6 @@ export async function generateTokens(userId: string): Promise<{
 
   const accessToken = await generateAccessToken(userId, secret);
   const refreshToken = await generateRefreshToken(userId, secret);
-
-  if (!accessToken || !refreshToken) {
-    throw new Error('Failed to generate tokens');
-  }
 
   return { accessToken, refreshToken };
 }
@@ -138,6 +131,7 @@ export async function generateVerificationToken() {
  *
  * @param {string} refreshToken - The refresh token to use for refreshing the access token
  * @returns {Promise<string>} The new access token
+ * @throws {Error} If JWT_SECRET is missing, refresh token is invalid or expired
  */
 export async function refreshAccessToken(refreshToken: string): Promise<string> {
   const secret = env.JWT_SECRET;
@@ -167,7 +161,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<string> 
 
     return accessToken;
   } catch (error) {
-    console.error('Error refreshing access token:', error);
-    throw new Error('Failed to refresh access token');
+    // Propagate the error with a clear message
+    throw new Error(`Failed to refresh access token: ${error instanceof Error ? error.message : 'unknown error'}`);
   }
 }
