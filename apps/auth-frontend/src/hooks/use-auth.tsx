@@ -2,9 +2,7 @@ import type { User } from '@roll-your-own-auth/shared/types';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { refreshAccessToken } from '@/api/api-client';
 import { getCurrentUser, login, register } from '@/api/auth-apis';
-import { isAccessTokenExpired } from '@/lib/utils';
 import { handleLogout } from '@/services/auth-service';
 import { authStorage } from '@/services/auth-storage-service';
 
@@ -23,40 +21,29 @@ export function useAuth() {
     queryKey: AUTH_QUERY_KEY,
     // Use queryFn as the source of truth for auth data from localStorage and /me endpoint
     queryFn: async () => {
-      // First, try to get data from localStorage
-      let accessToken = authStorage.getAccessToken();
-      const localUser = authStorage.getUser();
+      // First, try to get user data from localStorage
+      const localUser = authStorage.getUserDataFromLocalStorage();
 
-      // If we have both the access token and user data in localStorage, but
-      // the token is expired, try to refresh the access token first to
-      // retrieve a new access token.
-      if (accessToken && localUser && isAccessTokenExpired(accessToken)) {
+      // If we have user data in localStorage
+      if (localUser) {
         try {
-          // Generate a new access token using the refresh token cookie
-          accessToken = await refreshAccessToken();
-        } catch {
-          console.error('Failed during auth initialization');
-          return null;
-        }
-      }
+          // Then fetch fresh user data from `/me` endpoint to ensure it's up
+          // to date
+          const serverData = await getCurrentUser();
 
-      // If we have both token and user data in localStorage
-      if (accessToken && localUser) {
-        try {
-          // Then fetch fresh user data from /me endpoint to ensure it's up to date
-          const serverData = await getCurrentUser(accessToken);
-
-          // If server data is valid, use it (with token from localStorage)
+          // If server data is valid, set this queryFn's return value to the
+          // server data
           if (serverData) {
-            return { user: serverData, accessToken };
+            return { user: serverData };
           }
 
-          // If server request fails but we have local data, use that as fallback
-          return { user: localUser, accessToken };
+          // If server request fails but we have local data, set this queryFn's
+          // return value to the local data as a fallback
+          return { user: localUser };
         } catch (error) {
           console.error('Error fetching user data from server:', error);
           // Fall back to localStorage data
-          return { user: localUser, accessToken };
+          return { user: localUser };
         }
       }
 
@@ -79,8 +66,9 @@ export function useAuth() {
     mutationFn: (credentials: { email: string; password: string }) =>
       login(credentials.email, credentials.password),
     onSuccess: (data) => {
-      // Save auth data to local storage on successful login
-      authStorage.saveAuth(data);
+      // Save user data to local storage on successful login so that we can
+      // use it to populate the auth state
+      authStorage.saveUserDataToLocalStorage(data.user!);
 
       // Update query cache with login response data
       queryClient.setQueryData(AUTH_QUERY_KEY, data);
@@ -94,6 +82,8 @@ export function useAuth() {
   const registerMutation = useMutation({
     mutationFn: (credentials: { email: string; password: string; confirmPassword: string }) =>
       register(credentials.email, credentials.password, credentials.confirmPassword),
+    // We don't need to save user data to local storage on successful registration
+    // because the user is required to verify their email before they can login
     onError: (error) => {
       console.error(error);
     },
