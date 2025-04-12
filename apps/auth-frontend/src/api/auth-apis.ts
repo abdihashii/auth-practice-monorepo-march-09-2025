@@ -2,114 +2,109 @@ import type { AuthResponse, User } from '@roll-your-own-auth/shared/types';
 
 import { BASE_API_URL } from '@/constants';
 
+import { apiClient } from './api-client';
+
 /**
  * Log in a user with email and password
- * @returns AuthResponse containing user data and access token
+ *
+ * This is a public route that doesn't require authentication, but does set
+ * HTTP-only cookies upon successful login.
+ *
+ * @returns AuthResponse containing user data
  */
 export async function login(email: string, password: string): Promise<AuthResponse> {
-  const res = await fetch(`${BASE_API_URL}/api/v1/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email, password }),
-    credentials: 'include', // Include cookies in the request
-  });
+  try {
+    const response = await apiClient<{ data: AuthResponse }>(`${BASE_API_URL}/api/v1/auth/login`, {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
 
-  const response = await res.json();
-
-  if (!res.ok) {
-    const error = response.error || { message: 'Failed to login' };
-    throw new Error(error.message);
+    return response.data;
+  } catch (error: any) {
+    console.error('Login failed:', error);
+    throw new Error(error.message || 'Failed to login');
   }
-
-  const { data } = response as { data: AuthResponse };
-
-  return data;
 }
 
+/**
+ * Register a new user
+ *
+ * This is a public route that doesn't require authentication.
+ *
+ * @returns AuthResponse containing registration status
+ */
 export async function register(email: string, password: string, confirmPassword: string): Promise<AuthResponse> {
   // Double validate the password and confirm password
   if (password !== confirmPassword) {
     throw new Error('Passwords do not match');
   }
 
-  const res = await fetch(`${BASE_API_URL}/api/v1/auth/register`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email, password }),
-    credentials: 'include',
-  });
+  try {
+    const response = await apiClient<{ data: AuthResponse }>(`${BASE_API_URL}/api/v1/auth/register`, {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
 
-  const response = await res.json();
-
-  if (!res.ok) {
-    const error = response.error || { message: 'Failed to register' };
-    throw new Error(error.message);
+    return response.data;
+  } catch (error: any) {
+    console.error('Registration failed:', error);
+    throw new Error(error.message || 'Failed to register');
   }
-
-  const { data } = response as { data: AuthResponse };
-
-  return data;
 }
 
 /**
  * Get the current authenticated user
- * @returns AuthResponse if authenticated, null otherwise
+ *
+ * This function fetches the currently authenticated user by calling the /me endpoint.
+ * Authentication is handled via HTTP-only cookies that are automatically included
+ * in the request by the apiClient.
+ *
+ * If the user is not authenticated or the access token has expired, the apiClient
+ * will automatically attempt to refresh the token before failing. If the token
+ * refresh fails, the user will be logged out.
+ *
+ * @returns User data if authenticated, null if unauthenticated or on error
  */
-export async function getCurrentUser(accessToken: string): Promise<User | null> {
+export async function getCurrentUser(): Promise<User | null> {
   try {
-    if (!accessToken) {
-      return null;
-    }
-
-    const res = await fetch(`${BASE_API_URL}/api/v1/auth/me`, {
+    // Use the apiClient which handles authentication via HTTP-only cookies
+    // and automatically refreshes tokens if needed
+    const response = await apiClient<{ data: User }>(`${BASE_API_URL}/api/v1/auth/me`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
-      },
-      credentials: 'include', // Important for cookies
     });
 
-    if (!res.ok) {
-      // If status is 401, user is not authenticated
-      if (res.status === 401) {
-        return null;
-      }
-      throw new Error('Failed to get current user');
-    }
-
-    const { data } = await res.json() as { data: User };
-
-    return data;
+    return response.data;
   } catch (error) {
+    // If there's an error, the user is not authenticated or something else went wrong
     console.error('Error fetching current user:', error);
     return null;
   }
 }
 
 /**
- * Log out the current user
+ * Log out the current user by calling the logout endpoint.
+ * This will clear the HTTP-only auth cookies.
+ *
+ * This is technically a public route (doesn't require valid tokens)
+ * but still needs to send the cookies to clear them.
  */
 export async function logout(): Promise<void> {
-  const res = await fetch(`${BASE_API_URL}/api/v1/auth/logout`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include', // Include cookies in the request
-  });
-
-  if (!res.ok) {
+  try {
+    await apiClient<{ data: { message: string } }>(`${BASE_API_URL}/api/v1/auth/logout`, {
+      method: 'POST',
+    });
+  } catch (error) {
+    console.error('Error logging out:', error);
     throw new Error('Failed to logout');
   }
 }
 
 /**
  * Verify a user's email with a token
+ *
+ * This is a public route that doesn't require authentication, but it
+ * sets HTTP-only cookies upon successful email verification.
+ *
  * @returns Result of email verification attempt
  */
 export async function verifyEmail(token: string, signal?: AbortSignal): Promise<{
@@ -120,36 +115,22 @@ export async function verifyEmail(token: string, signal?: AbortSignal): Promise<
   };
 }> {
   try {
-    const res = await fetch(`${BASE_API_URL}/api/v1/auth/verify-email/${token}`, {
+    // Call the API but we don't need the response data, just success/failure
+    await apiClient<{ data: any }>(`${BASE_API_URL}/api/v1/auth/verify-email/${token}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
       signal,
     });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      return {
-        success: false,
-        error: {
-          code: data.error?.code,
-          message: data.error?.message || 'Failed to verify email',
-        },
-      };
-    }
 
     return {
       success: true,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error verifying email:', error);
     return {
       success: false,
       error: {
-        message: 'An unexpected error occurred',
+        code: error.code,
+        message: error.message || 'An unexpected error occurred',
       },
     };
   }
@@ -157,6 +138,9 @@ export async function verifyEmail(token: string, signal?: AbortSignal): Promise<
 
 /**
  * Resend verification email to the specified email address
+ *
+ * This is a public route that doesn't require authentication.
+ *
  * @returns Result of the resend attempt
  */
 export async function resendVerificationEmail(email: string): Promise<{
@@ -173,40 +157,26 @@ export async function resendVerificationEmail(email: string): Promise<{
   };
 }> {
   try {
-    const res = await fetch(`${BASE_API_URL}/api/v1/auth/resend-verification-email`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await apiClient<{ data: { message: string } }>(
+      `${BASE_API_URL}/api/v1/auth/resend-verification-email`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ email }),
       },
-      credentials: 'include',
-      body: JSON.stringify({ email }),
-    });
-
-    const response = await res.json();
-
-    if (!res.ok) {
-      return {
-        success: false,
-        error: {
-          code: response.error?.code,
-          message: response.error?.message || 'Failed to resend verification email',
-          details: response.error?.details || undefined,
-        },
-      };
-    }
-
-    const { data } = response as { data: { message: string } };
+    );
 
     return {
       success: true,
-      message: data.message || 'Verification email sent successfully',
+      message: response.data.message || 'Verification email sent successfully',
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error resending verification email:', error);
     return {
       success: false,
       error: {
-        message: 'An unexpected error occurred',
+        code: error.code,
+        message: error.message || 'An unexpected error occurred',
+        details: error.details,
       },
     };
   }
