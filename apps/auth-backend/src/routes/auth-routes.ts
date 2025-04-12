@@ -266,10 +266,10 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
 
     // Set refresh token in HTTP-only cookie
     setCookie(c, 'auth-app-refreshToken', refreshToken, {
-      httpOnly: true,
+      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
       secure: env.NODE_ENV === 'production', // true in production
       sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-      path: '/',
+      path: '/', // The path on the server in which the cookie will be sent to
       maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
       // Optional: Use __Host- prefix for additional security in production
       ...(env.NODE_ENV === 'production' && {
@@ -497,10 +497,10 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
 
     // Set new refresh token cookie
     setCookie(c, 'auth-app-refreshToken', newRefreshToken, {
-      httpOnly: true,
+      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
       secure: env.NODE_ENV === 'production', // true in production
       sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-      path: '/',
+      path: '/', // The path on the server in which the cookie will be sent to
       maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
       // Optional: Use __Host- prefix for additional security in production
       ...(env.NODE_ENV === 'production' && {
