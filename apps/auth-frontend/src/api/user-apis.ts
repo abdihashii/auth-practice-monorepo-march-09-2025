@@ -2,6 +2,8 @@ import type { ApiResponse, UpdateUserDto, UpdateUserPasswordDto } from '@roll-yo
 
 import { BASE_API_URL } from '@/constants';
 
+import { apiClient } from './api-client';
+
 /**
  * Update user's profile information
  *
@@ -13,26 +15,16 @@ export async function updateUser(userId: string, user: UpdateUserDto) {
   // Validate the user data
   const { name, bio, profilePicture } = user;
 
-  // Update the user
-  const res = await fetch(`${BASE_API_URL}/api/v1/users/${userId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
+  // Update the user using apiClient
+  const response = await apiClient<{ data: ApiResponse<{ message: string }> }>(
+    `${BASE_API_URL}/api/v1/users/${userId}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({ name, bio, profilePicture }),
     },
-    credentials: 'include',
-    body: JSON.stringify({ name, bio, profilePicture }),
-  });
+  );
 
-  const response = await res.json();
-
-  if (!res.ok) {
-    const error = response.error || { message: 'Failed to update user' };
-    throw new Error(error.message);
-  }
-
-  const { data } = response as { data: ApiResponse<{ message: string }> };
-
-  return data;
+  return response.data;
 }
 
 /**
@@ -44,24 +36,14 @@ export async function updateUser(userId: string, user: UpdateUserDto) {
  * @returns {Promise<ApiResponse<{ message: string }>>} The response from the API
  */
 export async function updateUserPassword(userId: string, passwords: UpdateUserPasswordDto) {
-  // Update the user's password
-  const res = await fetch(`${BASE_API_URL}/api/v1/users/${userId}/password`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
+  // Update the user's password using apiClient
+  const response = await apiClient<{ data: ApiResponse<{ message: string }> }>(
+    `${BASE_API_URL}/api/v1/users/${userId}/password`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(passwords),
     },
-    credentials: 'include',
-    body: JSON.stringify(passwords),
-  });
+  );
 
-  const response = await res.json();
-
-  if (!res.ok) {
-    const error = response.error || { message: 'Failed to update user password' };
-    throw new Error(error.message);
-  }
-
-  const { data } = response as { data: ApiResponse<{ message: string }> };
-
-  return data;
+  return response.data;
 }
