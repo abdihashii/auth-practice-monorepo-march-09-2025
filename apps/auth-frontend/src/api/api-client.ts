@@ -1,3 +1,5 @@
+import { ApiErrorCode, authErrorCodesRequiringLogout } from '@roll-your-own-auth/shared/types';
+
 import { BASE_API_URL } from '@/constants';
 import { handleLogout } from '@/services/auth-service';
 
@@ -105,8 +107,12 @@ export async function apiClient<T>(
       const clonedResponse = response.clone();
       const responseData = await parseResponseData<any>(clonedResponse);
 
-      // Handle expired tokens with automatic refresh
-      if (responseData.error?.code === 'ACCESS_TOKEN_EXPIRED') {
+      // Get the error code from the response data
+      const errorCode = responseData.error?.code;
+
+      // First check if this is an expired access token that we can
+      // automatically refresh
+      if (errorCode === ApiErrorCode.ACCESS_TOKEN_EXPIRED) {
         // If already refreshing, queue this request to retry after refresh
         // completes
         if (isRefreshing) {
@@ -159,6 +165,12 @@ export async function apiClient<T>(
           await handleLogout({ silent: true });
           throw refreshError;
         }
+      } else if (authErrorCodesRequiringLogout.includes(errorCode)) {
+        // Then check if this is an auth error requiring logout
+        // Log the user out immediately
+        console.error(`Auth error requiring logout: ${errorCode}`);
+        await handleLogout({ silent: true });
+        throw new Error(responseData.error?.message || 'Session expired. Please log in again.');
       }
 
       // Other 401 errors
