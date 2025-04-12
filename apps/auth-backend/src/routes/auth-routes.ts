@@ -10,7 +10,6 @@ import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { every } from 'hono/combine';
 import { getCookie, setCookie } from 'hono/cookie';
-import { verify } from 'hono/jwt';
 
 import type { CustomEnv } from '@/lib/types';
 
@@ -875,109 +874,6 @@ protectedRoutes.use('*', authMiddleware);
 
 protectedRoutes.get('/me', async (c) => {
   try {
-    // First, get the refresh and access tokens from the cookies
-    const refreshToken = getCookie(c, 'auth-app-refreshToken');
-    const accessToken = getCookie(c, 'auth-app-accessToken');
-
-    // If refresh token is missing, return unauthorized. The client should
-    // handle this by redirecting to the login page or something else that
-    // indicates that the user is not authorized to access the resource.
-    if (!refreshToken) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.UNAUTHORIZED,
-            message: 'Unauthorized',
-          },
-        }),
-        401,
-      );
-    }
-
-    // Handle case where access token is missing but refresh token exists
-    // This happens when access token has expired and been removed by browser
-    if (!accessToken) {
-      try {
-        // Generate new access token using the refresh token
-        const newAccessToken = await refreshAccessToken(refreshToken);
-
-        // Set the new access token in the HTTP-only cookie
-        setCookie(c, 'auth-app-accessToken', newAccessToken, {
-          httpOnly: true,
-          secure: env.NODE_ENV === 'production',
-          sameSite: 'Lax',
-          path: '/',
-          maxAge: 15 * 60, // 15 minutes
-          ...(env.NODE_ENV === 'production' && {
-            prefix: 'host',
-          }),
-        });
-
-        // Continue with the newly set access token
-      } catch (error) {
-        // If token refresh fails, return unauthorized
-        console.error('Failed to refresh access token:', error);
-        return c.json(
-          createApiResponse({
-            error: {
-              code: ApiErrorCode.UNAUTHORIZED,
-              message: 'Session expired. Please log in again.',
-            },
-          }),
-          401,
-        );
-      }
-    } else {
-      // If access token exists, verify it
-      try {
-        const decodedAccessToken = await verify(accessToken, env.JWT_SECRET);
-        if (!decodedAccessToken) {
-          throw new Error('Invalid access token');
-        }
-
-        // Check if the access token from the request cookie is expired
-        if (decodedAccessToken.exp && decodedAccessToken.exp < Math.floor(Date.now() / 1000)) {
-          throw new Error('Access token expired');
-        }
-
-        // If the access token is valid and not expired, continue with the
-        // request
-      } catch {
-        // If verification fails or the access token is expired, try to refresh
-        // the token
-        try {
-          // Refresh the access token
-          const newAccessToken = await refreshAccessToken(refreshToken);
-
-          // Set the new access token in the HTTP-only cookie
-          setCookie(c, 'auth-app-accessToken', newAccessToken, {
-            httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-            secure: env.NODE_ENV === 'production', // true in production
-            sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-            path: '/', // The path on the server in which the cookie will be sent to
-            maxAge: 15 * 60, // 15 minutes in seconds
-            // Optional: Use __Host- prefix for additional security in production
-            ...(env.NODE_ENV === 'production' && {
-              prefix: 'host',
-            }),
-          });
-
-          // Continue with the newly set access token
-        } catch (error) {
-          console.error('Failed to refresh access token:', error);
-          return c.json(
-            createApiResponse({
-              error: {
-                code: ApiErrorCode.UNAUTHORIZED,
-                message: 'Session expired. Please log in again.',
-              },
-            }),
-            401,
-          );
-        }
-      }
-    }
-
     // Get db connection
     const db = c.get('db');
 
