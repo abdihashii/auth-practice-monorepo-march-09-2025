@@ -13,7 +13,8 @@ import { authStorage } from '@/services/auth-storage-service';
  */
 export async function handleLogout(options = { silent: false }): Promise<void> {
   try {
-    // Call the logout API endpoint to clear the HTTP-only refresh token cookie
+    // Call the logout API endpoint to clear the HTTP-only refresh and access
+    // token cookies
     await logoutApi();
   } catch (error) {
     if (!options.silent) {
@@ -22,8 +23,8 @@ export async function handleLogout(options = { silent: false }): Promise<void> {
     // Continue with client-side logout in the finally block even if API call
     // fails
   } finally {
-    // Clear auth data from storage
-    authStorage.clearAuth();
+    // Clear user data from storage
+    authStorage.clearLocalStorageAuth();
 
     // Update React Query state
     queryClient.setQueryData(AUTH_QUERY_KEY, null);
