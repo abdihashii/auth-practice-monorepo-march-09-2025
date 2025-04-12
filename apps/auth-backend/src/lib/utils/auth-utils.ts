@@ -1,4 +1,4 @@
-import { sign } from 'hono/jwt';
+import { sign, verify } from 'hono/jwt';
 
 import env from '@/env';
 
@@ -129,4 +129,45 @@ export async function generateVerificationToken() {
   const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
   return { verificationToken, verificationTokenExpiry };
+}
+
+/**
+ * Refresh the access token using the refresh token and the JWT_SECRET
+ * environment variable to verify the refresh token then generate a new access
+ * token.
+ *
+ * @param {string} refreshToken - The refresh token to use for refreshing the access token
+ * @returns {Promise<string>} The new access token
+ */
+export async function refreshAccessToken(refreshToken: string): Promise<string> {
+  const secret = env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET is not defined');
+  }
+
+  try {
+    // Verify the refresh token
+    const decoded = await verify(refreshToken, secret) as {
+      userId: string;
+      type: string;
+      exp: number;
+    };
+
+    if (!decoded || !decoded.userId || decoded.type !== 'refresh') {
+      throw new Error('Invalid refresh token');
+    }
+
+    // Check if refresh token is expired
+    if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
+      throw new Error('Refresh token expired');
+    }
+
+    // Generate a new access token
+    const accessToken = await generateAccessToken(decoded.userId, secret);
+
+    return accessToken;
+  } catch (error) {
+    console.error('Error refreshing access token:', error);
+    throw new Error('Failed to refresh access token');
+  }
 }
