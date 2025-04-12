@@ -10,6 +10,7 @@ import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { every } from 'hono/combine';
 import { getCookie, setCookie } from 'hono/cookie';
+import { verify } from 'hono/jwt';
 
 import type { CustomEnv } from '@/lib/types';
 
@@ -17,9 +18,11 @@ import { usersTable } from '@/db/schema';
 import env from '@/env';
 import {
   createApiResponse,
+  generateRefreshToken,
   generateTokens,
   generateVerificationToken,
   hashPassword,
+  refreshAccessToken,
   verifyPassword,
 } from '@/lib/utils';
 import { sendVerificationEmail } from '@/lib/utils/email';
@@ -836,6 +839,72 @@ protectedRoutes.use('*', authMiddleware);
 
 protectedRoutes.get('/me', async (c) => {
   try {
+    // First, get the refresh and access tokens from the cookies
+    const refreshToken = getCookie(c, 'auth-app-refreshToken');
+    const accessToken = getCookie(c, 'auth-app-accessToken');
+
+    // If either token is missing, return unauthorized
+    if (!refreshToken || !accessToken) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.UNAUTHORIZED,
+            message: 'Unauthorized',
+          },
+        }),
+        401,
+      );
+    }
+
+    // Check if both tokens are valid
+    const decodedRefreshToken = await verify(refreshToken, env.JWT_SECRET);
+    const decodedAccessToken = await verify(accessToken, env.JWT_SECRET);
+    if (!decodedRefreshToken || !decodedAccessToken) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.UNAUTHORIZED,
+            message: 'Unauthorized',
+          },
+        }),
+        401,
+      );
+    }
+
+    // Check if the access token has expired. If it has, refresh it using the
+    // refresh token
+    if (decodedAccessToken.exp && decodedAccessToken.exp < Date.now() / 1000) {
+      try {
+        // Refresh the access token
+        const newAccessToken = await refreshAccessToken(refreshToken);
+
+        // Set the new access token in the HTTP-only cookie
+        setCookie(c, 'auth-app-accessToken', newAccessToken, {
+          httpOnly: true,
+          secure: env.NODE_ENV === 'production', // true in production
+          sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
+          path: '/', // The path on the server in which the cookie will be sent to
+          maxAge: 15 * 60, // 15 minutes in seconds
+          // Optional: Use __Host- prefix for additional security in production
+          ...(env.NODE_ENV === 'production' && {
+            prefix: 'host', // This will prefix the cookie with __Host-
+          }),
+        });
+      } catch (error) {
+        console.error('Failed to refresh access token:', error);
+        // Don't continue with the request if token refresh failed
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.UNAUTHORIZED,
+              message: 'Session expired. Please log in again.',
+            },
+          }),
+          401,
+        );
+      }
+    }
+
     // Get db connection
     const db = c.get('db');
 
