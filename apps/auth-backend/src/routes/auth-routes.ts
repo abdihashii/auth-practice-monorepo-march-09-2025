@@ -400,10 +400,22 @@ publicRoutes.post('/logout', async (c) => {
 
     // Clear refresh token from cookie
     setCookie(c, 'auth-app-refreshToken', '', {
-      httpOnly: true,
+      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
       secure: env.NODE_ENV === 'production', // true in production
       sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-      path: '/',
+      path: '/', // The path on the server in which the cookie will be sent to
+      maxAge: 0, // Expire immediately
+      ...(env.NODE_ENV === 'production' && {
+        prefix: 'host', // This will prefix the cookie with __Host-
+      }),
+    });
+
+    // Clear access token from cookie
+    setCookie(c, 'auth-app-accessToken', '', {
+      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+      secure: env.NODE_ENV === 'production', // true in production
+      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
+      path: '/', // The path on the server in which the cookie will be sent to
       maxAge: 0, // Expire immediately
       ...(env.NODE_ENV === 'production' && {
         prefix: 'host', // This will prefix the cookie with __Host-
