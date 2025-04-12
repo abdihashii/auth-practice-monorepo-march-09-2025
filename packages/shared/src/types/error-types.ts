@@ -27,3 +27,11 @@ export interface ApiError {
     details?: Record<string, unknown>;
   };
 }
+
+export const authErrorCodesRequiringLogout = [
+  ApiErrorCode.NO_REFRESH_TOKEN, // Refresh token is missing completely
+  ApiErrorCode.INVALID_REFRESH_TOKEN, // Refresh token is invalid/tampered with
+  ApiErrorCode.REFRESH_TOKEN_EXPIRED, // Refresh token has expired
+  ApiErrorCode.ACCESS_TOKEN_INVALIDATED, // Tokens were explicitly invalidated (e.g. after password change)
+  ApiErrorCode.USER_INACTIVE, // User account has been deactivated
+];
