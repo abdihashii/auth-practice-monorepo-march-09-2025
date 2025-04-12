@@ -280,6 +280,19 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
       }),
     });
 
+    // Set the access token in the HTTP-only cookie
+    setCookie(c, 'auth-app-accessToken', accessToken, {
+      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+      secure: env.NODE_ENV === 'production', // true in production
+      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
+      path: '/', // The path on the server in which the cookie will be sent to
+      maxAge: 15 * 60, // 15 minutes in seconds
+      // Optional: Use __Host- prefix for additional security in production
+      ...(env.NODE_ENV === 'production' && {
+        prefix: 'host', // This will prefix the cookie with __Host-
+      }),
+    });
+
     // Create a safe user object (excluding sensitive data)
     const safeUser: User = {
       // Core user information
@@ -330,7 +343,6 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
     // Combine user and access token into auth response
     const authResponse: AuthResponse = {
       user: safeUser,
-      accessToken,
     };
 
     return c.json(
@@ -674,6 +686,19 @@ publicRoutes.post('/verify-email/:token', async (c) => {
       }),
     });
 
+    // Set the access token in the HTTP-only cookie
+    setCookie(c, 'auth-app-accessToken', accessToken, {
+      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+      secure: env.NODE_ENV === 'production', // true in production
+      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
+      path: '/',
+      maxAge: 15 * 60, // 15 minutes in seconds
+      // Optional: Use __Host- prefix for additional security in production
+      ...(env.NODE_ENV === 'production' && {
+        prefix: 'host', // This will prefix the cookie with __Host-
+      }),
+    });
+
     // Create a safe user object
     const safeUser: User = {
       // Core user information
@@ -719,7 +744,6 @@ publicRoutes.post('/verify-email/:token', async (c) => {
 
     const authResponse: AuthResponse = {
       user: safeUser,
-      accessToken,
       message: 'Email verified successfully',
     };
 
