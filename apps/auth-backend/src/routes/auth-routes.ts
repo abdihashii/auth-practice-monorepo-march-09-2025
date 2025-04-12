@@ -1,4 +1,4 @@
-import type { AuthResponse, CreateUserDto, NotificationPreferences, TokenResponse, User, UserSettings } from '@roll-your-own-auth/shared/types';
+import type { AuthResponse, CreateUserDto, NotificationPreferences, User, UserSettings } from '@roll-your-own-auth/shared/types';
 
 import {
   createUserSchema,
@@ -481,9 +481,24 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
       );
     }
 
-    // Generate new tokens
-    const { accessToken: newAccessToken, refreshToken: newRefreshToken }
-      = await generateTokens(user.id);
+    // Generate new access token
+    let newAccessToken: string;
+    try {
+      newAccessToken = await refreshAccessToken(refreshToken);
+    } catch (error) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INVALID_REFRESH_TOKEN,
+            message: error instanceof Error ? error.message : 'Failed to refresh token',
+          },
+        }),
+        401,
+      );
+    }
+
+    // Generate new refresh token for rotation
+    const { refreshToken: newRefreshToken } = await generateTokens(user.id);
 
     // Update user with new refresh token (rotation)
     await db
@@ -495,7 +510,8 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
       })
       .where(eq(usersTable.id, user.id));
 
-    // Set new refresh token cookie
+    // Replace the old refresh token in the HTTP-only cookie with the newly
+    // rotated one
     setCookie(c, 'auth-app-refreshToken', newRefreshToken, {
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
       secure: env.NODE_ENV === 'production', // true in production
@@ -508,13 +524,25 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
       }),
     });
 
-    const tokenResponse: TokenResponse = {
-      accessToken: newAccessToken,
-    };
+    // Replace the old access token in the HTTP-only cookie with the newly
+    // generated one
+    setCookie(c, 'auth-app-accessToken', newAccessToken, {
+      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+      secure: env.NODE_ENV === 'production', // true in production
+      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
+      path: '/', // The path on the server in which the cookie will be sent to
+      maxAge: 15 * 60, // 15 minutes in seconds
+      // Optional: Use __Host- prefix for additional security in production
+      ...(env.NODE_ENV === 'production' && {
+        prefix: 'host', // This will prefix the cookie with __Host-
+      }),
+    });
 
     return c.json(
       createApiResponse({
-        data: tokenResponse,
+        data: {
+          message: 'Access token refreshed successfully',
+        },
       }),
       200,
     );
