@@ -1,58 +1,21 @@
-import type { TokenResponse } from '@roll-your-own-auth/shared/types';
-
 import { BASE_API_URL } from '@/constants';
 import { handleLogout } from '@/services/auth-service';
-import { authStorage } from '@/services/auth-storage-service';
 
 // Flag to prevent multiple refresh requests from happening simultaneously
 let isRefreshing = false;
 
-// Queue of callbacks to run after token refresh
-let refreshQueue: Array<(newToken: string) => void> = [];
+// Queue of callbacks to execute after a successful token refresh
+// This prevents multiple API calls from each triggering their own refresh
+let pendingRequests: Array<() => void> = [];
 
 /**
- * Execute queued requests after token refresh
+ * Process all queued requests after a successful token refresh
+ * This allows multiple failed requests to retry once the token is refreshed
+ * without each one triggering its own refresh
  */
-function executeQueue(newToken: string) {
-  refreshQueue.forEach((callback) => callback(newToken));
-  refreshQueue = [];
-}
-
-/**
- * Refresh the access token using the HTTP-only refresh token cookie
- * @returns A promise resolving to the new access token
- */
-export async function refreshAccessToken(): Promise<string> {
-  try {
-    const response = await fetch(`${BASE_API_URL}/api/v1/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include', // Important: send cookies with the request
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to refresh token: HTTP ${response.status}`);
-    }
-
-    // Parse the response as JSON and extract the new access token
-    const { data } = await response.json() as { data: TokenResponse };
-
-    // Save the new access token to storage
-    authStorage.saveAccessToken(data.accessToken);
-
-    // Return the new access token
-    return data.accessToken;
-  } catch (error) {
-    console.error('Error refreshing token:', error);
-
-    // Log out the user completely when refresh fails
-    await handleLogout({ silent: true });
-
-    // Rethrow for upstream handling
-    throw error;
-  }
+function processPendingRequests() {
+  pendingRequests.forEach((callback) => callback());
+  pendingRequests = [];
 }
 
 /**
@@ -68,36 +31,63 @@ async function parseResponseData<T>(response: Response): Promise<T> {
 }
 
 /**
- * Fetch API wrapper with automatic token refresh
+ * Fetch API wrapper that handles authentication and token refresh
+ *
+ * This function wraps the native fetch API with additional features:
+ *
+ * 1. Authentication:
+ *    - Automatically includes credentials (HTTP-only cookies) with all requests
+ *    - Sets appropriate content headers
+ *
+ * 2. Token refresh flow:
+ *    - Detects 401 errors with ACCESS_TOKEN_EXPIRED code
+ *    - Calls the refresh endpoint to get new HTTP-only cookies
+ *    - Retries the original request with the refreshed token
+ *
+ * 3. Request queuing:
+ *    - When a token refresh is in progress, subsequent requests are queued
+ *    - Once refresh completes, all queued requests are automatically retried
+ *    - Prevents multiple simultaneous refresh requests
+ *
+ * 4. Error handling:
+ *    - Parses error responses consistently
+ *    - Handles token refresh failures by logging the user out
+ *    - Provides clear error messages from the server when available
+ *
+ * Usage example:
+ * ```
+ * try {
+ *   const data = await apiClient<ResponseType>('https://api.example.com/endpoint', {
+ *     method: 'POST',
+ *     body: JSON.stringify({ key: 'value' })
+ *   });
+ *   // Handle successful response
+ * } catch (error) {
+ *   // Handle error
+ * }
+ * ```
+ *
  * @param url - The URL to fetch
- * @param options - Fetch options
- * @returns Promise with fetch response
+ * @param options - Standard fetch options (method, headers, body, etc.)
+ * @returns Promise resolving to the parsed JSON response data of type T
+ * @throws Error with message from the server or a default message
  */
 export async function apiClient<T>(
   url: string,
   options: RequestInit = {},
 ): Promise<T> {
-  // Get the current access token
-  const accessToken = authStorage.getAccessToken();
-
   // Set default headers
   const headers = new Headers(options.headers || {});
-
-  // Set content-type header if not already set
   if (!headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
 
-  // Add authorization header if token exists
-  if (accessToken) {
-    headers.set('Authorization', `Bearer ${accessToken}`);
-  }
-
-  // Clone and extend the options
+  // Always include cookies for authentication. Access token is handled
+  // server-side via HTTP-only cookies
   const fetchOptions: RequestInit = {
     ...options,
     headers,
-    credentials: 'include', // Always include cookies
+    credentials: 'include',
   };
 
   try {
@@ -109,21 +99,20 @@ export async function apiClient<T>(
       return await parseResponseData<T>(response);
     }
 
-    // If unauthorized and there's an access token
-    if (response.status === 401 && accessToken) {
+    // Handle 401 unauthorized (expired token)
+    if (response.status === 401) {
       // Clone the response to read the body multiple times if needed
       const clonedResponse = response.clone();
       const responseData = await parseResponseData<any>(clonedResponse);
 
-      // Check if token expired
+      // Handle expired tokens with automatic refresh
       if (responseData.error?.code === 'ACCESS_TOKEN_EXPIRED') {
-        // If already refreshing, queue this request
+        // If already refreshing, queue this request to retry after refresh
+        // completes
         if (isRefreshing) {
           return new Promise<T>((resolve, reject) => {
-            refreshQueue.push((newToken) => {
-              // Retry with new token
-              headers.set('Authorization', `Bearer ${newToken}`);
-              fetch(url, { ...fetchOptions, headers })
+            pendingRequests.push(() => {
+              fetch(url, fetchOptions)
                 .then((res) => parseResponseData(res))
                 .then((data) => resolve(data as T))
                 .catch(reject);
@@ -135,36 +124,48 @@ export async function apiClient<T>(
         isRefreshing = true;
 
         try {
-          // Get new token
-          const newToken = await refreshAccessToken();
+          // Call the refresh endpoint - server handles setting the new cookies
+          // to the HTTP-only cookies.
+          const refreshResponse = await fetch(`${BASE_API_URL}/api/v1/auth/refresh`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+          });
+
+          if (!refreshResponse.ok) {
+            throw new Error(`Failed to refresh token: HTTP ${refreshResponse.status}`);
+          }
 
           // Reset refreshing flag
           isRefreshing = false;
 
           // Execute queued requests
-          executeQueue(newToken);
+          processPendingRequests();
 
-          // Retry the request with new token
-          headers.set('Authorization', `Bearer ${newToken}`);
-          const retryResponse = await fetch(url, { ...fetchOptions, headers });
-
+          // Retry the original request with the new token in cookies
+          const retryResponse = await fetch(url, fetchOptions);
           if (!retryResponse.ok) {
             throw new Error('Request failed after token refresh');
           }
 
           return await parseResponseData<T>(retryResponse);
         } catch (refreshError) {
+          // Reset the refreshing flag and clear the queue
           isRefreshing = false;
-          refreshQueue = [];
+          pendingRequests = [];
+
+          // Handle failed refresh by logging out
+          console.error('Error refreshing token:', refreshError);
+          await handleLogout({ silent: true });
           throw refreshError;
         }
       }
 
-      // For 401 errors that aren't expired tokens
+      // Other 401 errors
       throw new Error(responseData.error?.message || 'Unauthorized');
     }
 
-    // For other errors, parse and throw
+    // Handle other error responses
     const errorData = await parseResponseData<any>(response);
     throw new Error(
       errorData.error?.message
