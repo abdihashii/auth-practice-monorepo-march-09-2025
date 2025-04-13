@@ -164,6 +164,8 @@ export async function apiClient<T>(
 
           // Handle failed refresh by logging out
           console.error('Error refreshing token:', refreshError);
+          queryClient.setQueryData(AUTH_QUERY_KEY, null);
+          await queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
           await handleLogout({ silent: true });
           throw refreshError;
         }
