@@ -249,7 +249,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
             message: 'User not found',
           },
         }),
-        404,
+        401,
       );
     }
 

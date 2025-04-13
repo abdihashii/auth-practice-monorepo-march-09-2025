@@ -34,4 +34,5 @@ export const authErrorCodesRequiringLogout = [
   ApiErrorCode.REFRESH_TOKEN_EXPIRED, // Refresh token has expired
   ApiErrorCode.ACCESS_TOKEN_INVALIDATED, // Tokens were explicitly invalidated (e.g. after password change)
   ApiErrorCode.USER_INACTIVE, // User account has been deactivated
+  ApiErrorCode.USER_NOT_FOUND, // User account does not exist
 ];
