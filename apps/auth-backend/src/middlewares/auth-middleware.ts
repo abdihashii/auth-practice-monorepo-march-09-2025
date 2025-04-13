@@ -85,10 +85,19 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
         userId = accessTokenPayload.userId;
       } catch (error) {
         console.error('Failed to refresh access token:', error);
+
+        // Determine the specific error type based on error message
+        let errorCode = ApiErrorCode.INVALID_REFRESH_TOKEN;
+        if (error instanceof Error) {
+          if (error.message.includes('expired')) {
+            errorCode = ApiErrorCode.REFRESH_TOKEN_EXPIRED;
+          }
+        }
+
         return c.json(
           createApiResponse({
             error: {
-              code: ApiErrorCode.REFRESH_TOKEN_EXPIRED,
+              code: errorCode,
               message: 'Session expired. Please log in again.',
             },
           }),
@@ -148,10 +157,19 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
             userId = accessTokenPayload.userId;
           } catch (error) {
             console.error('Failed to refresh access token:', error);
+
+            // Determine the specific error type based on error message
+            let errorCode = ApiErrorCode.INVALID_REFRESH_TOKEN;
+            if (error instanceof Error) {
+              if (error.message.includes('expired')) {
+                errorCode = ApiErrorCode.REFRESH_TOKEN_EXPIRED;
+              }
+            }
+
             return c.json(
               createApiResponse({
                 error: {
-                  code: ApiErrorCode.ACCESS_TOKEN_EXPIRED,
+                  code: errorCode,
                   message: 'Session expired. Please log in again.',
                 },
               }),
@@ -194,11 +212,20 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
           // Unauthorized status. This will be handled by the client to log
           // the user out or whatever else is appropriate client-side.
           console.error('Failed to refresh access token:', error);
+
+          // Determine the specific error type based on error message
+          let errorCode = ApiErrorCode.INVALID_REFRESH_TOKEN;
+          if (error instanceof Error) {
+            if (error.message.includes('expired')) {
+              errorCode = ApiErrorCode.REFRESH_TOKEN_EXPIRED;
+            }
+          }
+
           return c.json(
             createApiResponse({
               error: {
-                code: ApiErrorCode.INVALID_ACCESS_TOKEN,
-                message: 'Invalid access token',
+                code: errorCode,
+                message: 'Session expired. Please log in again.',
               },
             }),
             401,
