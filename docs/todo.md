@@ -36,6 +36,7 @@ Bonus
 - [x] Implement a way to check if the user is authenticated
 - [x] Implement a way to logout the user
 - [x] Eslint
+- [ ] Link/unlink social accounts
 - Create a basic user management UI
   - User profile page
     - [ ] User profile picture support
