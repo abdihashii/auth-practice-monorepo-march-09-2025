@@ -2,7 +2,8 @@ import type { User } from '@roll-your-own-auth/shared/types';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { getCurrentUser, login, logout, register } from '@/api/auth-apis';
+import { getCurrentUser, login, register } from '@/api/auth-apis';
+import { handleLogout } from '@/services/auth-service';
 import { authStorage } from '@/services/auth-storage-service';
 
 // Key for auth-related queries
@@ -20,27 +21,32 @@ export function useAuth() {
     queryKey: AUTH_QUERY_KEY,
     // Use queryFn as the source of truth for auth data from localStorage and /me endpoint
     queryFn: async () => {
-      // First, try to get data from localStorage
-      const token = authStorage.getAccessToken();
-      const localUser = authStorage.getUser();
+      // First, try to get user data from localStorage
+      const localUser = authStorage.getUserDataFromLocalStorage();
 
-      // If we have both token and user data in localStorage
-      if (token && localUser) {
+      // If we have user data in localStorage
+      if (localUser) {
         try {
-          // Then fetch fresh user data from /me endpoint to ensure it's up to date
-          const serverData = await getCurrentUser(token);
+          // Then fetch fresh user data from `/me` endpoint to ensure it's up
+          // to date
+          const serverData = await getCurrentUser();
 
-          // If server data is valid, use it (with token from localStorage)
+          // If server data is valid, update localStorage and use server data
           if (serverData) {
-            return { user: serverData, accessToken: token };
+            // Always keep localStorage in sync with server data
+            authStorage.saveUserDataToLocalStorage(serverData);
+            return { user: serverData };
           }
 
-          // If server request fails but we have local data, use that as fallback
-          return { user: localUser, accessToken: token };
+          // If server returns null (unauthorized), clear localStorage and return null
+          // This ensures we don't keep stale auth data when the server session is invalid
+          authStorage.clearLocalStorageUserData();
+          return null;
         } catch (error) {
           console.error('Error fetching user data from server:', error);
-          // Fall back to localStorage data
-          return { user: localUser, accessToken: token };
+          // For network/server errors (not auth errors), fall back to localStorage
+          // This prevents users from being logged out during temporary network issues
+          return { user: localUser };
         }
       }
 
@@ -63,8 +69,9 @@ export function useAuth() {
     mutationFn: (credentials: { email: string; password: string }) =>
       login(credentials.email, credentials.password),
     onSuccess: (data) => {
-      // Save auth data to local storage on successful login
-      authStorage.saveAuth(data);
+      // Save user data to local storage on successful login so that we can
+      // use it to populate the auth state
+      authStorage.saveUserDataToLocalStorage(data.user!);
 
       // Update query cache with login response data
       queryClient.setQueryData(AUTH_QUERY_KEY, data);
@@ -78,6 +85,8 @@ export function useAuth() {
   const registerMutation = useMutation({
     mutationFn: (credentials: { email: string; password: string; confirmPassword: string }) =>
       register(credentials.email, credentials.password, credentials.confirmPassword),
+    // We don't need to save user data to local storage on successful registration
+    // because the user is required to verify their email before they can login
     onError: (error) => {
       console.error(error);
     },
@@ -85,13 +94,12 @@ export function useAuth() {
 
   // Logout mutation
   const logoutMutation = useMutation({
-    mutationFn: logout,
-    onSuccess: () => {
-      // Clear auth data from storage on successful logout
-      authStorage.clearAuth();
-
-      // Clear query cache authData query to remove the auth data
-      queryClient.setQueryData(AUTH_QUERY_KEY, null);
+    mutationFn: async () => {
+      // Use the centralized logout utility
+      await handleLogout();
+    },
+    onError: () => {
+      console.error('Logout failed during user-initiated logout');
     },
   });
 
