@@ -392,8 +392,8 @@ publicRoutes.post('/logout', async (c) => {
 
     // Get refresh token from cookie, if production, use __Host- prefix
     const refreshToken = env.NODE_ENV === 'production'
-      ? getCookie(c, '__Host-auth-app-refreshToken')
-      : getCookie(c, 'auth-app-refreshToken');
+      ? getCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD)
+      : getCookie(c, REFRESH_TOKEN_COOKIE_NAME_DEV);
 
     // If no refresh token is found, return success (already logged out)
     if (!refreshToken) {
@@ -487,8 +487,8 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
 
     // Get refresh token from cookie, if production, use __Host- prefix
     const refreshToken = env.NODE_ENV === 'production'
-      ? getCookie(c, '__Host-auth-app-refreshToken')
-      : getCookie(c, 'auth-app-refreshToken');
+      ? getCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD)
+      : getCookie(c, REFRESH_TOKEN_COOKIE_NAME_DEV);
     if (!refreshToken) {
       return c.json(
         createApiResponse({
