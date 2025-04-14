@@ -6,7 +6,9 @@ on:
       - main
     paths:
       - 'apps/auth-frontend/**' # Only deploy frontend if there are changes to the frontend app code
+      - 'packages/**' # Or deploy frontend if there are changes to the shared packages
 
+# TODO: Add a check to ensure that the frontend app is built and linted before deploying
 jobs:
   deploy:
     name: Deploy frontend to Fly.io
