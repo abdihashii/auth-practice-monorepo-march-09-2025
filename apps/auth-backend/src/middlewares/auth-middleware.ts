@@ -7,7 +7,7 @@ import { verify } from 'hono/jwt';
 
 import { usersTable } from '@/db/schema';
 import env from '@/env';
-import { ACCESS_TOKEN_COOKIE_NAME_DEV, ACCESS_TOKEN_COOKIE_NAME_PROD } from '@/lib/constants';
+import { ACCESS_TOKEN_COOKIE_NAME_DEV, ACCESS_TOKEN_COOKIE_NAME_PROD, REFRESH_TOKEN_COOKIE_NAME_DEV, REFRESH_TOKEN_COOKIE_NAME_PROD } from '@/lib/constants';
 import { createApiResponse, refreshAccessToken } from '@/lib/utils';
 
 interface AccessTokenJWTPayload {
@@ -26,11 +26,11 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
   try {
     // Get both tokens from cookies, if production, use __Host- prefix
     const accessToken = env.NODE_ENV === 'production'
-      ? getCookie(c, '__Host-auth-app-accessToken')
-      : getCookie(c, 'auth-app-accessToken');
+      ? getCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD)
+      : getCookie(c, ACCESS_TOKEN_COOKIE_NAME_DEV);
     const refreshToken = env.NODE_ENV === 'production'
-      ? getCookie(c, '__Host-auth-app-refreshToken')
-      : getCookie(c, 'auth-app-refreshToken');
+      ? getCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD)
+      : getCookie(c, REFRESH_TOKEN_COOKIE_NAME_DEV);
 
     // If refresh token is missing, the user is unauthorized and is not
     // allowed to access the resource
