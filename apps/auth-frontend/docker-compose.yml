@@ -1,0 +1,21 @@
+services:
+  web:
+    build:
+      context: ../.. # Root of the monorepo
+      dockerfile: apps/auth-frontend/Dockerfile.frontend.prod
+    container_name: web
+    ports:
+      - '5173:5173'
+    volumes:
+      - ../../.env:/app/.env:ro
+    env_file:
+      - .env
+    environment:
+      - VITE_API_URL=http://auth-backend:8000
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
