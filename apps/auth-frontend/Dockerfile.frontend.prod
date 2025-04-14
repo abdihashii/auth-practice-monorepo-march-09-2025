@@ -42,12 +42,15 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 --ingroup nodejs nodeuser
 
-# Copy built assets from builder
-COPY --from=builder /app/apps/auth-frontend/dist /app/dist
-COPY --from=builder /app/apps/auth-frontend/package.json /app/package.json
+# Install curl for healthcheck
+RUN apk --no-cache add curl
 
 # Install a static file server
 RUN npm install -g serve
+
+# Copy built assets from builder
+COPY --from=builder /app/apps/auth-frontend/dist /app/dist
+COPY --from=builder /app/apps/auth-frontend/package.json /app/package.json
 
 # Change ownership of app files to non-root user
 RUN chown -R nodeuser:nodejs /app
@@ -55,8 +58,12 @@ RUN chown -R nodeuser:nodejs /app
 # Switch to non-root user
 USER nodeuser
 
-# Expose standard port (instead of 5173)
+# Expose port 3000
 EXPOSE 3000
+
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/ || exit 1
 
 # Start the static server with standard port
 CMD ["serve", "-s", "dist", "-l", "3000"]
