@@ -399,8 +399,11 @@ publicRoutes.post('/logout', async (c) => {
       })
       .where(eq(usersTable.refreshToken, refreshToken));
 
-    // Clear refresh token from cookie
-    setCookie(c, 'auth-app-refreshToken', '', {
+    // Clear refresh token from cookie, if production, use __Host- prefix
+    const refreshTokenCookie = env.NODE_ENV === 'production'
+      ? '__Host-auth-app-refreshToken'
+      : 'auth-app-refreshToken';
+    setCookie(c, refreshTokenCookie, '', {
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
       secure: env.NODE_ENV === 'production', // true in production
       sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
@@ -411,8 +414,11 @@ publicRoutes.post('/logout', async (c) => {
       }),
     });
 
-    // Clear access token from cookie
-    setCookie(c, 'auth-app-accessToken', '', {
+    // Clear access token from cookie, if production, use __Host- prefix
+    const accessTokenCookie = env.NODE_ENV === 'production'
+      ? '__Host-auth-app-accessToken'
+      : 'auth-app-accessToken';
+    setCookie(c, accessTokenCookie, '', {
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
       secure: env.NODE_ENV === 'production', // true in production
       sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
@@ -557,8 +563,11 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
       .where(eq(usersTable.id, user.id));
 
     // Replace the old refresh token in the HTTP-only cookie with the newly
-    // rotated one
-    setCookie(c, 'auth-app-refreshToken', newRefreshToken, {
+    // rotated one, if production, use __Host- prefix
+    const refreshTokenCookie = env.NODE_ENV === 'production'
+      ? '__Host-auth-app-refreshToken'
+      : 'auth-app-refreshToken';
+    setCookie(c, refreshTokenCookie, newRefreshToken, {
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
       secure: env.NODE_ENV === 'production', // true in production
       sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
@@ -571,8 +580,11 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
     });
 
     // Replace the old access token in the HTTP-only cookie with the newly
-    // generated one
-    setCookie(c, 'auth-app-accessToken', newAccessToken, {
+    // generated one, if production, use __Host- prefix
+    const accessTokenCookie = env.NODE_ENV === 'production'
+      ? '__Host-auth-app-accessToken'
+      : 'auth-app-accessToken';
+    setCookie(c, accessTokenCookie, newAccessToken, {
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
       secure: env.NODE_ENV === 'production', // true in production
       sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
