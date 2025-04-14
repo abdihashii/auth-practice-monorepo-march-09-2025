@@ -1,0 +1,8 @@
+export const AUTH_TOKEN_COOKIE_PREFIX_PROD = '__ryoa-auth-app-';
+export const AUTH_TOKEN_COOKIE_PREFIX_DEV = 'auth-app-';
+
+export const ACCESS_TOKEN_COOKIE_NAME_PROD = `${AUTH_TOKEN_COOKIE_PREFIX_PROD}accessToken`;
+export const ACCESS_TOKEN_COOKIE_NAME_DEV = `${AUTH_TOKEN_COOKIE_PREFIX_DEV}accessToken`;
+
+export const REFRESH_TOKEN_COOKIE_NAME_PROD = `${AUTH_TOKEN_COOKIE_PREFIX_PROD}refreshToken`;
+export const REFRESH_TOKEN_COOKIE_NAME_DEV = `${AUTH_TOKEN_COOKIE_PREFIX_DEV}refreshToken`;
