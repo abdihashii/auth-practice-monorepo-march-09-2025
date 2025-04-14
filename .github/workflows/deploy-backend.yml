@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'apps/auth-backend/**' # Only deploy backend if there are changes to the backend app code
 
 jobs:
   deploy:
