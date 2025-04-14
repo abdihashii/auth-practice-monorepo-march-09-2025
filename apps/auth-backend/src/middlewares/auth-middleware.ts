@@ -7,6 +7,7 @@ import { verify } from 'hono/jwt';
 
 import { usersTable } from '@/db/schema';
 import env from '@/env';
+import { ACCESS_TOKEN_COOKIE_NAME_DEV, ACCESS_TOKEN_COOKIE_NAME_PROD } from '@/lib/constants';
 import { createApiResponse, refreshAccessToken } from '@/lib/utils';
 
 interface AccessTokenJWTPayload {
@@ -71,17 +72,23 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
         const newAccessToken = await refreshAccessToken(refreshToken);
 
         // Set the new access token cookie
-        setCookie(c, 'auth-app-accessToken', newAccessToken, {
-          httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-          secure: env.NODE_ENV === 'production', // true in production
-          sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-          path: '/', // The path on the server in which the cookie will be sent to
-          maxAge: 15 * 60, // 15 minutes in seconds
-          // Optional: Use __Host- prefix for additional security in production
-          ...(env.NODE_ENV === 'production' && {
-            prefix: 'host',
-          }),
-        });
+        if (env.NODE_ENV === 'production') {
+          setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, newAccessToken, {
+            httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+            secure: true, // Ensures the cookie is only sent over HTTPS
+            sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+            path: '/', // The cookie is only sent to requests to the root domain
+            maxAge: 15 * 60, // 15 minutes in seconds
+          });
+        } else {
+          setCookie(c, ACCESS_TOKEN_COOKIE_NAME_DEV, newAccessToken, {
+            httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+            secure: false, // The cookie is only sent over HTTPS in production
+            sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+            path: '/', // The cookie is only sent to requests to the root domain
+            maxAge: 15 * 60, // 15 minutes in seconds
+          });
+        }
 
         // Decode the new access token to get user ID
         const decodedAccessToken = await verify(newAccessToken, jwtSecret);
@@ -145,17 +152,23 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
             const newAccessToken = await refreshAccessToken(refreshToken);
 
             // Set the new access token cookie
-            setCookie(c, 'auth-app-accessToken', newAccessToken, {
-              httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-              secure: env.NODE_ENV === 'production', // true in production
-              sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-              path: '/', // The path on the server in which the cookie will be sent to
-              maxAge: 15 * 60, // 15 minutes in seconds
-              // Optional: Use __Host- prefix for additional security in production
-              ...(env.NODE_ENV === 'production' && {
-                prefix: 'host',
-              }),
-            });
+            if (env.NODE_ENV === 'production') {
+              setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, newAccessToken, {
+                httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+                secure: true, // Ensures the cookie is only sent over HTTPS
+                sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+                path: '/', // The cookie is only sent to requests to the root domain
+                maxAge: 15 * 60, // 15 minutes in seconds
+              });
+            } else {
+              setCookie(c, ACCESS_TOKEN_COOKIE_NAME_DEV, newAccessToken, {
+                httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+                secure: false, // The cookie is only sent over HTTPS in production
+                sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+                path: '/', // The cookie is only sent to requests to the root domain
+                maxAge: 15 * 60, // 15 minutes in seconds
+              });
+            }
 
             // Use the user ID from the payload
             userId = accessTokenPayload.userId;
@@ -193,17 +206,23 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
           const newAccessToken = await refreshAccessToken(refreshToken);
 
           // Set the new access token cookie
-          setCookie(c, 'auth-app-accessToken', newAccessToken, {
-            httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-            secure: env.NODE_ENV === 'production', // true in production
-            sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-            path: '/', // The path on the server in which the cookie will be sent to
-            maxAge: 15 * 60, // 15 minutes in seconds
-            // Optional: Use __Host- prefix for additional security in production
-            ...(env.NODE_ENV === 'production' && {
-              prefix: 'host',
-            }),
-          });
+          if (env.NODE_ENV === 'production') {
+            setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, newAccessToken, {
+              httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+              secure: true, // Ensures the cookie is only sent over HTTPS
+              sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+              path: '/', // The cookie is only sent to requests to the root domain
+              maxAge: 15 * 60, // 15 minutes in seconds
+            });
+          } else {
+            setCookie(c, ACCESS_TOKEN_COOKIE_NAME_DEV, newAccessToken, {
+              httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+              secure: false, // The cookie is only sent over HTTPS in production
+              sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+              path: '/', // The cookie is only sent to requests to the root domain
+              maxAge: 15 * 60, // 15 minutes in seconds
+            });
+          }
 
           // Decode the new access token to get user ID
           const decodedAccessToken = await verify(newAccessToken, jwtSecret);
