@@ -19,7 +19,7 @@ export const corsMiddleware = cors({
 
     // In production, check against allowed domains
     const allowedOrigins = [
-      // env.FRONTEND_URL,
+      env.FRONTEND_URL,
       // Add any additional production domains here
     ].filter(Boolean) as string[];
 
