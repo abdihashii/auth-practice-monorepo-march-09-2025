@@ -33,4 +33,4 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy -a auth-frontend --remote-only --config ./apps/auth-frontend/fly.toml --dockerfile ./apps/auth-frontend/Dockerfile.frontend.prod --build-secret VITE_BASE_API_URL=https://auth-backend-blue-darkness-6417.fly.dev
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_API_TOKEN: ${{ secrets.FLY_FRONTEND_TOKEN }}
