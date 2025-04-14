@@ -277,7 +277,7 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
       setCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD, refreshToken, {
         httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
         secure: true, // Ensures the cookie is only sent over HTTPS
-        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
         path: '/', // The cookie is only sent to requests to the root domain
         maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
       });
@@ -296,7 +296,7 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
       setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, accessToken, {
         httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
         secure: true, // Ensures the cookie is only sent over HTTPS
-        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
         path: '/', // The cookie is only sent to requests to the root domain
         maxAge: 15 * 60, // 15 minutes in seconds
       });
@@ -594,7 +594,7 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
       setCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD, newRefreshToken, {
         httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
         secure: true, // Ensures the cookie is only sent over HTTPS
-        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
         path: '/', // The cookie is only sent to requests to the root domain
         maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
       });
@@ -614,7 +614,7 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
       setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, newAccessToken, {
         httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
         secure: true, // Ensures the cookie is only sent over HTTPS
-        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
         path: '/', // The cookie is only sent to requests to the root domain
         maxAge: 15 * 60, // 15 minutes in seconds
       });
@@ -737,7 +737,7 @@ publicRoutes.post('/verify-email/:token', async (c) => {
       setCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD, refreshToken, {
         httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
         secure: true, // Ensures the cookie is only sent over HTTPS
-        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
         path: '/', // The cookie is only sent to requests to the root domain
         maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
       });
@@ -756,7 +756,7 @@ publicRoutes.post('/verify-email/:token', async (c) => {
       setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, accessToken, {
         httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
         secure: true, // Ensures the cookie is only sent over HTTPS
-        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
         path: '/', // The cookie is only sent to requests to the root domain
         maxAge: 15 * 60, // 15 minutes in seconds
       });

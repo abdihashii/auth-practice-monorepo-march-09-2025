@@ -156,7 +156,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
               setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, newAccessToken, {
                 httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
                 secure: true, // Ensures the cookie is only sent over HTTPS
-                sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+                sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
                 path: '/', // The cookie is only sent to requests to the root domain
                 maxAge: 15 * 60, // 15 minutes in seconds
               });
@@ -210,7 +210,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
             setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, newAccessToken, {
               httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
               secure: true, // Ensures the cookie is only sent over HTTPS
-              sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+              sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
               path: '/', // The cookie is only sent to requests to the root domain
               maxAge: 15 * 60, // 15 minutes in seconds
             });
