@@ -5,7 +5,7 @@ services:
       dockerfile: apps/auth-frontend/Dockerfile.frontend.prod
     container_name: web
     ports:
-      - '5173:5173'
+      - '3000:3000'
     volumes:
       - ../../.env:/app/.env:ro
     env_file:

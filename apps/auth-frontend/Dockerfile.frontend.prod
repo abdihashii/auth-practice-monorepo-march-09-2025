@@ -38,6 +38,10 @@ FROM node:22-alpine AS production
 
 WORKDIR /app
 
+# Create a non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 --ingroup nodejs nodeuser
+
 # Copy built assets from builder
 COPY --from=builder /app/apps/auth-frontend/dist /app/dist
 COPY --from=builder /app/apps/auth-frontend/package.json /app/package.json
@@ -45,8 +49,14 @@ COPY --from=builder /app/apps/auth-frontend/package.json /app/package.json
 # Install a static file server
 RUN npm install -g serve
 
-# Expose the port
-EXPOSE 5173
+# Change ownership of app files to non-root user
+RUN chown -R nodeuser:nodejs /app
 
-# Start the static server
-CMD ["serve", "-s", "dist", "-l", "5173"]
+# Switch to non-root user
+USER nodeuser
+
+# Expose standard port (instead of 5173)
+EXPOSE 3000
+
+# Start the static server with standard port
+CMD ["serve", "-s", "dist", "-l", "3000"]
