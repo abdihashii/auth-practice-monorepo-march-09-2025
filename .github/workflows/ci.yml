@@ -1,4 +1,4 @@
-name: Build Check
+name: CI
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       shared: ${{ steps.filter.outputs.shared }}
-      eslint-config: ${{ steps.filter.outputs.eslint-config }}
+      eslintconfig: ${{ steps.filter.outputs.eslintconfig }}
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
     steps:
@@ -21,16 +21,33 @@ jobs:
           filters: |
             shared:
               - 'packages/shared/**'
-            eslint-config:
+            eslintconfig:
               - 'packages/eslint-config/**'
             backend:
               - 'apps/auth-backend/**'
             frontend:
               - 'apps/auth-frontend/**'
 
-  build-shared:
+  lint:
     needs: detect-changes
-    if: needs.detect-changes.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'pnpm'
+      - run: pnpm i
+      - run: pnpm lint
+      
+  build-shared:
+    needs: [detect-changes, lint]
+    if: ${{ needs.detect-changes.outputs.shared == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,8 +70,8 @@ jobs:
           fi
 
   build-backend:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.backend == 'true'
+    needs: [detect-changes, lint]
+    if: ${{ needs.detect-changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -78,8 +95,8 @@ jobs:
         run: bun run build:ci
 
   build-frontend:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.frontend == 'true'
+    needs: [detect-changes, lint]
+    if: ${{ needs.detect-changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
