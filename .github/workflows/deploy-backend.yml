@@ -7,6 +7,7 @@ on:
     paths:
       - 'apps/auth-backend/**' # Only deploy backend if there are changes to the backend app code
       - 'packages/**' # Or deploy backend if there are changes to the shared packages
+      - '.github/workflows/**' # Or deploy backend if there are changes to the GitHub workflow files
 
 jobs:
   deploy:
