@@ -5,9 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'apps/auth-frontend/**'
-      - 'pnpm-workspace.yaml'
-      - 'package.json'
+      - 'apps/auth-frontend/**' # Only deploy frontend if there are changes to the frontend app code
 
 jobs:
   deploy:
