@@ -16,6 +16,12 @@ import type { CustomEnv } from '@/lib/types';
 import { usersTable } from '@/db/schema';
 import env from '@/env';
 import {
+  ACCESS_TOKEN_COOKIE_NAME_DEV,
+  ACCESS_TOKEN_COOKIE_NAME_PROD,
+  REFRESH_TOKEN_COOKIE_NAME_DEV,
+  REFRESH_TOKEN_COOKIE_NAME_PROD,
+} from '@/lib/constants';
+import {
   createApiResponse,
   generateRefreshToken,
   generateTokens,
@@ -267,30 +273,42 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
       .where(eq(usersTable.id, user.id));
 
     // Set refresh token in HTTP-only cookie
-    setCookie(c, 'auth-app-refreshToken', refreshToken, {
-      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-      secure: env.NODE_ENV === 'production', // true in production
-      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-      path: '/', // The path on the server in which the cookie will be sent to
-      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-      // Optional: Use __Host- prefix for additional security in production
-      ...(env.NODE_ENV === 'production' && {
-        prefix: 'host', // This will prefix the cookie with __Host-
-      }),
-    });
+    if (env.NODE_ENV === 'production') {
+      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD, refreshToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: true, // Ensures the cookie is only sent over HTTPS
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      });
+    } else {
+      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_DEV, refreshToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: false, // The cookie is only sent over HTTPS in production
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      });
+    }
 
     // Set the access token in the HTTP-only cookie
-    setCookie(c, 'auth-app-accessToken', accessToken, {
-      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-      secure: env.NODE_ENV === 'production', // true in production
-      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-      path: '/', // The path on the server in which the cookie will be sent to
-      maxAge: 15 * 60, // 15 minutes in seconds
-      // Optional: Use __Host- prefix for additional security in production
-      ...(env.NODE_ENV === 'production' && {
-        prefix: 'host', // This will prefix the cookie with __Host-
-      }),
-    });
+    if (env.NODE_ENV === 'production') {
+      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, accessToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: true, // Ensures the cookie is only sent over HTTPS
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 15 * 60, // 15 minutes in seconds
+      });
+    } else {
+      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_DEV, accessToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: false, // The cookie is only sent over HTTPS in production
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 15 * 60, // 15 minutes in seconds
+      });
+    }
 
     // Create a safe user object (excluding sensitive data)
     const safeUser: User = {
@@ -399,35 +417,43 @@ publicRoutes.post('/logout', async (c) => {
       })
       .where(eq(usersTable.refreshToken, refreshToken));
 
-    // Clear refresh token from cookie, if production, use __Host- prefix
-    const refreshTokenCookie = env.NODE_ENV === 'production'
-      ? '__Host-auth-app-refreshToken'
-      : 'auth-app-refreshToken';
-    setCookie(c, refreshTokenCookie, '', {
-      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-      secure: env.NODE_ENV === 'production', // true in production
-      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-      path: '/', // The path on the server in which the cookie will be sent to
-      maxAge: 0, // Expire immediately
-      ...(env.NODE_ENV === 'production' && {
-        prefix: 'host', // This will prefix the cookie with __Host-
-      }),
-    });
+    // Clear refresh token from cookie
+    if (env.NODE_ENV === 'production') {
+      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD, '', {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: true, // Ensures the cookie is only sent over HTTPS
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 0, // Expire immediately
+      });
+    } else {
+      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_DEV, '', {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: false, // The cookie is only sent over HTTPS in production
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 0, // Expire immediately
+      });
+    }
 
-    // Clear access token from cookie, if production, use __Host- prefix
-    const accessTokenCookie = env.NODE_ENV === 'production'
-      ? '__Host-auth-app-accessToken'
-      : 'auth-app-accessToken';
-    setCookie(c, accessTokenCookie, '', {
-      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-      secure: env.NODE_ENV === 'production', // true in production
-      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-      path: '/', // The path on the server in which the cookie will be sent to
-      maxAge: 0, // Expire immediately
-      ...(env.NODE_ENV === 'production' && {
-        prefix: 'host', // This will prefix the cookie with __Host-
-      }),
-    });
+    // Clear access token from cookie
+    if (env.NODE_ENV === 'production') {
+      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, '', {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: true, // Ensures the cookie is only sent over HTTPS
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 0, // Expire immediately
+      });
+    } else {
+      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_DEV, '', {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: false, // The cookie is only sent over HTTPS in production
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 0, // Expire immediately
+      });
+    }
 
     return c.json(
       createApiResponse({
@@ -563,38 +589,44 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
       .where(eq(usersTable.id, user.id));
 
     // Replace the old refresh token in the HTTP-only cookie with the newly
-    // rotated one, if production, use __Host- prefix
-    const refreshTokenCookie = env.NODE_ENV === 'production'
-      ? '__Host-auth-app-refreshToken'
-      : 'auth-app-refreshToken';
-    setCookie(c, refreshTokenCookie, newRefreshToken, {
-      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-      secure: env.NODE_ENV === 'production', // true in production
-      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-      path: '/', // The path on the server in which the cookie will be sent to
-      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-      // Optional: Use __Host- prefix for additional security in production
-      ...(env.NODE_ENV === 'production' && {
-        prefix: 'host', // This will prefix the cookie with __Host-
-      }),
-    });
+    // rotated one
+    if (env.NODE_ENV === 'production') {
+      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD, newRefreshToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: true, // Ensures the cookie is only sent over HTTPS
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      });
+    } else {
+      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_DEV, newRefreshToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: false, // The cookie is only sent over HTTPS in production
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      });
+    }
 
     // Replace the old access token in the HTTP-only cookie with the newly
-    // generated one, if production, use __Host- prefix
-    const accessTokenCookie = env.NODE_ENV === 'production'
-      ? '__Host-auth-app-accessToken'
-      : 'auth-app-accessToken';
-    setCookie(c, accessTokenCookie, newAccessToken, {
-      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-      secure: env.NODE_ENV === 'production', // true in production
-      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-      path: '/', // The path on the server in which the cookie will be sent to
-      maxAge: 15 * 60, // 15 minutes in seconds
-      // Optional: Use __Host- prefix for additional security in production
-      ...(env.NODE_ENV === 'production' && {
-        prefix: 'host', // This will prefix the cookie with __Host-
-      }),
-    });
+    // generated one
+    if (env.NODE_ENV === 'production') {
+      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, newAccessToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: true, // Ensures the cookie is only sent over HTTPS
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 15 * 60, // 15 minutes in seconds
+      });
+    } else {
+      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_DEV, newAccessToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: false, // The cookie is only sent over HTTPS in production
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 15 * 60, // 15 minutes in seconds
+      });
+    }
 
     return c.json(
       createApiResponse({
@@ -701,30 +733,42 @@ publicRoutes.post('/verify-email/:token', async (c) => {
       .where(eq(usersTable.id, user.id));
 
     // Set refresh token in HTTP-only cookie
-    setCookie(c, 'auth-app-refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: env.NODE_ENV === 'production', // true in production
-      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-      path: '/',
-      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-      // Optional: Use __Host- prefix for additional security in production
-      ...(env.NODE_ENV === 'production' && {
-        prefix: 'host', // This will prefix the cookie with __Host-
-      }),
-    });
+    if (env.NODE_ENV === 'production') {
+      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD, refreshToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: true, // Ensures the cookie is only sent over HTTPS
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      });
+    } else {
+      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_DEV, refreshToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: false, // The cookie is only sent over HTTPS in production
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      });
+    }
 
     // Set the access token in the HTTP-only cookie
-    setCookie(c, 'auth-app-accessToken', accessToken, {
-      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-      secure: env.NODE_ENV === 'production', // true in production
-      sameSite: 'Lax', // or 'Strict' if not dealing with third-party redirects
-      path: '/',
-      maxAge: 15 * 60, // 15 minutes in seconds
-      // Optional: Use __Host- prefix for additional security in production
-      ...(env.NODE_ENV === 'production' && {
-        prefix: 'host', // This will prefix the cookie with __Host-
-      }),
-    });
+    if (env.NODE_ENV === 'production') {
+      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, accessToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: true, // Ensures the cookie is only sent over HTTPS
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 15 * 60, // 15 minutes in seconds
+      });
+    } else {
+      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_DEV, accessToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: false, // The cookie is only sent over HTTPS in production
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 15 * 60, // 15 minutes in seconds
+      });
+    }
 
     // Create a safe user object
     const safeUser: User = {
