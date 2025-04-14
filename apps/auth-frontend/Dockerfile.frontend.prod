@@ -43,9 +43,6 @@ COPY --from=builder /app/apps/auth-frontend/package.json /app/package.json
 # Install a static file server
 RUN npm install -g serve
 
-# Set the correct environment variable for the API URL
-ENV VITE_API_URL=${VITE_API_URL}
-
 # Expose the port
 EXPOSE 5173
 
