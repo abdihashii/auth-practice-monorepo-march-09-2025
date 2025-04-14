@@ -40,4 +40,4 @@ To ensure PRs can only be merged when checks pass:
    - `build-frontend` (if frontend changes)
 7. Click "Create" or "Save changes"
 
-With this setup, PRs will require the appropriate checks to pass before merging, and deployments will happen automatically after merge. 
+With this setup, PRs will require the appropriate checks to pass before merging, and deployments will happen automatically after merge.
