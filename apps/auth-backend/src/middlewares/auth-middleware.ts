@@ -23,9 +23,13 @@ declare module 'hono' {
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
   try {
-    // Get both tokens from cookies
-    const accessToken = getCookie(c, 'auth-app-accessToken');
-    const refreshToken = getCookie(c, 'auth-app-refreshToken');
+    // Get both tokens from cookies, if production, use __Host- prefix
+    const accessToken = env.NODE_ENV === 'production'
+      ? getCookie(c, '__Host-auth-app-accessToken')
+      : getCookie(c, 'auth-app-accessToken');
+    const refreshToken = env.NODE_ENV === 'production'
+      ? getCookie(c, '__Host-auth-app-refreshToken')
+      : getCookie(c, 'auth-app-refreshToken');
 
     // If refresh token is missing, the user is unauthorized and is not
     // allowed to access the resource
