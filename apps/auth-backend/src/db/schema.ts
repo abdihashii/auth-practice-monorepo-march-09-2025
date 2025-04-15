@@ -73,4 +73,4 @@ export const usersTable = pgTable('users', {
     withTimezone: true,
   }),
   loginCount: integer('login_count').default(0),
-});
+}).enableRLS();
