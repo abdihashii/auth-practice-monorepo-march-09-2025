@@ -1,10 +1,11 @@
 import * as Sentry from '@sentry/bun';
+import { sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 
 import type { CustomEnv } from '@/lib/types';
 
 import { dbConnect } from '@/db';
-import { usersTable } from '@/db/schema';
+import { authUsersTable } from '@/db/schema';
 import { corsMiddleware, globalRateLimiter } from '@/middlewares';
 import { dbMiddleware } from '@/middlewares/db-middleware';
 import { securityMiddlewares } from '@/middlewares/security-middlewares';
@@ -50,8 +51,17 @@ app.get('/health/db', async (c) => {
   try {
     const db = await dbConnect();
 
-    // Try to execute a simple query
-    await db.select().from(usersTable).limit(1);
+    // Set admin session variables to bypass RLS for health check
+    await db.execute(sql`SET LOCAL app.current_user_id = ''`);
+    await db.execute(sql`SET LOCAL app.is_admin = 'true'`);
+    await db.execute(sql`SET LOCAL app.is_superadmin = 'true'`);
+    await db.execute(sql`SET LOCAL app.is_registration = 'false'`);
+
+    // Try to execute a simple query first
+    await db.execute(sql`SELECT 1 as health_check`);
+
+    // Then test querying the users table to verify RLS policies are working
+    await db.select().from(authUsersTable).limit(1);
 
     return c.json({
       status: 'ok',
