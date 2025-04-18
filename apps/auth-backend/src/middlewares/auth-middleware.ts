@@ -1,11 +1,11 @@
 import type { MiddlewareHandler } from 'hono';
 
 import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { getCookie, setCookie } from 'hono/cookie';
 import { verify } from 'hono/jwt';
 
-import { usersTable } from '@/db/schema';
+import { authUsersTable } from '@/db/schema';
 import env from '@/env';
 import { ACCESS_TOKEN_COOKIE_NAME_DEV, ACCESS_TOKEN_COOKIE_NAME_PROD, REFRESH_TOKEN_COOKIE_NAME_DEV, REFRESH_TOKEN_COOKIE_NAME_PROD } from '@/lib/constants';
 import { createApiResponse, refreshAccessToken } from '@/lib/utils';
@@ -260,8 +260,8 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
     // Check if the user exists and is active by querying the database
     // with the user ID set in the previous steps.
     const db = c.get('db');
-    const user = await db.query.usersTable.findFirst({
-      where: eq(usersTable.id, userId),
+    const user = await db.query.authUsersTable.findFirst({
+      where: eq(authUsersTable.id, userId),
     });
 
     if (!user) {
@@ -327,13 +327,29 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
       }
     }
 
+    // Set Postgres session variable for RLS
+    await db.execute(sql`SET LOCAL app.current_user_id = ${user.id}`);
+
+    // Set role-based session variables for RLS
+    if (user.role === 'admin' || user.role === 'superadmin') {
+      await db.execute(sql`SET LOCAL app.is_admin = 'true'`);
+    } else {
+      await db.execute(sql`SET LOCAL app.is_admin = 'false'`);
+    }
+
+    if (user.role === 'superadmin') {
+      await db.execute(sql`SET LOCAL app.is_superadmin = 'true'`);
+    } else {
+      await db.execute(sql`SET LOCAL app.is_superadmin = 'false'`);
+    }
+
     // Update the user's last activity time
     await db
-      .update(usersTable)
+      .update(authUsersTable)
       .set({
         lastActivityAt: new Date(),
       })
-      .where(eq(usersTable.id, user.id));
+      .where(eq(authUsersTable.id, user.id));
 
     // Call the next middleware
     await next();
