@@ -115,13 +115,13 @@ export async function generateTokens(userId: string): Promise<{
  * Generates a random UUID verification token with a 24 hour expiration
  * time
  *
- * @returns {Promise<{ verificationToken: string; verificationTokenExpiry: Date }>} The verification token and expiration date
+ * @returns {Promise<{ verificationToken: string; verificationTokenExpiresAt: Date }>} The verification token and expiration date
  */
 export async function generateVerificationToken() {
   const verificationToken = crypto.randomUUID();
-  const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-  return { verificationToken, verificationTokenExpiry };
+  return { verificationToken, verificationTokenExpiresAt };
 }
 
 /**
