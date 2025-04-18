@@ -9,7 +9,7 @@ import { every } from 'hono/combine';
 
 import type { CustomEnv } from '@/lib/types';
 
-import { usersTable } from '@/db/schema';
+import { authUsersTable, profilesTable } from '@/db/schema';
 import {
   DEFAULT_USER_DETAIL_COLUMNS,
   DEFAULT_USER_LIST_COLUMNS,
@@ -24,10 +24,10 @@ userRoutes.get('/', async (c) => {
     const db = c.get('db');
 
     // Create select object using the helper function
-    const selectObj = createSelectObject(usersTable, DEFAULT_USER_LIST_COLUMNS);
+    const selectObj = createSelectObject(authUsersTable, DEFAULT_USER_LIST_COLUMNS);
 
     // Only select the necessary columns based on default list columns
-    const users = await db.select(selectObj).from(usersTable);
+    const users = await db.select(selectObj).from(authUsersTable);
 
     // Return standardized response using the unified utility
     return c.json(
@@ -60,15 +60,15 @@ userRoutes.get('/:id', zValidator('param', idParamSchema), async (c) => {
 
     // Create select object using the helper function
     const selectObj = createSelectObject(
-      usersTable,
+      authUsersTable,
       DEFAULT_USER_DETAIL_COLUMNS,
     );
 
     // Only select the necessary columns based on default detail columns
     const results = await db
       .select(selectObj)
-      .from(usersTable)
-      .where(eq(usersTable.id, id));
+      .from(authUsersTable)
+      .where(eq(authUsersTable.id, id));
 
     if (results.length === 0) {
       // Return not found error using the unified utility
@@ -117,18 +117,17 @@ userRoutes.put('/:id', every(zValidator('param', idParamSchema), zValidator('jso
 
     const { name, bio, profilePicture } = await c.req.json();
 
-    const [updatedUser] = await db
-      .update(usersTable)
+    const [updatedProfile] = await db
+      .update(profilesTable)
       .set({ name, bio, profilePicture })
-      .where(eq(usersTable.id, id))
+      .where(eq(profilesTable.userId, id))
       .returning();
-
-    if (!updatedUser) {
+    if (!updatedProfile) {
       return c.json(
         createApiResponse({
           error: {
             code: ApiErrorCode.NOT_FOUND,
-            message: 'User not found',
+            message: 'User profile not found',
           },
         }),
         404,
@@ -138,19 +137,19 @@ userRoutes.put('/:id', every(zValidator('param', idParamSchema), zValidator('jso
     return c.json(
       createApiResponse({
         data: {
-          message: 'User updated successfully',
+          message: 'User profile updated successfully',
         },
       }),
       200,
     );
   } catch (error) {
-    console.error('Error updating user:', error);
+    console.error('Error updating user profile:', error);
 
     return c.json(
       createApiResponse({
         error: {
           code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: 'Failed to update user',
+          message: 'Failed to update user profile',
         },
       }),
       500,
@@ -174,8 +173,8 @@ userRoutes.put('/:id/password', every(zValidator('param', idParamSchema), zValid
     const { old_password, new_password } = await c.req.json();
 
     // Get the user from the database
-    const user = await db.query.usersTable.findFirst({
-      where: eq(usersTable.id, id),
+    const user = await db.query.authUsersTable.findFirst({
+      where: eq(authUsersTable.id, id),
     });
     if (!user) {
       return c.json(
@@ -207,7 +206,7 @@ userRoutes.put('/:id/password', every(zValidator('param', idParamSchema), zValid
     const hashedNewPassword = await hashPassword(new_password);
 
     // Update the user's password
-    await db.update(usersTable).set({ hashedPassword: hashedNewPassword }).where(eq(usersTable.id, id));
+    await db.update(authUsersTable).set({ hashedPassword: hashedNewPassword }).where(eq(authUsersTable.id, id));
 
     return c.json(
       createApiResponse({

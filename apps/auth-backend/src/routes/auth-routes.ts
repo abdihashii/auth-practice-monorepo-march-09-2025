@@ -6,14 +6,14 @@ import {
 } from '@roll-your-own-auth/shared/schemas';
 import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { validateAuthSchema } from '@roll-your-own-auth/shared/validations';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { every } from 'hono/combine';
 import { getCookie, setCookie } from 'hono/cookie';
 
 import type { CustomEnv } from '@/lib/types';
 
-import { usersTable } from '@/db/schema';
+import { authUsersTable, profilesTable } from '@/db/schema';
 import env from '@/env';
 import {
   ACCESS_TOKEN_COOKIE_NAME_DEV,
@@ -53,8 +53,8 @@ publicRoutes.post('/register', every(extractEmailMiddleware, authRateLimiter), a
     const rawBody = await c.req.json();
 
     // Check if user already exists and return error if so
-    const existingUser = await db.query.usersTable.findFirst({
-      where: eq(usersTable.email, rawBody.email),
+    const existingUser = await db.query.authUsersTable.findFirst({
+      where: eq(authUsersTable.email, rawBody.email),
     });
     if (existingUser) {
       return c.json(
@@ -93,18 +93,19 @@ publicRoutes.post('/register', every(extractEmailMiddleware, authRateLimiter), a
     const hashedPassword = await hashPassword(password);
 
     // Generate verification token and expiration date
-    const { verificationToken, verificationTokenExpiry } = await generateVerificationToken();
+    const { verificationToken, verificationTokenExpiresAt } = await generateVerificationToken();
+
+    // Set Postgres session variable for registration
+    await db.execute(sql`SET LOCAL app.is_registration = TRUE`);
 
     // Create user
     const [user] = await db
-      .insert(usersTable)
+      .insert(authUsersTable)
       .values({
         email,
         hashedPassword,
-        name: body.name ?? null,
-        emailVerified: false,
         verificationToken,
-        verificationTokenExpiry,
+        verificationTokenExpiresAt,
       })
       .returning();
 
@@ -118,7 +119,7 @@ publicRoutes.post('/register', every(extractEmailMiddleware, authRateLimiter), a
       const emailResult = await sendVerificationEmail(email, verificationToken, env.FRONTEND_URL);
       if (!emailResult.success) {
         // Delete the user if email sending fails
-        await db.delete(usersTable).where(eq(usersTable.id, user.id));
+        await db.delete(authUsersTable).where(eq(authUsersTable.id, user.id));
 
         const errorDetails = emailResult.error as { message?: string; name?: string; code?: string };
 
@@ -141,7 +142,7 @@ publicRoutes.post('/register', every(extractEmailMiddleware, authRateLimiter), a
       }
     } catch (error) {
       // Delete the user if email sending fails
-      await db.delete(usersTable).where(eq(usersTable.id, user.id));
+      await db.delete(authUsersTable).where(eq(authUsersTable.id, user.id));
 
       console.error('Failed to send verification email:', error);
       return c.json(
@@ -210,8 +211,8 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
     const { email, password } = validationResult.data;
 
     // Check if user exists in the database
-    const user = await db.query.usersTable.findFirst({
-      where: eq(usersTable.email, email),
+    const user = await db.query.authUsersTable.findFirst({
+      where: eq(authUsersTable.email, email),
     });
     if (!user) {
       return c.json(
@@ -219,6 +220,22 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
           error: {
             code: ApiErrorCode.USER_NOT_FOUND,
             message: 'User not found',
+          },
+        }),
+        404,
+      );
+    }
+
+    // Check if user profile exists
+    const profile = await db.query.profilesTable.findFirst({
+      where: eq(profilesTable.userId, user.id),
+    });
+    if (!profile) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.USER_NOT_FOUND,
+            message: 'User profile not found',
           },
         }),
         404,
@@ -262,15 +279,22 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
 
     // Update user with refresh token after successful login
     await db
-      .update(usersTable)
+      .update(authUsersTable)
       .set({
         refreshToken,
         refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      })
+      .where(eq(authUsersTable.id, user.id));
+
+    // Update profile with user id
+    await db
+      .update(profilesTable)
+      .set({
         lastSuccessfulLogin: new Date(),
-        loginCount: (user.loginCount ?? 0) + 1,
+        loginCount: (profile.loginCount ?? 0) + 1,
         lastActivityAt: new Date(),
       })
-      .where(eq(usersTable.id, user.id));
+      .where(eq(profilesTable.userId, user.id));
 
     // Set refresh token in HTTP-only cookie
     if (env.NODE_ENV === 'production') {
@@ -315,9 +339,9 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
       // Core user information
       id: user.id,
       email: user.email,
-      name: user.name,
-      bio: user.bio,
-      profilePicture: user.profilePicture,
+      name: profile.name,
+      bio: profile.bio,
+      profilePicture: profile.profilePicture,
       createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
       updatedAt: user.updatedAt?.toISOString() ?? new Date().toISOString(),
 
@@ -326,10 +350,10 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
 
       // Account status & management
       isActive: user.isActive ?? true,
-      deletedAt: user.deletedAt?.toISOString() ?? null,
+      deletedAt: profile.deletedAt?.toISOString() ?? null,
 
       // User preferences & settings
-      settings: (user.settings as UserSettings) ?? {
+      settings: (profile.settings as UserSettings) ?? {
         theme: 'system',
         language: 'en',
         timezone: 'UTC',
@@ -337,7 +361,7 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
 
       // User preferences & settings
       notificationPreferences:
-        (user.notificationPreferences as NotificationPreferences) ?? {
+        (profile.notificationPreferences as NotificationPreferences) ?? {
           email: {
             enabled: false,
             digest: 'never',
@@ -351,10 +375,10 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
 
       // Activity tracking
       lastActivityAt:
-        user.lastActivityAt?.toISOString() ?? new Date().toISOString(),
+      profile.lastActivityAt?.toISOString() ?? new Date().toISOString(),
       lastSuccessfulLogin:
-        user.lastSuccessfulLogin?.toISOString() ?? new Date().toISOString(),
-      loginCount: (user.loginCount ?? 0) + 1,
+      profile.lastSuccessfulLogin?.toISOString() ?? new Date().toISOString(),
+      loginCount: (profile.loginCount ?? 0) + 1,
     };
 
     // Combine user and access token into auth response
@@ -409,13 +433,13 @@ publicRoutes.post('/logout', async (c) => {
 
     // Clear refresh token from database and invalidate it
     await db
-      .update(usersTable)
+      .update(authUsersTable)
       .set({
         refreshToken: null,
         refreshTokenExpiresAt: null,
         lastTokenInvalidation: new Date(),
       })
-      .where(eq(usersTable.refreshToken, refreshToken));
+      .where(eq(authUsersTable.refreshToken, refreshToken));
 
     // Clear refresh token from cookie
     if (env.NODE_ENV === 'production') {
@@ -502,8 +526,8 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
     }
 
     // Find the user with this refresh token
-    const user = await db.query.usersTable.findFirst({
-      where: eq(usersTable.refreshToken, refreshToken),
+    const user = await db.query.authUsersTable.findFirst({
+      where: eq(authUsersTable.refreshToken, refreshToken),
     });
     if (!user || !user.refreshTokenExpiresAt) {
       return c.json(
@@ -515,6 +539,19 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
         }),
         401,
       );
+    }
+
+    // Find the user profile
+    const profile = await db.query.profilesTable.findFirst({
+      where: eq(profilesTable.userId, user.id),
+    });
+    if (!profile) {
+      return c.json(createApiResponse({
+        error: {
+          code: ApiErrorCode.USER_NOT_FOUND,
+          message: 'User profile not found',
+        },
+      }), 404);
     }
 
     // Check if refresh token is expired
@@ -580,13 +617,20 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
 
     // Update user with new refresh token (rotation)
     await db
-      .update(usersTable)
+      .update(authUsersTable)
       .set({
         refreshToken: newRefreshToken,
         refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      })
+      .where(eq(authUsersTable.id, user.id));
+
+    // Update profile with last activity at
+    await db
+      .update(profilesTable)
+      .set({
         lastActivityAt: new Date(),
       })
-      .where(eq(usersTable.id, user.id));
+      .where(eq(profilesTable.userId, user.id));
 
     // Replace the old refresh token in the HTTP-only cookie with the newly
     // rotated one
@@ -673,8 +717,8 @@ publicRoutes.post('/verify-email/:token', async (c) => {
     }
 
     // Find the user with this verification token
-    const user = await db.query.usersTable.findFirst({
-      where: eq(usersTable.verificationToken, token),
+    const user = await db.query.authUsersTable.findFirst({
+      where: eq(authUsersTable.verificationToken, token),
     });
     if (!user) {
       return c.json(
@@ -688,8 +732,24 @@ publicRoutes.post('/verify-email/:token', async (c) => {
       );
     }
 
+    // Find the user profile
+    const profile = await db.query.profilesTable.findFirst({
+      where: eq(profilesTable.userId, user.id),
+    });
+    if (!profile) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.USER_NOT_FOUND,
+            message: 'User profile not found',
+          },
+        }),
+        404,
+      );
+    }
+
     // Check if the token has expired
-    if (!user.verificationTokenExpiry || user.verificationTokenExpiry < new Date()) {
+    if (!user.verificationTokenExpiresAt || user.verificationTokenExpiresAt < new Date()) {
       return c.json(
         createApiResponse({
           error: {
@@ -719,18 +779,26 @@ publicRoutes.post('/verify-email/:token', async (c) => {
 
     // Update user as verified, clear verification token, and set refresh token
     await db
-      .update(usersTable)
+      .update(authUsersTable)
       .set({
         emailVerified: true,
         verificationToken: null,
-        verificationTokenExpiry: null,
+        verificationTokenExpiresAt: null,
         refreshToken,
         refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        updatedAt: new Date(),
+      })
+      .where(eq(authUsersTable.id, user.id));
+
+    // Update profile with last successful login and login count
+    await db
+      .update(profilesTable)
+      .set({
         lastSuccessfulLogin: new Date(),
         loginCount: 1,
         updatedAt: new Date(),
       })
-      .where(eq(usersTable.id, user.id));
+      .where(eq(profilesTable.userId, user.id));
 
     // Set refresh token in HTTP-only cookie
     if (env.NODE_ENV === 'production') {
@@ -775,9 +843,9 @@ publicRoutes.post('/verify-email/:token', async (c) => {
       // Core user information
       id: user.id,
       email: user.email,
-      name: user.name,
-      bio: user.bio,
-      profilePicture: user.profilePicture,
+      name: profile.name,
+      bio: profile.bio,
+      profilePicture: profile.profilePicture,
       createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
       updatedAt: new Date().toISOString(),
 
@@ -786,16 +854,16 @@ publicRoutes.post('/verify-email/:token', async (c) => {
 
       // Account status & management
       isActive: user.isActive ?? true,
-      deletedAt: user.deletedAt?.toISOString() ?? null,
+      deletedAt: profile.deletedAt?.toISOString() ?? null,
 
       // User preferences & settings
-      settings: (user.settings as UserSettings) ?? {
+      settings: (profile.settings as UserSettings) ?? {
         theme: 'system',
         language: 'en',
         timezone: 'UTC',
       },
       notificationPreferences:
-        (user.notificationPreferences as NotificationPreferences) ?? {
+        (profile.notificationPreferences as NotificationPreferences) ?? {
           email: {
             enabled: false,
             digest: 'never',
@@ -855,8 +923,8 @@ publicRoutes.post('/resend-verification-email', async (c) => {
     }
 
     // Find the user with this email
-    const user = await db.query.usersTable.findFirst({
-      where: eq(usersTable.email, email),
+    const user = await db.query.authUsersTable.findFirst({
+      where: eq(authUsersTable.email, email),
     });
     // For security reasons, don't reveal if user exists or not
     // We'll return the same message either way
@@ -869,14 +937,14 @@ publicRoutes.post('/resend-verification-email', async (c) => {
     }
 
     // Generate verification token and expiration date
-    const { verificationToken, verificationTokenExpiry } = await generateVerificationToken();
+    const { verificationToken, verificationTokenExpiresAt } = await generateVerificationToken();
 
     // Update user with new verification token
-    await db.update(usersTable).set({
+    await db.update(authUsersTable).set({
       verificationToken,
-      verificationTokenExpiry,
+      verificationTokenExpiresAt,
       updatedAt: new Date(),
-    }).where(eq(usersTable.id, user.id));
+    }).where(eq(authUsersTable.id, user.id));
 
     // Send verification email
     try {
@@ -941,8 +1009,8 @@ protectedRoutes.get('/me', async (c) => {
     const userId = c.get('userId');
 
     // Find the user from the database
-    const user = await db.query.usersTable.findFirst({
-      where: eq(usersTable.id, userId),
+    const user = await db.query.authUsersTable.findFirst({
+      where: eq(authUsersTable.id, userId),
     });
     if (!user) {
       return c.json(
@@ -956,14 +1024,30 @@ protectedRoutes.get('/me', async (c) => {
       );
     }
 
+    // Find the user profile
+    const profile = await db.query.profilesTable.findFirst({
+      where: eq(profilesTable.userId, user.id),
+    });
+    if (!profile) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.USER_NOT_FOUND,
+            message: 'User profile not found',
+          },
+        }),
+        404,
+      );
+    }
+
     // Create a safe user object (excluding sensitive data)
     const safeUser: User = {
       // Core user information
       id: user.id,
       email: user.email,
-      name: user.name,
-      bio: user.bio,
-      profilePicture: user.profilePicture,
+      name: profile.name,
+      bio: profile.bio,
+      profilePicture: profile.profilePicture,
       createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
       updatedAt: user.updatedAt?.toISOString() ?? new Date().toISOString(),
 
@@ -972,10 +1056,10 @@ protectedRoutes.get('/me', async (c) => {
 
       // Account status & management
       isActive: user.isActive ?? true,
-      deletedAt: user.deletedAt?.toISOString() ?? null,
+      deletedAt: profile.deletedAt?.toISOString() ?? null,
 
       // User preferences & settings
-      settings: (user.settings as UserSettings) ?? {
+      settings: (profile.settings as UserSettings) ?? {
         theme: 'system',
         language: 'en',
         timezone: 'UTC',
@@ -983,16 +1067,16 @@ protectedRoutes.get('/me', async (c) => {
 
       // User preferences & settings
       notificationPreferences:
-        (user.notificationPreferences as NotificationPreferences) ?? {
+        (profile.notificationPreferences as NotificationPreferences) ?? {
           email: {
             enabled: false,
           },
         },
 
       // Activity tracking
-      lastActivityAt: user.lastActivityAt?.toISOString() ?? null,
-      lastSuccessfulLogin: user.lastSuccessfulLogin?.toISOString() ?? null,
-      loginCount: user.loginCount ?? 0,
+      lastActivityAt: profile.lastActivityAt?.toISOString() ?? null,
+      lastSuccessfulLogin: profile.lastSuccessfulLogin?.toISOString() ?? null,
+      loginCount: profile.loginCount ?? 0,
     };
 
     return c.json(
