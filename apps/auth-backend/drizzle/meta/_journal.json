@@ -8,6 +8,13 @@
       "when": 1745093049123,
       "tag": "0000_premium_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1745096089337,
+      "tag": "0001_bizarre_red_skull",
+      "breakpoints": true
     }
   ]
 }
