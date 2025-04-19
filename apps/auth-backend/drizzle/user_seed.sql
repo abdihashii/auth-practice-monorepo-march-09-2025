@@ -32,6 +32,17 @@ GRANT CONNECT ON DATABASE "auth-backend-db" TO app_user;
 GRANT USAGE ON SCHEMA public TO app_user;
 GRANT USAGE ON SCHEMA auth TO app_user;
 
--- Grant select on all tables in the public schema to app_user role
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO app_user;
-GRANT SELECT ON ALL TABLES IN SCHEMA auth TO app_user;
+-- Grant table permissions to app_user
+GRANT SELECT, INSERT, UPDATE, DELETE ON auth.users TO app_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO app_user;
+
+-- Create a function to get the current user id
+CREATE OR REPLACE FUNCTION auth.current_user_id()
+RETURNS uuid AS $$
+BEGIN
+  RETURN nullif(current_setting('app.current_user_id', true), '')::uuid;
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
