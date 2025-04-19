@@ -54,7 +54,8 @@ services:
       - .env
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@auth-backend-db:5432/auth-backend-db
+      - DATABASE_URL=postgresql://app_user:201fd7a2b44b692cf44d98cd717fd0bda56d0838@auth-backend-db:5432/auth-backend-db?search_path=auth,public
+      # - DATABASE_URL=postgresql://postgres:postgres@auth-backend-db:5432/auth-backend-db?search_path=auth,public
       - REDIS_URL=redis://auth-backend-redis:6379
     restart: unless-stopped
     depends_on:
