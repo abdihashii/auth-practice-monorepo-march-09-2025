@@ -21,3 +21,6 @@ insert into public.profiles (
   'Admin User',
   'I am the admin user for the auth backend.'
 );
+
+-- Set password for app_user role
+ALTER ROLE app_user WITH PASSWORD '201fd7a2b44b692cf44d98cd717fd0bda56d0838';
