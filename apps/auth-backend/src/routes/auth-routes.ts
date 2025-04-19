@@ -114,6 +114,18 @@ publicRoutes.post('/register', every(extractEmailMiddleware, authRateLimiter), a
       throw new Error('Failed to create user');
     }
 
+    // Create profile for user
+    const [profile] = await db.insert(profilesTable).values({
+      userId: user.id,
+      email: user.email,
+      name: user.email,
+    }).returning();
+
+    // If profile creation fails, throw error and have it handled in catch block
+    if (!profile) {
+      throw new Error('Failed to create profile');
+    }
+
     // Send verification email
     try {
       const emailResult = await sendVerificationEmail(email, verificationToken, env.FRONTEND_URL);
