@@ -1,10 +1,10 @@
 import { relations } from 'drizzle-orm';
 import {
   boolean,
-  index,
   integer,
   jsonb,
   pgEnum,
+  pgRole,
   pgSchema,
   pgTable,
   text,
@@ -13,10 +13,16 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
+// Create a role for the application to use
+export const appUserRole = pgRole('app_user', { createRole: true, createDb: true, inherit: true });
+
+// Create an enum for the role column in the auth.users table
 export const userRoleEnum = pgEnum('user_role', ['user', 'admin', 'superadmin']);
 
+// Create a new schema in the database
 export const authSchema = pgSchema('auth');
 
+// Create the users table in the auth schema
 export const authUsersTable = authSchema.table('users', {
   // Core user information
   id: uuid('id').primaryKey().defaultRandom(),
@@ -53,13 +59,9 @@ export const authUsersTable = authSchema.table('users', {
 
   // Account status & management
   isActive: boolean('is_active').default(true),
-}, (table) => [
-  index('idx_auth_users_email').on(table.email),
-  index('idx_auth_users_refresh_token').on(table.refreshToken),
-  index('idx_auth_users_verification_token').on(table.verificationToken),
-  index('idx_auth_users_reset_token').on(table.resetToken),
-]);
+});
 
+// Create the profiles table in the public schema
 export const profilesTable = pgTable('profiles', {
   // Core profile information
   userId: uuid('user_id').primaryKey().references(() => authUsersTable.id, { onDelete: 'cascade' }),
@@ -95,9 +97,7 @@ export const profilesTable = pgTable('profiles', {
     withTimezone: true,
   }),
   loginCount: integer('login_count').default(0),
-}, (table) => [
-  index('idx_profiles_last_activity_at').on(table.lastActivityAt),
-]);
+});
 
 // Relationships
 export const authUsersRelations = relations(authUsersTable, ({ one }) => ({
