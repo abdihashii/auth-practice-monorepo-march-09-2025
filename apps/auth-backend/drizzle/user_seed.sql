@@ -36,13 +36,18 @@ GRANT USAGE ON SCHEMA auth TO app_user;
 GRANT SELECT, INSERT, UPDATE, DELETE ON auth.users TO app_user;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO app_user;
 
--- Create a function to get the current user id
-CREATE OR REPLACE FUNCTION auth.current_user_id()
-RETURNS uuid AS $$
-BEGIN
-  RETURN nullif(current_setting('app.current_user_id', true), '')::uuid;
-EXCEPTION
-  WHEN OTHERS THEN
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+-- Create a function that will help identify the current user
+CREATE OR REPLACE FUNCTION auth.get_current_user_id()
+RETURNS uuid
+LANGUAGE sql STABLE
+AS $$
+  SELECT NULLIF(current_setting('app.current_user_id', TRUE), '')::uuid;
+$$;
+
+-- Create a Function to Check if in Service Context
+CREATE OR REPLACE FUNCTION auth.is_service_request()
+RETURNS boolean
+LANGUAGE sql STABLE
+AS $$
+  SELECT NULLIF(current_setting('app.is_service_request', TRUE), '')::boolean;
+$$;
