@@ -59,7 +59,7 @@ export const authUsersTable = authSchema.table('users', {
 
   // Account status & management
   isActive: boolean('is_active').default(true),
-});
+}).enableRLS();
 
 // Create the profiles table in the public schema
 export const profilesTable = pgTable('profiles', {
@@ -97,7 +97,7 @@ export const profilesTable = pgTable('profiles', {
     withTimezone: true,
   }),
   loginCount: integer('login_count').default(0),
-});
+}).enableRLS();
 
 // Relationships
 export const authUsersRelations = relations(authUsersTable, ({ one }) => ({
