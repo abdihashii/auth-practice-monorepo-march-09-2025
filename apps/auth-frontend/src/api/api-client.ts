@@ -1,7 +1,6 @@
 import { ApiErrorCode, authErrorCodesRequiringLogout } from '@roll-your-own-auth/shared/types';
 
-import { BASE_API_URL } from '@/constants';
-import { AUTH_QUERY_KEY } from '@/hooks/use-auth';
+import { AUTH_QUERY_KEY, BASE_API_URL } from '@/constants';
 import { queryClient } from '@/lib/react-query';
 import { handleLogout } from '@/services/auth-service';
 
