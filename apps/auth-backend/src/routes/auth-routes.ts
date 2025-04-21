@@ -6,7 +6,7 @@ import {
 } from '@roll-your-own-auth/shared/schemas';
 import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { validateAuthSchema } from '@roll-your-own-auth/shared/validations';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { every } from 'hono/combine';
 import { getCookie, setCookie } from 'hono/cookie';
@@ -33,6 +33,7 @@ import {
 import { sendVerificationEmail } from '@/lib/utils/email';
 import { authMiddleware } from '@/middlewares/auth-middleware';
 import { extractEmailMiddleware } from '@/middlewares/extract-email-middleware';
+import { publicRouteRlsMiddleware } from '@/middlewares/public-route-rls-middleware';
 import { authRateLimiter } from '@/middlewares/rate-limit-middleware';
 
 export const authRoutes = new Hono<CustomEnv>();
@@ -44,7 +45,7 @@ const publicRoutes = new Hono<CustomEnv>();
  * Register a new user
  * POST /api/v1/auth/register
  */
-publicRoutes.post('/register', every(extractEmailMiddleware, authRateLimiter), async (c) => {
+publicRoutes.post('/register', every(extractEmailMiddleware, authRateLimiter, publicRouteRlsMiddleware), async (c) => {
   try {
     // Get db connection
     const db = c.get('db');
@@ -94,9 +95,6 @@ publicRoutes.post('/register', every(extractEmailMiddleware, authRateLimiter), a
 
     // Generate verification token and expiration date
     const { verificationToken, verificationTokenExpiresAt } = await generateVerificationToken();
-
-    // Set Postgres session variable for registration
-    await db.execute(sql`SET LOCAL app.is_registration = TRUE`);
 
     // Create user
     const [user] = await db
@@ -197,7 +195,7 @@ publicRoutes.post('/register', every(extractEmailMiddleware, authRateLimiter), a
  * Login a user
  * POST /api/v1/auth/login
  */
-publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), async (c) => {
+publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter, publicRouteRlsMiddleware), async (c) => {
   try {
     // Get db connection
     const db = c.get('db');
@@ -420,6 +418,9 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter), asyn
 /**
  * Logout a user
  * POST /api/v1/auth/logout
+ *
+ * TODO: This route should be protected and only accessible to authenticated
+ *       users. We should also invalidate the refresh token in the database.
  */
 publicRoutes.post('/logout', async (c) => {
   try {
@@ -515,6 +516,9 @@ publicRoutes.post('/logout', async (c) => {
 /**
  * Refresh a user's access token
  * POST /api/v1/auth/refresh
+ *
+ * TODO: This route should be protected and only accessible to authenticated
+ *       users. We should also invalidate the refresh token in the database.
  */
 publicRoutes.post('/refresh', authRateLimiter, async (c) => {
   try {
@@ -709,7 +713,7 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
  * Verify a user's email address
  * POST /api/v1/auth/verify-email/:token
  */
-publicRoutes.post('/verify-email/:token', async (c) => {
+publicRoutes.post('/verify-email/:token', every(publicRouteRlsMiddleware), async (c) => {
   try {
     // Get db connection
     const db = c.get('db');

@@ -15,6 +15,7 @@ import {
   DEFAULT_USER_LIST_COLUMNS,
 } from '@/lib/constants';
 import { comparePasswords, createApiResponse, createSelectObject, hashPassword } from '@/lib/utils';
+import { publicRouteRlsMiddleware } from '@/middlewares/public-route-rls-middleware';
 
 export const userRoutes = new Hono<CustomEnv>();
 
@@ -110,7 +111,7 @@ userRoutes.get('/:id', zValidator('param', idParamSchema), async (c) => {
  * Update a user's profile information
  * PUT /users/:id
  */
-userRoutes.put('/:id', every(zValidator('param', idParamSchema), zValidator('json', updateUserSchema)), async (c) => {
+userRoutes.put('/:id', every(zValidator('param', idParamSchema), zValidator('json', updateUserSchema), publicRouteRlsMiddleware), async (c) => {
   try {
     const db = c.get('db');
     const { id } = c.req.param();
