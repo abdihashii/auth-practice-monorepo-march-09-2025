@@ -1,6 +1,6 @@
 {
-  "id": "9620e6cc-5154-49f3-b848-453d5283c7b4",
-  "prevId": "96102296-3654-4c00-b97c-c414617f9a3b",
+  "id": "a5fee778-65b3-4128-bfd4-017f58244dce",
+  "prevId": "9620e6cc-5154-49f3-b848-453d5283c7b4",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -124,7 +124,17 @@
           ]
         }
       },
-      "policies": {},
+      "policies": {
+        "users_policy": {
+          "name": "users_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "\n      (select auth.get_current_user_id()) = \"auth\".\"users\".\"id\"\n      OR auth.is_service_request() = TRUE\n    "
+        }
+      },
       "checkConstraints": {},
       "isRLSEnabled": true
     },
@@ -243,7 +253,17 @@
           ]
         }
       },
-      "policies": {},
+      "policies": {
+        "profiles_policy": {
+          "name": "profiles_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "\n      (select auth.get_current_user_id()) = \"profiles\".\"user_id\"\n      OR auth.is_service_request() = TRUE\n    "
+        }
+      },
       "checkConstraints": {},
       "isRLSEnabled": true
     }

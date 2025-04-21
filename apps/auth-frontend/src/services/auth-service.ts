@@ -1,5 +1,5 @@
 import { logout as logoutApi } from '@/api/auth-apis';
-import { AUTH_QUERY_KEY } from '@/hooks/use-auth';
+import { AUTH_QUERY_KEY } from '@/constants/';
 import { queryClient } from '@/lib/react-query';
 import { authStorage } from '@/services/auth-storage-service';
 

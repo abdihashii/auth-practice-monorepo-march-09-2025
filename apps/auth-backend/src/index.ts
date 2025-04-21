@@ -1,10 +1,11 @@
 import * as Sentry from '@sentry/bun';
+import { sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 
 import type { CustomEnv } from '@/lib/types';
 
 import { dbConnect } from '@/db';
-import { usersTable } from '@/db/schema';
+import { authUsersTable } from '@/db/schema';
 import { corsMiddleware, globalRateLimiter } from '@/middlewares';
 import { dbMiddleware } from '@/middlewares/db-middleware';
 import { securityMiddlewares } from '@/middlewares/security-middlewares';
@@ -50,8 +51,11 @@ app.get('/health/db', async (c) => {
   try {
     const db = await dbConnect();
 
-    // Try to execute a simple query
-    await db.select().from(usersTable).limit(1);
+    // Try to execute a simple query first
+    await db.execute(sql`SELECT 1 as health_check`);
+
+    // Then test querying the users table to verify RLS policies are working
+    await db.select().from(authUsersTable).limit(1);
 
     return c.json({
       status: 'ok',
