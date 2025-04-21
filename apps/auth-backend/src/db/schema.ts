@@ -34,7 +34,7 @@ export const authUsersTable = authSchema.table('users', {
   role: userRoleEnum('role').notNull().default('user'),
 
   // JWT management
-  refreshToken: text('refresh_token'),
+  refreshToken: text('refresh_token'), // Using text instead of varchar for tokens as they have variable length with no practical size limit
   refreshTokenExpiresAt: timestamp('refresh_token_expires_at', {
     withTimezone: true,
   }),
@@ -50,7 +50,7 @@ export const authUsersTable = authSchema.table('users', {
   }),
 
   // Password reset
-  resetToken: text('reset_token'),
+  resetToken: text('reset_token'), // Using text instead of varchar for tokens as they have variable length with no practical size limit
   resetTokenExpiresAt: timestamp('reset_token_expires_at', {
     withTimezone: true,
   }),
@@ -82,7 +82,7 @@ export const profilesTable = pgTable('profiles', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
 
-  // User settings & preferences
+  // User preferences & settings
   settings: jsonb('settings').default({
     theme: 'system',
     language: 'en',
