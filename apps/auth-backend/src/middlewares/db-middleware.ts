@@ -12,11 +12,15 @@ export const dbMiddleware: MiddlewareHandler<CustomEnv> = async (c, next) => {
     // Connect to the database
     const db = await dbConnect();
 
-    // Set default session variables for anonymous access
-    // These ensure the RLS policies have sensible defaults when no user is authenticated
-    await db.execute(sql`SET LOCAL app.current_user_id = ''`);
-    await db.execute(sql`SET LOCAL app.is_admin = 'false'`);
-    await db.execute(sql`SET LOCAL app.is_superadmin = 'false'`);
+    // Only initialize variables when they're not being set by auth middleware
+    // Don't overwrite existing variables if this is a subsequent middleware
+    if (!c.get('userId')) {
+      await db.execute(sql`
+        SELECT
+          set_config('app.current_user_id', '', FALSE),
+          set_config('app.is_service_request', 'false', FALSE)
+      `);
+    }
 
     // Set the database connection in the context
     c.set('db', db);

@@ -51,12 +51,6 @@ app.get('/health/db', async (c) => {
   try {
     const db = await dbConnect();
 
-    // Set admin session variables to bypass RLS for health check
-    await db.execute(sql`SET LOCAL app.current_user_id = ''`);
-    await db.execute(sql`SET LOCAL app.is_admin = 'true'`);
-    await db.execute(sql`SET LOCAL app.is_superadmin = 'true'`);
-    await db.execute(sql`SET LOCAL app.is_registration = 'false'`);
-
     // Try to execute a simple query first
     await db.execute(sql`SELECT 1 as health_check`);
 
