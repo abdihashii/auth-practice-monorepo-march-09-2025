@@ -1,9 +1,11 @@
 insert into auth.users (
+  id,
   email,
   hashed_password,
   email_verified,
   role
 ) values (
+  'cb26bfec-4003-4282-8bc5-f23ab7da6244',
   'admin@example.com',
   'Test=123', -- setting password to Test=123 for testing purposes
   true,
@@ -16,7 +18,7 @@ insert into public.profiles (
   name,
   bio
 ) values (
-  'enter the created user id here',
+  'cb26bfec-4003-4282-8bc5-f23ab7da6244',
   'admin@example.com',
   'Admin User',
   'I am the admin user for the auth backend.'

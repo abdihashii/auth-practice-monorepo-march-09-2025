@@ -22,7 +22,7 @@ CREATE TABLE "auth"."users" (
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-CREATE TABLE "profiles" (
+CREATE TABLE "public"."profiles" (
 	"user_id" uuid PRIMARY KEY NOT NULL,
 	"email" varchar(255) NOT NULL,
 	"name" varchar(255),
