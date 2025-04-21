@@ -5,7 +5,7 @@ import { eq, sql } from 'drizzle-orm';
 import { getCookie, setCookie } from 'hono/cookie';
 import { verify } from 'hono/jwt';
 
-import { authUsersTable } from '@/db/schema';
+import { authUsersTable, profilesTable } from '@/db/schema';
 import env from '@/env';
 import { ACCESS_TOKEN_COOKIE_NAME_DEV, ACCESS_TOKEN_COOKIE_NAME_PROD, REFRESH_TOKEN_COOKIE_NAME_DEV, REFRESH_TOKEN_COOKIE_NAME_PROD } from '@/lib/constants';
 import { createApiResponse, refreshAccessToken } from '@/lib/utils';
@@ -257,9 +257,33 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
       }
     }
 
+    // Get the database connection
+    const db = c.get('db');
+
+    // Set the current user id and is_service_request session variables
+    // for the duration of the request. This is used to secure the database
+    // connection against RLS for service requests.
+    try {
+      // Execute set_config calls separately to allow proper parameter binding
+      await db.execute(sql`SELECT set_config('app.current_user_id', ${userId}::text, FALSE)`);
+      await db.execute(sql`SELECT set_config('app.is_service_request', 'false', FALSE)`);
+    } catch (dbError) {
+      console.error(`[AuthMiddleware] Error setting DB config for userId: ${userId}`, dbError);
+      // Re-throw or handle as appropriate, maybe return 500?
+      // For now, let's return a generic unauthorized to match existing behavior but log the real cause
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INTERNAL_SERVER_ERROR, // Or a more specific code if possible
+            message: 'Database configuration error',
+          },
+        }),
+        500,
+      );
+    }
+
     // Check if the user exists and is active by querying the database
     // with the user ID set in the previous steps.
-    const db = c.get('db');
     const user = await db.query.authUsersTable.findFirst({
       where: eq(authUsersTable.id, userId),
     });
@@ -327,34 +351,24 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
       }
     }
 
-    // Set Postgres session variable for RLS
-    await db.execute(sql`SET LOCAL app.current_user_id = ${user.id}`);
-
-    // Set role-based session variables for RLS
-    if (user.role === 'admin' || user.role === 'superadmin') {
-      await db.execute(sql`SET LOCAL app.is_admin = 'true'`);
-    } else {
-      await db.execute(sql`SET LOCAL app.is_admin = 'false'`);
-    }
-
-    if (user.role === 'superadmin') {
-      await db.execute(sql`SET LOCAL app.is_superadmin = 'true'`);
-    } else {
-      await db.execute(sql`SET LOCAL app.is_superadmin = 'false'`);
-    }
-
     // Update the user's last activity time
-    await db
-      .update(authUsersTable)
-      .set({
-        lastActivityAt: new Date(),
-      })
-      .where(eq(authUsersTable.id, user.id));
+    try {
+      // Use db.execute with raw SQL to bypass potential prepared statement issues with RLS
+      await db.execute(sql`
+        UPDATE ${profilesTable}
+        SET last_activity_at = ${new Date()}
+        WHERE ${profilesTable.userId} = ${user.id}
+      `);
+    } catch (updateError) {
+      console.error(`[AuthMiddleware] Error updating last activity for userId: ${userId}`, updateError);
+      // Depending on policy, you might want to let the request proceed or return an error
+      // For now, let's log and continue.
+    }
 
     // Call the next middleware
     await next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
+    console.error('[AuthMiddleware] Error caught in main try-catch:', error);
     return c.json(
       createApiResponse({
         error: {
