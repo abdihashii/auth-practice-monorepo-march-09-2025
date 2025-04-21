@@ -96,33 +96,42 @@ publicRoutes.post('/register', every(extractEmailMiddleware, authRateLimiter, pu
     // Generate verification token and expiration date
     const { verificationToken, verificationTokenExpiresAt } = await generateVerificationToken();
 
-    // Create user
-    const [user] = await db
-      .insert(authUsersTable)
-      .values({
-        email,
-        hashedPassword,
-        verificationToken,
-        verificationTokenExpiresAt,
-      })
-      .returning();
+    // Wrap user and profile creation in a transaction
+    const { user, profile: _profile } = await db.transaction(async (tx) => {
+      // Create user
+      const [user] = await tx
+        .insert(authUsersTable)
+        .values({
+          email,
+          hashedPassword,
+          verificationToken,
+          verificationTokenExpiresAt,
+        })
+        .returning();
 
-    // If user creation fails, throw error and have it handled in catch block
-    if (!user) {
-      throw new Error('Failed to create user');
-    }
+      // If user creation fails, throw error to rollback transaction
+      if (!user) {
+        throw new Error('Failed to create user within transaction');
+      }
 
-    // Create profile for user
-    const [profile] = await db.insert(profilesTable).values({
-      userId: user.id,
-      email: user.email,
-      name: user.email,
-    }).returning();
+      // Create profile for user
+      const [profile] = await tx.insert(profilesTable).values({
+        userId: user.id,
+        email: user.email,
+        // name: user.email, // Use email as default name
+      }).returning();
 
-    // If profile creation fails, throw error and have it handled in catch block
-    if (!profile) {
-      throw new Error('Failed to create profile');
-    }
+      // If profile creation fails, throw error to rollback transaction
+      if (!profile) {
+        throw new Error('Failed to create profile within transaction');
+      }
+
+      return { user, profile };
+    });
+
+    // If the transaction failed, user/profile will not be populated,
+    // but the catch block below should handle the thrown error.
+    // We might add an explicit check here if needed, but transaction errors should bubble up.
 
     // Send verification email
     try {
