@@ -1,9 +1,10 @@
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   boolean,
   integer,
   jsonb,
   pgEnum,
+  pgPolicy,
   pgRole,
   pgSchema,
   pgTable,
@@ -59,7 +60,15 @@ export const authUsersTable = authSchema.table('users', {
 
   // Account status & management
   isActive: boolean('is_active').default(true),
-}).enableRLS();
+}, (t) => [
+  pgPolicy('users_policy', {
+    using: sql`
+      ((select auth.get_current_user_id()) IS NOT NULL AND (select auth.get_current_user_id()) = ${t.id})
+      OR
+      (auth.is_service_request() = TRUE)
+    `,
+  }),
+]).enableRLS();
 
 // Create the profiles table in the public schema
 export const profilesTable = pgTable('profiles', {
@@ -97,7 +106,15 @@ export const profilesTable = pgTable('profiles', {
     withTimezone: true,
   }),
   loginCount: integer('login_count').default(0),
-}).enableRLS();
+}, (t) => [
+  pgPolicy('profiles_policy', {
+    using: sql`
+      ((select auth.get_current_user_id()) IS NOT NULL AND (select auth.get_current_user_id()) = ${t.userId})
+      OR
+      (auth.is_service_request() = TRUE)
+    `,
+  }),
+]).enableRLS();
 
 // Relationships
 export const authUsersRelations = relations(authUsersTable, ({ one }) => ({
