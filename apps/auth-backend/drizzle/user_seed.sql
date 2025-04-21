@@ -41,7 +41,12 @@ CREATE OR REPLACE FUNCTION auth.get_current_user_id()
 RETURNS uuid
 LANGUAGE sql STABLE
 AS $$
-  SELECT NULLIF(current_setting('app.current_user_id', TRUE), '')::uuid;
+  SELECT 
+    CASE 
+      WHEN current_setting('app.current_user_id', TRUE) = '' THEN NULL
+      WHEN current_setting('app.current_user_id', TRUE) IS NULL THEN NULL
+      ELSE current_setting('app.current_user_id', TRUE)::uuid
+    END;
 $$;
 
 -- Create a Function to Check if in Service Context
@@ -49,5 +54,10 @@ CREATE OR REPLACE FUNCTION auth.is_service_request()
 RETURNS boolean
 LANGUAGE sql STABLE
 AS $$
-  SELECT NULLIF(current_setting('app.is_service_request', TRUE), '')::boolean;
+  SELECT 
+    CASE 
+      WHEN current_setting('app.is_service_request', TRUE) = 'true' THEN TRUE
+      WHEN current_setting('app.is_service_request', TRUE) = 't' THEN TRUE
+      ELSE FALSE
+    END;
 $$;
