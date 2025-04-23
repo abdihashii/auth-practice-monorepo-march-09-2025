@@ -1,7 +1,6 @@
 import { ApiErrorCode, authErrorCodesRequiringLogout } from '@roll-your-own-auth/shared/types';
 
-import { AUTH_QUERY_KEY, BASE_API_URL } from '@/constants';
-import { queryClient } from '@/lib/react-query';
+import { BASE_API_URL } from '@/constants';
 import { handleLogout } from '@/services/auth-service';
 
 // Flag to prevent multiple refresh requests from happening simultaneously
@@ -163,9 +162,10 @@ export async function apiClient<T>(
 
           // Handle failed refresh by logging out
           console.error('Error refreshing token:', refreshError);
-          queryClient.setQueryData(AUTH_QUERY_KEY, null);
-          await queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
+
+          // Let handleLogout manage query cache clearing and invalidation
           await handleLogout({ silent: true });
+
           throw refreshError;
         }
       } else if (authErrorCodesRequiringLogout.includes(errorCode)) {
@@ -173,17 +173,8 @@ export async function apiClient<T>(
         // Log the user out immediately
         console.error(`Auth error requiring logout: ${errorCode}`);
 
-        try {
-          // First, clear the React Query cache
-          queryClient.setQueryData(AUTH_QUERY_KEY, null);
-          // Also invalidate the query to ensure all observers are notified
-          await queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
-
-          // Then handle the logout API call and cleanup
-          await handleLogout({ silent: true });
-        } catch (logoutError) {
-          console.error('Error during automatic logout:', logoutError);
-        }
+        // Then handle the logout API call and cleanup
+        await handleLogout({ silent: true });
 
         throw new Error(responseData.error?.message || 'Session expired. Please log in again.');
       }
