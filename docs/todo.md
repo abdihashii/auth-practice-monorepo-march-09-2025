@@ -32,14 +32,14 @@ Bonus
 - [x] Create a basic login UI
 - [x] Create a basic protected page
 - [x] Add auth protection to the protected page
-- [ ] Implement a way to refresh the access token
-- [ ] Implement a way to revoke the refresh token
+- [x] Implement a way to refresh the access token
+- [x] Implement a way to revoke the refresh token (This is handled by cookie expiration and the refresh token being http-only)
 - [x] Implement a way to check if the user is authenticated
 - [x] Implement a way to logout the user
 - [x] Eslint
 - [ ] Link/unlink social accounts
-- Create a basic user management UI
-  - User profile page
+- [ ] Create a basic user management UI
+  - [ ] User profile page
     - [ ] User profile picture support
     - [x] User name support
     - [x] User bio support
