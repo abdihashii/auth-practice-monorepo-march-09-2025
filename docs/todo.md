@@ -18,6 +18,9 @@
   - [x] Implement proper error responses for authorization failures (401/403)
   - [x] Add documentation for token usage in API responses
 - [x] Row level security (RLS)
+- [ ] Google OAuth2.0
+- [ ] GitHub OAuth2.0
+- [ ] Apple OAuth2.0
 
 Bonus
 
