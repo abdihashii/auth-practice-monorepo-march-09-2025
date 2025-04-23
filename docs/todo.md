@@ -10,14 +10,14 @@
 - [x] CSRF protection
 - [x] Rate limiting
 - [x] Change password
-- Authorization
+- [x] Authorization
   - [x] Separate public and protected routes
   - [x] Create protected route examples
   - [x] Create authorization middleware to verify tokens on protected routes
   - [x] Add token validation checks (expiration, signature, etc.)
   - [x] Implement proper error responses for authorization failures (401/403)
   - [x] Add documentation for token usage in API responses
-- [ ] Row level security (RLS)
+- [x] Row level security (RLS)
 
 Bonus
 
