@@ -28,7 +28,7 @@ let redisClient: any;
 
       // eslint-disable-next-line no-console
       console.log('Connected to Redis (development)', env.REDIS_URL);
-    } else {
+    } else if (env.NODE_ENV === 'production') {
       // For production, use Upstash Redis
       redisClient = new UpstashRedis({
         url: env.REDIS_URL,
