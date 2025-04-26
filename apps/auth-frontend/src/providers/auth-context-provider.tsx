@@ -20,36 +20,27 @@ function useAuth() {
     queryKey: AUTH_QUERY_KEY,
     // Use queryFn as the source of truth for auth data from localStorage and /me endpoint
     queryFn: async () => {
-      // First, try to get user data from localStorage
-      const localUser = authStorage.getUserDataFromLocalStorage();
-
-      // If we have user data in localStorage
-      if (localUser) {
-        try {
-          // Then fetch fresh user data from `/me` endpoint to ensure it's up
-          // to date
-          const serverData = await getCurrentUser();
-
-          // If server data is valid, update localStorage and use server data
-          if (serverData) {
-            // Always keep localStorage in sync with server data
-            authStorage.saveUserDataToLocalStorage(serverData);
-            return { user: serverData };
-          }
-
-          // If server returns null (unauthorized), clear localStorage and return null
-          // This ensures we don't keep stale auth data when the server session is invalid
-          authStorage.clearLocalStorageUserData();
-          return null;
-        } catch (error) {
-          console.error('Error fetching user data from server:', error);
-          // For network/server errors (not auth errors), fall back to localStorage
-          // This prevents users from being logged out during temporary network issues
-          return { user: localUser };
-        }
+      // 1. Attempt to fetch fresh user data from the server first.
+      // This leverages the HTTP-only cookies set by the backend (incl. OAuth flow).
+      let serverData: User | null = null;
+      try {
+        serverData = await getCurrentUser();
+      } catch (error) {
+        // apiClient handles token refresh errors and auth errors requiring logout.
+        // Ignore other errors (like network errors) for now, we might fall back to localStorage.
+        console.warn('Initial fetch for current user failed:', error);
       }
 
-      // If no localStorage data, return null (user not authenticated)
+      // 2. If server confirms user is authenticated, use that data for both
+      // localStorage and the auth state.
+      if (serverData) {
+        authStorage.saveUserDataToLocalStorage(serverData); // Keep localStorage in sync
+        return { user: serverData };
+      }
+
+      // 3. If server says user is not authenticated (serverData is null),
+      // clear any potentially stale localStorage data and return null.
+      authStorage.clearLocalStorageUserData();
       return null;
     },
     // Only run once on mount - no refetching

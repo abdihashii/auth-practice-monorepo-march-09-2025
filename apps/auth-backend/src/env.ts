@@ -10,6 +10,9 @@ const EnvSchema = z.object({
   DATABASE_URL: z.string().url(),
   FRONTEND_URL: z.string().url(),
   JWT_SECRET: z.string(),
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
+  GOOGLE_REDIRECT_URI: z.string(),
   // Build time doesn't need these, but runtime does
   RESEND_API_KEY: isBuildTime ? z.string().optional() : z.string(),
   REDIS_URL: z.string().url(),

@@ -37,6 +37,7 @@ GRANT USAGE ON SCHEMA auth TO app_user;
 -- Grant table permissions to app_user
 GRANT SELECT, INSERT, UPDATE, DELETE ON auth.users TO app_user;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO app_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON auth.user_connections TO app_user;
 
 -- Create a function that will help identify the current user
 CREATE OR REPLACE FUNCTION auth.get_current_user_id()

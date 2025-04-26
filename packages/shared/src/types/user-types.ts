@@ -1,3 +1,5 @@
+import type { OAuthProviders } from '@/constants';
+
 /**
  * Type for basic user information shown in lists
  */
@@ -118,3 +120,8 @@ export interface UpdateUserPasswordDto {
   old_password?: string;
   new_password: string;
 }
+
+/**
+ * Type for OAuth providers
+ */
+export type OAuthProvider = (typeof OAuthProviders)[number];

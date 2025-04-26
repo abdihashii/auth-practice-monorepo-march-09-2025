@@ -78,8 +78,12 @@ services:
     container_name: auth-backend
     ports:
       - '8000:8000'
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production
+      - DATABASE_URL=postgresql://app_user:201fd7a2b44b692cf44d98cd717fd0bda56d0838@auth-backend-db:5432/auth-backend-db?search_path=auth,public
+      - REDIS_URL=redis://auth-backend-redis:6379
     restart: unless-stopped
     healthcheck:
       test: [CMD, curl, -f, 'http://localhost:8000/health || curl -f http://localhost:8000/health/db']
