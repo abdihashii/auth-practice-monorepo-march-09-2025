@@ -1246,10 +1246,10 @@ publicRoutes.get('/google/callback', authRateLimiter, publicRouteRlsMiddleware, 
       maxAge: refreshTokenExpiresMs / 1000, // maxAge is in seconds
     });
 
-    // Redirect user to frontend (e.g., dashboard)
-    const successUrl = new URL(env.FRONTEND_URL);
+    // Redirect user to frontend (e.g., account page)
+    const successUrl = new URL(`${env.FRONTEND_URL}/account`);
     // Optionally add query params like ?login=success or ?welcome=true
-    successUrl.searchParams.set('login_method', 'google');
+    // successUrl.searchParams.set('login_method', 'google');
     return c.redirect(successUrl.toString(), 302);
   } catch (err) {
     console.error('Error handling Google OAuth callback:', err);
