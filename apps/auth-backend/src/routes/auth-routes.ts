@@ -1168,11 +1168,12 @@ publicRoutes.get('/google/callback', authRateLimiter, publicRouteRlsMiddleware, 
             providerUserId: googleUserProfile.providerId,
           });
 
+          // Create profile with Google data if available
           await tx.insert(profilesTable).values({
             userId: newUser.id,
             email: newUser.email,
-            name: googleUserProfile.name,
-            profilePicture: googleUserProfile.picture,
+            name: googleUserProfile.name, // Use Google name directly here
+            profilePicture: googleUserProfile.picture, // Use Google picture directly here
             // Add other defaults if needed
           });
 
@@ -1181,6 +1182,38 @@ publicRoutes.get('/google/callback', authRateLimiter, publicRouteRlsMiddleware, 
         userId = newUserResult.id;
       }
     }
+
+    // --- ADD PROFILE UPDATE LOGIC HERE (Runs every time) ---
+    // Fetch the user's profile regardless of how they were identified
+    const userProfileForUpdate = await db.query.profilesTable.findFirst({
+      where: eq(profilesTable.userId, userId),
+    });
+
+    if (userProfileForUpdate) {
+      const profileUpdateData: Partial<{ name: string | null; profilePicture: string | null }> = {};
+
+      // Update name only if Google provides one AND the current one is empty/null
+      if (googleUserProfile.name && !userProfileForUpdate.name) {
+        profileUpdateData.name = googleUserProfile.name;
+      }
+
+      // Update picture only if Google provides one AND the current one is empty/null
+      if (googleUserProfile.picture && !userProfileForUpdate.profilePicture) {
+        profileUpdateData.profilePicture = googleUserProfile.picture;
+      }
+
+      // If there are updates to apply, update the profile
+      if (Object.keys(profileUpdateData).length > 0) {
+        await db
+          .update(profilesTable)
+          .set(profileUpdateData)
+          .where(eq(profilesTable.userId, userId));
+      }
+    } else {
+      // This case should ideally not happen if user creation/linking worked
+      console.error(`Profile not found for user ${userId} before token generation.`);
+    }
+    // --- END PROFILE UPDATE LOGIC ---
 
     // --- User Found/Created/Linked - Proceed with Login ---
 

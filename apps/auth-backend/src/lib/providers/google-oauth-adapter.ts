@@ -68,10 +68,10 @@ export class GoogleOAuthAdapter implements IOAuthProvider {
     ];
 
     const authUrl = this.oauth2Client.generateAuthUrl({
-      access_type: 'offline', // Use 'offline' if you need refresh tokens
+      access_type: 'offline', // Request refresh token access
       scope: scopes || defaultScopes, // Optional: specify custom scopes from the function caller
       state, // CSRF protection
-      prompt: 'consent', // Optional: forces consent screen even if previously approved
+      prompt: 'consent', // Forces consent screen even if previously approved
     });
     return authUrl;
   }
@@ -96,43 +96,90 @@ export class GoogleOAuthAdapter implements IOAuthProvider {
       throw new Error('Invalid state parameter (CSRF detected)');
     }
 
+    let userInfoPayload: { sub: string; email: string; name?: string; picture?: string } | null = null;
+    let idTokenPayload: { sub: string; email: string } | null = null;
+
     try {
-      // Exchange the authorization code for tokens
+      // 1. Exchange the authorization code for tokens
       const { tokens } = await this.oauth2Client.getToken(code);
 
       if (!tokens.id_token) {
         throw new Error('ID token not received from Google');
       }
-
-      // Verify the ID token and get the payload
-      const ticket = await this.oauth2Client.verifyIdToken({
-        idToken: tokens.id_token,
-        audience: GOOGLE_CLIENT_ID, // Specify the CLIENT_ID of the app that accesses the backend
-      });
-
-      const payload = ticket.getPayload();
-
-      if (!payload || !payload.sub || !payload.email) {
-        throw new Error('Invalid ID token payload received from Google');
+      if (!tokens.access_token) {
+        // Less common, but good to check
+        throw new Error('Access token not received from Google');
       }
 
-      // Construct the standardized user profile
+      // 2. Verify the ID token to get essential, validated claims (sub, email)
+      try {
+        const ticket = await this.oauth2Client.verifyIdToken({
+          idToken: tokens.id_token,
+          audience: GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        if (!payload || !payload.sub || !payload.email) {
+          throw new Error('Invalid ID token payload received from Google');
+        }
+        idTokenPayload = { sub: payload.sub, email: payload.email };
+      } catch (error) {
+        console.error('ID Token verification failed:', error);
+        throw new Error('Failed to verify ID token.');
+      }
+
+      // 3. Use the access token to fetch user info from the UserInfo endpoint
+      try {
+        // Temporarily set credentials for the userinfo request
+        this.oauth2Client.setCredentials(tokens);
+        const userInfoResponse = await this.oauth2Client.request<{
+          sub: string;
+          email: string;
+          name?: string;
+          picture?: string;
+        }>({
+          url: 'https://www.googleapis.com/oauth2/v3/userinfo',
+        });
+
+        // Clear credentials after use if desired
+        // this.oauth2Client.setCredentials(null); // Optional: Credentials are short-lived anyway
+
+        if (!userInfoResponse || !userInfoResponse.data || !userInfoResponse.data.sub) {
+          throw new Error('Failed to fetch user info or invalid response');
+        }
+        userInfoPayload = userInfoResponse.data;
+      } catch (error) {
+        console.error('UserInfo endpoint request failed:', error);
+        throw new Error('Failed to fetch user details from Google.');
+      }
+
+      // 4. Security Check: Ensure the 'sub' from UserInfo matches the 'sub' from the verified ID token
+      if (userInfoPayload.sub !== idTokenPayload.sub) {
+        console.error('Mismatch between ID token sub and UserInfo sub');
+        throw new Error('User identity mismatch detected.');
+      }
+      // Optional: Also check if email matches, though sub is the primary identifier
+      if (userInfoPayload.email !== idTokenPayload.email) {
+        console.warn('Mismatch between ID token email and UserInfo email. Using ID token email.');
+      }
+
+      // 5. Construct the standardized user profile using UserInfo data where available,
+      //    but relying on the verified ID token for the core identifiers.
       const userProfile: ProviderUserProfile = {
         provider: this.providerName,
-        providerId: payload.sub,
-        email: payload.email,
-        name: payload.name ?? null,
-        picture: payload.picture ?? null,
+        providerId: idTokenPayload.sub, // Use sub from verified ID token
+        email: idTokenPayload.email, // Use email from verified ID token
+        name: userInfoPayload.name ?? null, // Use name from UserInfo
+        picture: userInfoPayload.picture ?? null, // Use picture from UserInfo
       };
 
       return userProfile;
     } catch (error) {
       console.error('Error handling Google callback:', error);
-      // Provide a more specific error message if possible
       if (error instanceof Error && error.message.includes('invalid_grant')) {
         throw new Error('Invalid or expired authorization code.');
       }
-      throw new Error('Failed to process Google authentication.');
+      // Re-throw other specific errors or a generic one
+      throw error instanceof Error ? error : new Error('Failed to process Google authentication.');
     }
   }
 }
