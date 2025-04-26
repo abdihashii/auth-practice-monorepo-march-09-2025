@@ -29,11 +29,12 @@ Other Auth Methods
 
 - [ ] Passwordless
 - [ ] Magic Link
+- [ ] Passkey (WebAuthn, FIDO2, etc.)
 
 Bonus
 
 - [ ] Add role-based access control (RBAC) for different user types
-- [ ] Create token blacklisting/revocation system
+- [ ] Create token denylist/revocation system
 - [ ] Delete account
 
 ## Frontend TODOs
