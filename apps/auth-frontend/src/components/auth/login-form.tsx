@@ -23,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { BASE_API_URL } from '@/constants';
 import { useAuthContext } from '@/hooks/use-auth-context';
 import { cn } from '@/lib/utils';
 
@@ -158,25 +159,19 @@ export function LoginForm({
                       'Login'
                     )}
               </Button>
-              <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="hover:cursor-not-allowed ">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full"
-                        disabled
-                      >
-                        Login with Google
-                      </Button>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    We are still working on this feature!
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {/*
+                * Use an anchor tag for direct navigation to the Google OAuth
+                * login page
+                */}
+              <a href={`${BASE_API_URL}/api/v1/auth/google`} className="block w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full hover:cursor-pointer"
+                >
+                  Login with Google
+                </Button>
+              </a>
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?

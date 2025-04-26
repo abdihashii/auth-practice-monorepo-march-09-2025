@@ -18,12 +18,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { BASE_API_URL } from '@/constants';
 import { useAuthContext } from '@/hooks/use-auth-context';
 import { cn } from '@/lib/utils';
 
@@ -222,25 +217,19 @@ export function RegisterForm({
                       'Register'
                     )}
               </Button>
-              <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="hover:cursor-not-allowed ">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full"
-                        disabled
-                      >
-                        Register with Google
-                      </Button>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    We are still working on this feature!
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {/*
+                * Use an anchor tag for direct navigation to the Google OAuth
+                * login page
+                */}
+              <a href={`${BASE_API_URL}/api/v1/auth/google`} className="block w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full hover:cursor-pointer"
+                >
+                  Register with Google
+                </Button>
+              </a>
             </div>
             <div className="mt-4 text-center text-sm">
               Already have an account?
