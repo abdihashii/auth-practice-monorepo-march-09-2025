@@ -104,7 +104,7 @@ export const profilesTable = pgTable('profiles', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   name: varchar('name', { length: 255 }),
   bio: text('bio'),
-  profilePicture: varchar('profile_picture', { length: 255 }),
+  profilePicture: text('profile_picture'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),

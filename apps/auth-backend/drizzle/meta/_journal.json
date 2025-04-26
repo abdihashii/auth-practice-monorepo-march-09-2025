@@ -36,6 +36,13 @@
       "when": 1745635641441,
       "tag": "0004_third_lilandra",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1745697718472,
+      "tag": "0005_living_havok",
+      "breakpoints": true
     }
   ]
 }
