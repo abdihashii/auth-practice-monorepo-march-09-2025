@@ -20,13 +20,12 @@ export async function handleLogout(options = { silent: false }): Promise<void> {
     if (!options.silent) {
       console.error('Error calling logout API:', error);
     }
-    // Continue with client-side logout in the finally block even if API call
-    // fails
+    // Continue with client-side logout in the finally block
   } finally {
-    // Clear user data from storage
+    // Clear user data from storage even if API call fails
     authStorage.clearLocalStorageUserData();
 
-    // Update React Query state
+    // Update React Query state even if API call fails
     queryClient.setQueryData(AUTH_QUERY_KEY, null);
   }
 }
