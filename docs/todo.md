@@ -21,7 +21,7 @@
 
 OAuth Providers Support
 
-- [ ] Google OAuth2.0
+- [x] Google OAuth2.0
 - [ ] GitHub OAuth2.0
 - [ ] Apple OAuth2.0
 
