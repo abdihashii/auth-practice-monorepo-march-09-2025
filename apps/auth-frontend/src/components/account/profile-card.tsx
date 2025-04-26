@@ -84,8 +84,8 @@ export function ProfileCard() {
               <div className="relative">
                 <Avatar className="h-24 w-24">
                   <AvatarImage
-                    src="/placeholder.svg?height=96&width=96"
-                    alt={user?.name || 'User'}
+                    src={user?.profilePicture ?? ''}
+                    alt={user?.name ?? 'User'}
                   />
                   <AvatarFallback className="text-lg">
                     {user?.name

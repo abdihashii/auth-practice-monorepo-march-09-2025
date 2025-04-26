@@ -60,7 +60,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:cursor-pointer">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+                  <AvatarImage src={user?.profilePicture ?? ''} alt={user?.name ?? 'User'} />
                   <AvatarFallback>
                     {user?.name?.charAt(0).toUpperCase()}
                     {user?.name?.charAt(1).toUpperCase()}
