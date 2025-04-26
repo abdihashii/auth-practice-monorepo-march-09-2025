@@ -1,8 +1,10 @@
 import { OAuth2Client } from 'google-auth-library';
 
+import type { ProviderUserProfile } from '@/lib/types';
+
 import env from '@/env';
 
-import type { IOAuthProvider, ProviderUserProfile } from './types';
+import type { IOAuthProvider } from './oauth-provider';
 
 const GOOGLE_CLIENT_ID = env.GOOGLE_CLIENT_ID!;
 const GOOGLE_CLIENT_SECRET = env.GOOGLE_CLIENT_SECRET!;
