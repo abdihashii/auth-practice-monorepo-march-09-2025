@@ -145,7 +145,9 @@ export function ProfileCard() {
                       : 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div
+                  className="absolute inset-0 flex items-center justify-center gap-1 bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                >
                   <Button
                     type="button"
                     size="icon"
@@ -162,8 +164,7 @@ export function ProfileCard() {
                       <Button
                         type="button"
                         size="icon"
-                        variant="destructive"
-                        className="h-8 w-8 rounded-full hover:cursor-pointer"
+                        className="h-8 w-8 rounded-full hover:cursor-pointer hover:bg-destructive/60 text-foreground bg-destructive/50"
                         aria-label="Remove profile picture"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -172,14 +173,27 @@ export function ProfileCard() {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure you want to remove your profile picture?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                          Are you sure you want to remove your profile picture?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
                           This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel className="hover:cursor-pointer">Cancel</AlertDialogCancel>
-                        <AlertDialogAction className="hover:cursor-pointer bg-destructive/50 text-foreground hover:bg-destructive/60 border-none" onClick={handleProfilePictureRemove}>Confirm</AlertDialogAction>
+                        <AlertDialogCancel
+                          className="hover:cursor-pointer"
+                          aria-label="Cancel remove profile picture"
+                        >
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          className="hover:cursor-pointer bg-destructive/50 text-foreground hover:bg-destructive/60 border-none"
+                          onClick={handleProfilePictureRemove}
+                          aria-label="Confirm remove profile picture"
+                        >
+                          Confirm
+                        </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
