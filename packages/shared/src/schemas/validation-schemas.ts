@@ -141,15 +141,18 @@ export const updateUserSchema = z.object({
     .string()
     .min(2, 'Name must be at least 2 characters')
     .max(100, 'Name must be less than 100 characters')
+    .nullable()
     .optional(),
   bio: z
     .string()
     .min(2, 'Bio must be at least 2 characters')
     .max(1000, 'Bio must be less than 1000 characters')
+    .nullable()
     .optional(),
   profilePicture: z
     .string()
     .url('Invalid profile picture URL')
+    .nullable()
     .optional(),
 
   // User preferences & settings
