@@ -19,7 +19,7 @@ export async function updateUser(userId: string, user: UpdateUserDto) {
   const response = await apiClient<{ data: ApiResponse<{ message: string }> }>(
     `${BASE_API_URL}/api/v1/users/${userId}`,
     {
-      method: 'PUT',
+      method: 'PATCH',
       body: JSON.stringify({ name, bio, profilePicture }),
     },
   );

@@ -111,19 +111,47 @@ userRoutes.get('/:id', zValidator('param', idParamSchema), async (c) => {
 });
 
 /**
- * Update a user's profile information
- * PUT /users/:id
+ * Update a user's profile information.
+ * Uses PATCH instead of PUT to indicate that only the provided fields are
+ * being updated.
+ * PATCH /users/:id
  */
-userRoutes.put('/:id', every(zValidator('param', idParamSchema), zValidator('json', updateUserSchema)), async (c) => {
+userRoutes.patch('/:id', every(zValidator('param', idParamSchema), zValidator('json', updateUserSchema)), async (c) => {
   try {
     const db = c.get('db');
     const { id } = c.req.param();
 
-    const { name, bio, profilePicture } = await c.req.json();
+    // Get the request body
+    const body = await c.req.json();
+
+    // Build the update object dynamically
+    const updateData: Partial<{ name?: string; bio?: string; profilePicture?: string }> = {};
+    if (body.name !== undefined) {
+      updateData.name = body.name;
+    }
+    if (body.bio !== undefined) {
+      updateData.bio = body.bio;
+    }
+    if (body.profilePicture !== undefined) {
+      updateData.profilePicture = body.profilePicture;
+    }
+
+    // Check if any fields were provided for update
+    if (Object.keys(updateData).length === 0) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: 'No fields provided for update',
+          },
+        }),
+        400,
+      );
+    }
 
     const [updatedProfile] = await db
       .update(profilesTable)
-      .set({ name, bio, profilePicture })
+      .set(updateData)
       .where(eq(profilesTable.userId, id))
       .returning();
     if (!updatedProfile) {
