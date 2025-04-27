@@ -54,9 +54,30 @@ export function ProfileCard() {
       throw new Error('User ID is required');
     }
 
+    // Build the payload with only changed fields
+    const updatePayload: { name?: string | null; bio?: string | null } = {};
+
+    // Check if name changed from original or if original was null/undefined
+    if (name !== (user.name ?? '')) {
+      updatePayload.name = name || null; // Send null if empty string
+    }
+
+    // Check if bio changed from original or if original was null/undefined
+    if (bio !== (user.bio ?? '')) {
+      updatePayload.bio = bio || null; // Send null if empty string
+    }
+
+    // Add similar logic for profilePicture if implemented
+
+    // Only submit if there are actual changes
+    if (Object.keys(updatePayload).length === 0) {
+      setIsEditing(false); // No changes, just exit edit mode
+      return;
+    }
+
     try {
-      // Update the user via the API
-      await updateUser(user.id, { name, bio });
+      // Update the user via the API with only changed fields
+      await updateUser(user.id, updatePayload);
 
       // Invalidate the user query to refresh the data on successful update
       queryClient.invalidateQueries({ queryKey: ['user'] });
