@@ -6,6 +6,17 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { updateUser } from '@/api/user-apis';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -145,16 +156,31 @@ export function ProfileCard() {
                     <Upload className="h-4 w-4" />
                     <span className="sr-only">Upload profile picture</span>
                   </Button>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="destructive"
-                    className="h-8 w-8 rounded-full hover:cursor-pointer"
-                    onClick={handleProfilePictureRemove}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Remove profile picture</span>
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="destructive"
+                        className="h-8 w-8 rounded-full hover:cursor-pointer"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Remove profile picture</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure you want to remove your profile picture?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="hover:cursor-pointer">Cancel</AlertDialogCancel>
+                        <AlertDialogAction className="hover:cursor-pointer bg-destructive/50 text-foreground hover:bg-destructive/60 border-none" onClick={handleProfilePictureRemove}>Confirm</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
               <div>
