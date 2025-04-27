@@ -3,6 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Pencil, Trash2, Upload } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { updateUser } from '@/api/user-apis';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -38,11 +39,28 @@ export function ProfileCard() {
   };
 
   // Handle profile picture removal
-  const handleProfilePictureRemove = () => {
-    // TODO: Implement removal logic
+  const handleProfilePictureRemove = async () => {
+    // Ensure the user is authenticated
+    if (!user?.id) {
+      throw new Error('User ID is required to remove profile picture');
+    }
 
-    // eslint-disable-next-line no-console
-    console.log('Remove profile picture');
+    try {
+      // Call the updateUser API setting profilePicture to null
+      await updateUser(user.id, { profilePicture: null });
+
+      // Invalidate the user query to refresh the UI
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      toast('Profile picture removed', {
+        description: 'Your profile picture has been removed',
+      });
+    } catch (error) {
+      console.error('Error removing profile picture:', error);
+      toast('Error removing profile picture', {
+        description: 'Please try again',
+      });
+    }
   };
 
   // Handle form submission
@@ -131,7 +149,7 @@ export function ProfileCard() {
                     type="button"
                     size="icon"
                     variant="destructive"
-                    className="h-8 w-8 rounded-full"
+                    className="h-8 w-8 rounded-full hover:cursor-pointer"
                     onClick={handleProfilePictureRemove}
                   >
                     <Trash2 className="h-4 w-4" />
