@@ -32,7 +32,7 @@ export const Route = createRootRoute({
         <TanStackRouterDevtools />
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
-      <Toaster />
+      <Toaster closeButton />
     </ThemeProvider>
   ),
 });
