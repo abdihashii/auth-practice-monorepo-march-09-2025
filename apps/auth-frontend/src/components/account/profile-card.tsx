@@ -131,7 +131,7 @@ export function ProfileCard() {
           <div className="space-y-6">
             {/* Profile Picture */}
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <div className="relative">
+              <div className="relative group">
                 <Avatar className="h-24 w-24">
                   <AvatarImage
                     src={user?.profilePicture ?? ''}
@@ -145,13 +145,14 @@ export function ProfileCard() {
                       : 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <div className="absolute -bottom-2 -right-2 flex gap-1">
+                <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <Button
                     type="button"
                     size="icon"
                     variant="secondary"
                     className="h-8 w-8 rounded-full hover:cursor-pointer"
                     onClick={handleProfilePictureUpload}
+                    aria-label="Upload profile picture"
                   >
                     <Upload className="h-4 w-4" />
                     <span className="sr-only">Upload profile picture</span>
@@ -163,6 +164,7 @@ export function ProfileCard() {
                         size="icon"
                         variant="destructive"
                         className="h-8 w-8 rounded-full hover:cursor-pointer"
+                        aria-label="Remove profile picture"
                       >
                         <Trash2 className="h-4 w-4" />
                         <span className="sr-only">Remove profile picture</span>
@@ -190,6 +192,9 @@ export function ProfileCard() {
                 </p>
               </div>
             </div>
+
+            {/* Visual separator */}
+            <hr className="my-6" />
 
             {/* User Information */}
             <div className="grid gap-4">
@@ -239,11 +244,17 @@ export function ProfileCard() {
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => setIsEditing(false)}
+                onClick={() => {
+                  // Reset local state to original user values
+                  setName(user?.name || '');
+                  setBio(user?.bio || '');
+                  setIsEditing(false); // Exit edit mode
+                }}
+                aria-label="Cancel"
               >
                 Cancel
               </Button>
-              <Button type="submit">Save Changes</Button>
+              <Button type="submit" aria-label="Save changes">Save Changes</Button>
             </div>
           )}
         </form>
