@@ -192,6 +192,19 @@ userRoutes.put('/:id/password', every(zValidator('param', idParamSchema), zValid
       );
     }
 
+    // Check if the user has a password set (might be null for OAuth users)
+    if (!user.hashedPassword) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INVALID_CREDENTIALS,
+            message: 'Invalid credentials', // Keep message generic for security
+          },
+        }),
+        401,
+      );
+    }
+
     // Check if the old password is correct
     const isPasswordCorrect = await comparePasswords(old_password, user.hashedPassword);
     if (!isPasswordCorrect) {
