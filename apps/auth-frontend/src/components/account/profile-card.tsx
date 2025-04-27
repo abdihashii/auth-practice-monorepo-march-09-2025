@@ -150,7 +150,7 @@ export function ProfileCard() {
                     type="button"
                     size="icon"
                     variant="secondary"
-                    className="h-8 w-8 rounded-full"
+                    className="h-8 w-8 rounded-full hover:cursor-pointer"
                     onClick={handleProfilePictureUpload}
                   >
                     <Upload className="h-4 w-4" />
