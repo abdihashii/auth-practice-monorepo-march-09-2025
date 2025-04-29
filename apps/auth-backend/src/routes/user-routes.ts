@@ -281,7 +281,7 @@ userRoutes.put('/:id/password', every(zValidator('param', idParamSchema), zValid
 userRoutes.post('/:id/profile-picture', async (c) => {
   try {
     const db = c.get('db');
-    const { id } = c.req.param();
+    const { id: userId } = c.req.param();
 
     // Get the form data from the request
     const formData = await c.req.formData();
@@ -326,11 +326,11 @@ userRoutes.post('/:id/profile-picture', async (c) => {
       );
     }
 
-    // Upload the file to R2 and use: `pfp_user_id_date` as the object key. If
+    // Upload the file to R2 and use: `pfp_userId` as the object key. If
     // the user already has a profile picture, we will overwrite it because
     // the object key will be the same and a user should only have one profile
     // picture.
-    const objectKey = `pfp_${id}`;
+    const objectKey = `pfp_${userId}`;
     const fileContent = await file.arrayBuffer();
     const contentType = file.type; // Get the content type
     await imageUploadService.uploadImage(
@@ -343,9 +343,9 @@ userRoutes.post('/:id/profile-picture', async (c) => {
     await db
       .update(profilesTable)
       // Save the object key to the db instead of the signed URL because the
-      // pre-signed URL is ephemeral.
+      // pre-signed URL is ephemeral and lasts only 5 minutes.
       .set({ profilePicture: objectKey })
-      .where(eq(profilesTable.userId, id));
+      .where(eq(profilesTable.userId, userId));
 
     return c.json(
       createApiResponse({
