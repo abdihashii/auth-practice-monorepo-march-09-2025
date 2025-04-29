@@ -1,8 +1,10 @@
 import type { AuthResponse, User } from '@roll-your-own-auth/shared/types';
 
-import { BASE_API_URL } from '@/constants';
+import { BASE_API_URL, CURRENT_SERVER_API_VERSION_PATH_PART } from '@/constants';
 
 import { apiClient } from './api-client';
+
+const AUTH_API_URL = `${BASE_API_URL}/${CURRENT_SERVER_API_VERSION_PATH_PART}/auth`;
 
 /**
  * Log in a user with email and password
@@ -40,7 +42,7 @@ export async function register(email: string, password: string, confirmPassword:
   }
 
   try {
-    const response = await apiClient<{ data: AuthResponse }>(`${BASE_API_URL}/api/v1/auth/register`, {
+    const response = await apiClient<{ data: AuthResponse }>(`${AUTH_API_URL}/register`, {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -69,7 +71,7 @@ export async function getCurrentUser(): Promise<User | null> {
   try {
     // Use the apiClient which handles authentication via HTTP-only cookies
     // and automatically refreshes tokens if needed
-    const response = await apiClient<{ data: User }>(`${BASE_API_URL}/api/v1/auth/me`, {
+    const response = await apiClient<{ data: User }>(`${AUTH_API_URL}/me`, {
       method: 'GET',
     });
 
@@ -90,7 +92,7 @@ export async function getCurrentUser(): Promise<User | null> {
  */
 export async function logout(): Promise<void> {
   try {
-    await apiClient<{ data: { message: string } }>(`${BASE_API_URL}/api/v1/auth/logout`, {
+    await apiClient<{ data: { message: string } }>(`${AUTH_API_URL}/logout`, {
       method: 'POST',
     });
   } catch (error) {
@@ -116,7 +118,7 @@ export async function verifyEmail(token: string, signal?: AbortSignal): Promise<
 }> {
   try {
     // Call the API but we don't need the response data, just success/failure
-    await apiClient<{ data: any }>(`${BASE_API_URL}/api/v1/auth/verify-email/${token}`, {
+    await apiClient<{ data: any }>(`${AUTH_API_URL}/verify-email/${token}`, {
       method: 'POST',
       signal,
     });
@@ -158,7 +160,7 @@ export async function resendVerificationEmail(email: string): Promise<{
 }> {
   try {
     const response = await apiClient<{ data: { message: string } }>(
-      `${BASE_API_URL}/api/v1/auth/resend-verification-email`,
+      `${AUTH_API_URL}/resend-verification-email`,
       {
         method: 'POST',
         body: JSON.stringify({ email }),
