@@ -56,5 +56,8 @@
 
 ## Shared Packages & Tooling
 
-- **Shared Logic:** `@roll-your-own-auth/shared` - Internal package containing shared TypeScript types, Zod schemas, constants, and validation functions used across the backend and frontend.
+- **Package Manager:** [PNPM](https://pnpm.io/workspaces) - Used for managing this monorepo and its workspaces.
+- **Shared Logic:** `@roll-your-own-auth/shared` - Internal package containing shared TypeScript types, constants, validation functions, and [Zod](https://zod.dev/) schemas used across the backend and frontend.
 - **Linting Configuration:** `@roll-your-own-auth/eslint-config` - Internal package providing a consistent ESLint setup (based on `@antfu/eslint-config`) for the entire monorepo.
+- **Build Path Aliases:** [tsc-alias](https://github.com/justkey007/tsc-alias) - Used to resolve TypeScript path aliases during the build process.
+- **Git Hooks:** [Husky](https://typicode.github.io/husky/) & [lint-staged](https://github.com/okonet/lint-staged) - Used to enforce code quality (e.g., linting) before commits.
