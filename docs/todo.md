@@ -61,3 +61,9 @@ Bonus
     - [ ] Link/unlink social accounts
   - [ ] User preferences page
   - [x] Delete account page
+
+## Testing
+
+- [ ] Add unit tests
+- [ ] Add integration tests
+- [ ] Add e2e tests
