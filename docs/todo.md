@@ -51,8 +51,8 @@ Bonus
 - [x] Eslint
 - [ ] Link/unlink social accounts
 - [ ] Create a basic user management UI
-  - [ ] User profile page
-    - [ ] User profile picture support
+  - [x] User profile page
+    - [x] User profile picture support
     - [x] User name support
     - [x] User bio support
   - [x] Change password page
