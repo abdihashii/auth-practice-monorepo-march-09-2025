@@ -50,7 +50,6 @@ Bonus
 - [x] Implement a way to check if the user is authenticated
 - [x] Implement a way to logout the user
 - [x] Eslint
-- [ ] Link/unlink social accounts
 - [ ] Create a basic user management UI
   - [x] User profile page
     - [x] User profile picture support
@@ -59,5 +58,6 @@ Bonus
   - [x] Change password page
   - [ ] 2FA page
   - [ ] Connected accounts page (social logins)
+    - [ ] Link/unlink social accounts
   - [ ] User preferences page
   - [ ] Delete account page
