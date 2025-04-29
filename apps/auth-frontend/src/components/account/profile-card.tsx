@@ -57,105 +57,111 @@ export function ProfileCard() {
         <CardDescription>
           Manage your personal information and how it appears on your account
         </CardDescription>
+
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-6">
-            {/* Profile Picture */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <div className="relative group">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage
-                    src={user?.profilePicture ?? ''}
-                    alt={user?.name ?? 'User'}
-                  />
-                  <AvatarFallback className="text-lg">
-                    {user?.name
-                      ? `${user.name.charAt(0).toUpperCase()}${user.name
-                        .charAt(1)
-                        .toUpperCase()}`
-                      : 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div
-                  className="absolute inset-0 flex items-center justify-center gap-1 bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                >
-                  {/*
+
+      {/* Profile Picture */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center px-6">
+        <div className="relative group">
+          <Avatar className="h-24 w-24">
+            <AvatarImage
+              src={user?.profilePicture ?? ''}
+              alt={user?.name ?? 'User'}
+            />
+            <AvatarFallback className="text-lg">
+              {user?.name
+                ? `${user.name.charAt(0).toUpperCase()}${user.name
+                  .charAt(1)
+                  .toUpperCase()}`
+                : 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div
+            className="absolute inset-0 flex items-center justify-center gap-1 bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          >
+            {/*
                     Input is hidden from the user but is used to trigger the
                     file input when the button is clicked. This is a workaround
                     to allow us to upload a file when the user clicks the
                     button instead of using the default file input.
                   */}
-                  <input
-                    type="file"
-                    id="profile-picture-input"
-                    className="hidden"
-                    onChange={handleProfilePictureUpload}
-                  />
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="secondary"
-                    className="h-8 w-8 rounded-full hover:cursor-pointer"
-                    onClick={() => {
-                      const input = document.getElementById('profile-picture-input') as HTMLInputElement;
-                      input.click();
-                    }}
-                    aria-label="Upload profile picture"
+            <input
+              type="file"
+              id="profile-picture-input"
+              className="hidden"
+              onChange={handleProfilePictureUpload}
+            />
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              className="h-8 w-8 rounded-full hover:cursor-pointer"
+              onClick={() => {
+                const input = document.getElementById('profile-picture-input') as HTMLInputElement;
+                input.click();
+              }}
+              aria-label="Upload profile picture"
+            >
+              <UploadIcon className="h-4 w-4" />
+              <span className="sr-only">Upload profile picture</span>
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  className="h-8 w-8 rounded-full hover:cursor-pointer hover:bg-destructive/60 text-foreground bg-destructive/50"
+                  aria-label="Remove profile picture"
+                >
+                  <Trash2Icon className="h-4 w-4" />
+                  <span className="sr-only">Remove profile picture</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Are you sure you want to remove your profile picture?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel
+                    className="hover:cursor-pointer"
+                    aria-label="Cancel remove profile picture"
                   >
-                    <UploadIcon className="h-4 w-4" />
-                    <span className="sr-only">Upload profile picture</span>
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        type="button"
-                        size="icon"
-                        className="h-8 w-8 rounded-full hover:cursor-pointer hover:bg-destructive/60 text-foreground bg-destructive/50"
-                        aria-label="Remove profile picture"
-                      >
-                        <Trash2Icon className="h-4 w-4" />
-                        <span className="sr-only">Remove profile picture</span>
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are you sure you want to remove your profile picture?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel
-                          className="hover:cursor-pointer"
-                          aria-label="Cancel remove profile picture"
-                        >
-                          Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                          className="hover:cursor-pointer bg-destructive/50 text-foreground hover:bg-destructive/60 border-none"
-                          onClick={handleProfilePictureRemove}
-                          aria-label="Confirm remove profile picture"
-                        >
-                          Confirm
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </div>
-              <div>
-                <h3 className="text-lg font-medium">Profile Picture</h3>
-                <p className="text-sm text-muted-foreground">
-                  Upload a photo to make your account more personalized
-                </p>
-              </div>
-            </div>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    className="hover:cursor-pointer bg-destructive/50 text-foreground hover:bg-destructive/60 border-none"
+                    onClick={handleProfilePictureRemove}
+                    aria-label="Confirm remove profile picture"
+                  >
+                    Confirm
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+        <div>
+          <h3 className="text-lg font-medium">Profile Picture</h3>
+          <p className="text-sm text-muted-foreground">
+            Upload a photo to make your account more personalized
+          </p>
+        </div>
+      </div>
+
+      {/* Visual separator */}
+      <hr />
+
+      <CardContent>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-6">
 
             {/* Visual separator */}
-            <hr className="my-6" />
+            {/* <hr className="my-6" /> */}
 
             {/* User Information */}
             <div className="grid gap-4">
@@ -221,11 +227,13 @@ export function ProfileCard() {
         </form>
       </CardContent>
       {!isEditing && (
-        <CardFooter className="flex justify-end border-t px-6 py-4">
+        <CardFooter className="flex justify-end border-t">
           <Button
+            type="button"
             variant="outline"
+            className="gap-2 hover:cursor-pointer w-[150px]"
             onClick={() => setIsEditing(true)}
-            className="gap-2"
+            aria-label="Edit profile"
           >
             <PencilIcon className="h-4 w-4" />
             Edit Profile
