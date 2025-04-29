@@ -228,9 +228,11 @@ export function ProfileCard() {
       {!isEditing && (
         <CardFooter className="flex justify-end border-t">
           <Button
+            type="button"
             variant="outline"
+            className="gap-2 hover:cursor-pointer w-[150px]"
             onClick={() => setIsEditing(true)}
-            className="gap-2"
+            aria-label="Edit profile"
           >
             <PencilIcon className="h-4 w-4" />
             Edit Profile
