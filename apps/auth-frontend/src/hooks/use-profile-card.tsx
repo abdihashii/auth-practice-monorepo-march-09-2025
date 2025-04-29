@@ -26,7 +26,10 @@ export function useProfileCard() {
   const [name, setName] = useState(user?.name || '');
   const [bio, setBio] = useState(user?.bio || '');
 
-  // Handle profile picture updates
+  /**
+   * Handles the profile picture upload.
+   * @param e - The change event from the input element.
+   */
   const handleProfilePictureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!user?.id) {
       throw new Error('User ID is required to upload profile picture');
@@ -56,9 +59,11 @@ export function useProfileCard() {
     }
   };
 
-  // Handle profile picture removal
+  /**
+   * Handles the profile picture removal.
+   */
   const handleProfilePictureRemove = async () => {
-  // Ensure the user is authenticated
+    // Ensure the user is authenticated
     if (!user?.id) {
       throw new Error('User ID is required to remove profile picture');
     }
@@ -81,7 +86,10 @@ export function useProfileCard() {
     }
   };
 
-  // Handle form submission
+  /**
+   * Handles the form submission.
+   * @param e - The form submission event.
+   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -125,6 +133,22 @@ export function useProfileCard() {
     }
   };
 
+  /**
+   * State:
+   * - isEditing: To track if the user is editing the profile card
+   * - name: To store the user's name in the form. It's initialized to the
+   *         user's name or an empty string if the user has no name.
+   * - bio: To store the user's bio in the form. It's initialized to the user's
+   *        bio or an empty string if the user has no bio.
+   *
+   * Handlers:
+   * - setIsEditing: To set the editing state
+   * - setName: To set the name in the form
+   * - setBio: To set the bio in the form
+   * - handleProfilePictureUpload: To handle the profile picture upload
+   * - handleProfilePictureRemove: To handle the profile picture removal
+   * - handleSubmit: To handle the form submission
+   */
   return {
     // State
     isEditing,
