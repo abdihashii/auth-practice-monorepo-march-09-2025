@@ -18,9 +18,9 @@ export function useProfileCard() {
    * State:
    * - isEditing: To track if the user is editing the profile card
    * - name: To store the user's name in the form. It's initialized to the
-   *   user's name or an empty string if the user has no name.
+   *         user's name or an empty string if the user has no name.
    * - bio: To store the user's bio in the form. It's initialized to the user's
-   *   bio or an empty string if the user has no bio.
+   *        bio or an empty string if the user has no bio.
    */
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user?.name || '');
