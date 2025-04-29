@@ -103,9 +103,9 @@ export interface CreateUserDto {
  */
 export interface UpdateUserDto {
   // Core user information
-  name?: string;
-  bio?: string;
-  profilePicture?: string;
+  name?: string | null;
+  bio?: string | null;
+  profilePicture?: string | null;
 
   // User preferences & settings
   settings?: UserSettings;

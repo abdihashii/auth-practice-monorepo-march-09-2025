@@ -80,7 +80,8 @@ export async function apiClient<T>(
 ): Promise<T> {
   // Set default headers
   const headers = new Headers(options.headers || {});
-  if (!headers.has('Content-Type')) {
+  // Only set Content-Type if it's not already set AND the body isn't FormData
+  if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
 

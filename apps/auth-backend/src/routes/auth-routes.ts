@@ -24,6 +24,7 @@ import {
   REFRESH_TOKEN_COOKIE_NAME_PROD,
 } from '@/lib/constants';
 import { GoogleOAuthAdapter } from '@/lib/providers/google-oauth-adapter';
+import { imageUploadService } from '@/lib/services/image-upload-service';
 import {
   createApiResponse,
   generateRefreshToken,
@@ -1342,6 +1343,11 @@ protectedRoutes.get('/me', async (c) => {
       );
     }
 
+    // Get a new pre-signed URL if the profile picture is set
+    const signedUrl = profile.profilePicture
+      ? await imageUploadService.getImageUrl(profile.profilePicture)
+      : null;
+
     // Create a safe user object (excluding sensitive data)
     const safeUser: User = {
       // Core user information
@@ -1349,7 +1355,7 @@ protectedRoutes.get('/me', async (c) => {
       email: user.email,
       name: profile.name,
       bio: profile.bio,
-      profilePicture: profile.profilePicture,
+      profilePicture: signedUrl,
       createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
       updatedAt: user.updatedAt?.toISOString() ?? new Date().toISOString(),
 

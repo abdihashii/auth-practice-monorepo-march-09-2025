@@ -1,6 +1,7 @@
 import type { UserDetail, UserListItem } from '@roll-your-own-auth/shared/types';
 
 import { zValidator } from '@hono/zod-validator';
+import { ImageMimeTypes } from '@roll-your-own-auth/shared/constants';
 import { idParamSchema, updatePasswordSchema, updateUserSchema } from '@roll-your-own-auth/shared/schemas';
 import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { eq } from 'drizzle-orm';
@@ -14,6 +15,7 @@ import {
   DEFAULT_USER_DETAIL_COLUMNS,
   DEFAULT_USER_LIST_COLUMNS,
 } from '@/lib/constants';
+import { imageUploadService } from '@/lib/services/image-upload-service';
 import { comparePasswords, createApiResponse, createSelectObject, hashPassword } from '@/lib/utils';
 import { authMiddleware } from '@/middlewares/auth-middleware';
 
@@ -111,19 +113,47 @@ userRoutes.get('/:id', zValidator('param', idParamSchema), async (c) => {
 });
 
 /**
- * Update a user's profile information
- * PUT /users/:id
+ * Update a user's profile information.
+ * Uses PATCH instead of PUT to indicate that only the provided fields are
+ * being updated.
+ * PATCH /users/:id
  */
-userRoutes.put('/:id', every(zValidator('param', idParamSchema), zValidator('json', updateUserSchema)), async (c) => {
+userRoutes.patch('/:id', every(zValidator('param', idParamSchema), zValidator('json', updateUserSchema)), async (c) => {
   try {
     const db = c.get('db');
     const { id } = c.req.param();
 
-    const { name, bio, profilePicture } = await c.req.json();
+    // Get the request body
+    const body = await c.req.json();
+
+    // Build the update object dynamically
+    const updateData: Partial<{ name?: string; bio?: string; profilePicture?: string }> = {};
+    if (body.name !== undefined) {
+      updateData.name = body.name;
+    }
+    if (body.bio !== undefined) {
+      updateData.bio = body.bio;
+    }
+    if (body.profilePicture !== undefined) {
+      updateData.profilePicture = body.profilePicture;
+    }
+
+    // Check if any fields were provided for update
+    if (Object.keys(updateData).length === 0) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: 'No fields provided for update',
+          },
+        }),
+        400,
+      );
+    }
 
     const [updatedProfile] = await db
       .update(profilesTable)
-      .set({ name, bio, profilePicture })
+      .set(updateData)
       .where(eq(profilesTable.userId, id))
       .returning();
     if (!updatedProfile) {
@@ -192,6 +222,19 @@ userRoutes.put('/:id/password', every(zValidator('param', idParamSchema), zValid
       );
     }
 
+    // Check if the user has a password set (might be null for OAuth users)
+    if (!user.hashedPassword) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INVALID_CREDENTIALS,
+            message: 'Invalid credentials', // Keep message generic for security
+          },
+        }),
+        401,
+      );
+    }
+
     // Check if the old password is correct
     const isPasswordCorrect = await comparePasswords(old_password, user.hashedPassword);
     if (!isPasswordCorrect) {
@@ -228,6 +271,98 @@ userRoutes.put('/:id/password', every(zValidator('param', idParamSchema), zValid
         error: {
           code: ApiErrorCode.INTERNAL_SERVER_ERROR,
           message: 'Failed to update user password',
+        },
+      }),
+      500,
+    );
+  }
+});
+
+userRoutes.post('/:id/profile-picture', async (c) => {
+  try {
+    const db = c.get('db');
+    const { id: userId } = c.req.param();
+
+    // Get the form data from the request
+    const formData = await c.req.formData();
+
+    // Get the file from the form data
+    const file = formData.get('file');
+    if (!file || !(file instanceof File)) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: 'No file provided',
+          },
+        }),
+        400,
+      );
+    }
+
+    // Check if the file is an image type (jpeg, png, webp)
+    if (!ImageMimeTypes.includes(file.type as typeof ImageMimeTypes[number])) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: 'Invalid file type',
+          },
+        }),
+        400,
+      );
+    }
+
+    // Check if the file is too large (100KB max)
+    if (file.size > 100 * 1024) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: 'File is too large',
+          },
+        }),
+        400,
+      );
+    }
+
+    // Upload the file to R2 and use: `pfp_userId` as the object key. If
+    // the user already has a profile picture, we will overwrite it because
+    // the object key will be the same and a user should only have one profile
+    // picture.
+    const objectKey = `pfp_${userId}`;
+    const fileContent = await file.arrayBuffer();
+    const contentType = file.type; // Get the content type
+    await imageUploadService.uploadImage(
+      fileContent,
+      objectKey,
+      contentType,
+    );
+
+    // Update the user's profile picture in the database
+    await db
+      .update(profilesTable)
+      // Save the object key to the db instead of the signed URL because the
+      // pre-signed URL is ephemeral and lasts only 5 minutes.
+      .set({ profilePicture: objectKey })
+      .where(eq(profilesTable.userId, userId));
+
+    return c.json(
+      createApiResponse({
+        data: {
+          message: 'Profile picture updated successfully',
+        },
+      }),
+      200,
+    );
+  } catch (error) {
+    console.error('Error updating user profile picture:', error);
+
+    return c.json(
+      createApiResponse({
+        error: {
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+          message: 'Failed to update user profile picture',
         },
       }),
       500,

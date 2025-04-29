@@ -39,6 +39,7 @@
     "@roll-your-own-auth/shared": "workspace:^",
     "@sentry/bun": "^9.5.0",
     "@upstash/redis": "^1.34.6",
+    "aws-sdk": "^2.1692.0",
     "drizzle-orm": "^0.40.0",
     "google-auth-library": "^9.15.1",
     "hono": "^4.7.4",

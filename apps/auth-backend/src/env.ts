@@ -13,6 +13,12 @@ const EnvSchema = z.object({
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
   GOOGLE_REDIRECT_URI: z.string(),
+  R2_ACCOUNT_ID: z.string(),
+  R2_SESSION_TOKEN: z.string(),
+  R2_ACCESS_KEY_ID: z.string(),
+  R2_SECRET_ACCESS_KEY: z.string(),
+  R2_BUCKET_NAME: z.string(),
+  R2_ENDPOINT: z.string(),
   // Build time doesn't need these, but runtime does
   RESEND_API_KEY: isBuildTime ? z.string().optional() : z.string(),
   REDIS_URL: z.string().url(),

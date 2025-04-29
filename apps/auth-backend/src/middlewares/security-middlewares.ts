@@ -77,17 +77,23 @@ export const contentTypeMiddleware: MiddlewareHandler<CustomEnv> = async (
   const contentType = c.req.header('content-type');
   const method = c.req.method;
 
-  // Only check content-type for POST, PUT, PATCH requests
-  if (
-    ['POST', 'PUT', 'PATCH'].includes(method)
-    && (!contentType || !contentType.includes('application/json'))
-  ) {
-    return c.json(
-      {
-        error: 'Content-Type must be application/json',
-      },
-      415,
-    );
+  // Check content-type for POST, PUT, PATCH requests
+  if (['POST', 'PUT', 'PATCH'].includes(method)) {
+    // Ensure Content-Type is provided and is either application/json for JSON
+    // requests or multipart/form-data for file uploads
+    if (
+      !contentType
+      || (!contentType.includes('application/json')
+        && !contentType.startsWith('multipart/form-data'))
+    ) {
+      return c.json(
+        {
+          error:
+            'Unsupported Media Type: Content-Type must be application/json or multipart/form-data',
+        },
+        415,
+      );
+    }
   }
   await next();
 };

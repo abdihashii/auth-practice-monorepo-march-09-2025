@@ -5,6 +5,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { Loader2Icon } from 'lucide-react';
 import { Suspense } from 'react';
 
+import { Toaster } from '@/components/ui/sonner';
 import { queryClient } from '@/lib/react-query';
 import { AuthContextProvider } from '@/providers/auth-context-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
@@ -31,6 +32,7 @@ export const Route = createRootRoute({
         <TanStackRouterDevtools />
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
+      <Toaster closeButton />
     </ThemeProvider>
   ),
 });
