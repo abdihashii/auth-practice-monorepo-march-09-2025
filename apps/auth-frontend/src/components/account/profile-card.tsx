@@ -171,7 +171,7 @@ export function ProfileCard() {
                       />
                     )
                   : (
-                      <div className="py-2">{user?.name || 'Not set'}</div>
+                      <div className="py-2">{user?.name ?? 'Not set'}</div>
                     )}
               </div>
 
@@ -193,7 +193,7 @@ export function ProfileCard() {
                       />
                     )
                   : (
-                      <div className="py-2">{bio || 'No bio set'}</div>
+                      <div className="py-2">{bio ?? 'No bio set'}</div>
                     )}
               </div>
             </div>
@@ -207,8 +207,8 @@ export function ProfileCard() {
                 variant="secondary"
                 onClick={() => {
                   // Reset local state to original user values
-                  setName(user?.name || '');
-                  setBio(user?.bio || '');
+                  setName(user?.name ?? '');
+                  setBio(user?.bio ?? '');
                   setIsEditing(false); // Exit edit mode
                 }}
                 aria-label="Cancel"
