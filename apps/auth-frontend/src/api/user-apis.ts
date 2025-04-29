@@ -74,3 +74,14 @@ export async function updateUserProfilePicture(userId: string, file: File) {
 
   return response.data;
 }
+
+export async function deleteUser(userId: string) {
+  const response = await apiClient<{ data: ApiResponse<{ message: string }> }>(
+    `${USER_API_URL}/${userId}`,
+    {
+      method: 'DELETE',
+    },
+  );
+
+  return response.data;
+}

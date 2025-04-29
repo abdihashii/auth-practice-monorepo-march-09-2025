@@ -10,7 +10,11 @@ import { every } from 'hono/combine';
 
 import type { CustomEnv } from '@/lib/types';
 
-import { authUsersTable, profilesTable } from '@/db/schema';
+import {
+  authUserConnections,
+  authUsersTable,
+  profilesTable,
+} from '@/db/schema';
 import {
   DEFAULT_USER_DETAIL_COLUMNS,
   DEFAULT_USER_LIST_COLUMNS,
@@ -363,6 +367,48 @@ userRoutes.post('/:id/profile-picture', async (c) => {
         error: {
           code: ApiErrorCode.INTERNAL_SERVER_ERROR,
           message: 'Failed to update user profile picture',
+        },
+      }),
+      500,
+    );
+  }
+});
+
+/**
+ * Delete a user
+ * DELETE /users/:id
+ */
+// eslint-disable-next-line drizzle/enforce-delete-with-where
+userRoutes.delete('/:id', zValidator('param', idParamSchema), async (c) => {
+  try {
+    const db = c.get('db');
+    const { id: userId } = c.req.param();
+
+    // Delete the user from the auth.users table.
+    await db.delete(authUsersTable).where(eq(authUsersTable.id, userId));
+
+    // Delete the user from the profiles table.
+    await db.delete(profilesTable).where(eq(profilesTable.userId, userId));
+
+    // Delete the user connections from the auth.user_connections table.
+    await db.delete(authUserConnections).where(eq(authUserConnections.userId, userId));
+
+    return c.json(
+      createApiResponse({
+        data: {
+          message: 'User deleted successfully',
+        },
+      }),
+      200,
+    );
+  } catch (error) {
+    console.error('Error deleting user profile picture:', error);
+
+    return c.json(
+      createApiResponse({
+        error: {
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+          message: 'Failed to delete user',
         },
       }),
       500,
