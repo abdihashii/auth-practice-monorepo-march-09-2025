@@ -13,6 +13,8 @@ const EnvSchema = z.object({
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
   GOOGLE_REDIRECT_URI: z.string(),
+  GITHUB_CLIENT_ID: z.string(),
+  GITHUB_CLIENT_SECRET: z.string(),
   R2_ACCOUNT_ID: z.string(),
   R2_SESSION_TOKEN: z.string(),
   R2_ACCESS_KEY_ID: z.string(),
