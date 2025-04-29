@@ -53,3 +53,8 @@
 ### Forms
 - **Form Management:** [React Hook Form](https://react-hook-form.com/) - Performant, flexible form library.
 - **Validation Integration:** [@hookform/resolvers](https://github.com/react-hook-form/resolvers) - To integrate validation libraries (like Zod) with React Hook Form.
+
+## Shared Packages & Tooling
+
+- **Shared Logic:** `@roll-your-own-auth/shared` - Internal package containing shared TypeScript types, Zod schemas, constants, and validation functions used across the backend and frontend.
+- **Linting Configuration:** `@roll-your-own-auth/eslint-config` - Internal package providing a consistent ESLint setup (based on `@antfu/eslint-config`) for the entire monorepo.
