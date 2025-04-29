@@ -80,12 +80,27 @@ export function ProfileCard() {
                 <div
                   className="absolute inset-0 flex items-center justify-center gap-1 bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                 >
+                  {/*
+                    Input is hidden from the user but is used to trigger the
+                    file input when the button is clicked. This is a workaround
+                    to allow us to upload a file when the user clicks the
+                    button instead of using the default file input.
+                  */}
+                  <input
+                    type="file"
+                    id="profile-picture-input"
+                    className="hidden"
+                    onChange={handleProfilePictureUpload}
+                  />
                   <Button
                     type="button"
                     size="icon"
                     variant="secondary"
                     className="h-8 w-8 rounded-full hover:cursor-pointer"
-                    onClick={handleProfilePictureUpload}
+                    onClick={() => {
+                      const input = document.getElementById('profile-picture-input') as HTMLInputElement;
+                      input.click();
+                    }}
                     aria-label="Upload profile picture"
                   >
                     <UploadIcon className="h-4 w-4" />

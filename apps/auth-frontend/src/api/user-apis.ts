@@ -52,3 +52,25 @@ export async function updateUserPassword(
 
   return response.data;
 }
+
+/**
+ * Update user's profile picture
+ *
+ * @param {string} userId - The ID of the user to update
+ * @param {File} file - The file to update the profile picture with
+ * @returns {Promise<ApiResponse<{ message: string }>>} The response from the API
+ */
+export async function updateUserProfilePicture(userId: string, file: File) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await apiClient<{ data: ApiResponse<{ message: string }> }>(
+    `${USER_API_URL}/${userId}/profile-picture`,
+    {
+      method: 'POST',
+      body: formData,
+    },
+  );
+
+  return response.data;
+}

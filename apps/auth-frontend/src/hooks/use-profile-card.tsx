@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { updateUser } from '@/api/user-apis';
+import { updateUser, updateUserProfilePicture } from '@/api/user-apis';
 import { useAuthContext } from '@/hooks/use-auth-context';
 
 export function useProfileCard() {
@@ -27,11 +27,33 @@ export function useProfileCard() {
   const [bio, setBio] = useState(user?.bio || '');
 
   // Handle profile picture updates
-  const handleProfilePictureUpload = () => {
-  // TODO: Implement file upload logic
+  const handleProfilePictureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user?.id) {
+      throw new Error('User ID is required to upload profile picture');
+    }
 
-    // eslint-disable-next-line no-console
-    console.log('Upload profile picture');
+    const file = e.target.files?.[0];
+    if (!file) {
+      throw new Error('No file selected');
+    }
+
+    if (file) {
+      try {
+        await updateUserProfilePicture(user.id, file);
+
+        // Invalidate the user query to refresh the UI
+        queryClient.invalidateQueries({ queryKey: ['user'] });
+
+        toast('Profile picture updated', {
+          description: 'Your profile picture has been updated',
+        });
+      } catch (error) {
+        console.error('Error updating profile picture:', error);
+        toast('Error updating profile picture', {
+          description: 'Please try again',
+        });
+      }
+    }
   };
 
   // Handle profile picture removal
