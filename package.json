@@ -32,7 +32,8 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.5.0",
     "tsc-alias": "^1.8.11",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "wrangler": "^4.13.2"
   },
   "lint-staged": {
     "*": "pnpm lint"
