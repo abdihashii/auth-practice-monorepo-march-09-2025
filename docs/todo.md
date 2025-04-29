@@ -27,9 +27,10 @@ OAuth Providers Support
 
 Other Auth Methods
 
-- [ ] Passwordless
-- [ ] Magic Link
 - [ ] Passkey (WebAuthn, FIDO2, etc.)
+- [ ] Passwordless
+  - [ ] Magic Link
+  - [ ] OTP from email
 
 Bonus
 
