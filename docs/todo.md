@@ -18,6 +18,7 @@
   - [x] Implement proper error responses for authorization failures (401/403)
   - [x] Add documentation for token usage in API responses
 - [x] Row level security (RLS)
+- [x] Delete account, profile, and oauth connections
 
 OAuth Providers Support
 
@@ -36,7 +37,6 @@ Bonus
 
 - [ ] Add role-based access control (RBAC) for different user types
 - [ ] Create token denylist/revocation system
-- [x] Delete account, profile, and oauth connections
 
 ## Frontend TODOs
 
