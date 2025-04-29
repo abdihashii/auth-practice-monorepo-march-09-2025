@@ -1,3 +1,4 @@
+import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { and, eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
@@ -9,7 +10,7 @@ import { authUserConnections, authUsersTable, profilesTable } from '@/db/schema'
 import env from '@/env';
 import { ACCESS_TOKEN_COOKIE_NAME_DEV, ACCESS_TOKEN_COOKIE_NAME_PROD, OAUTH_STATE_COOKIE_NAME, REFRESH_TOKEN_COOKIE_NAME_DEV, REFRESH_TOKEN_COOKIE_NAME_PROD } from '@/lib/constants';
 import { GoogleOAuthAdapter } from '@/lib/providers/google-oauth-adapter';
-import { generateTokens } from '@/lib/utils';
+import { createApiResponse, generateTokens } from '@/lib/utils';
 import { authRateLimiter, publicRouteRlsMiddleware } from '@/middlewares';
 
 // Instantiate the Google OAuth adapter
@@ -276,6 +277,100 @@ oauthProviderRoutes.get(
       }
       errorUrl.searchParams.set('error', errorCode);
       return c.redirect(errorUrl.toString(), 302);
+    }
+  },
+);
+
+/**
+ * Handle GitHub OAuth flow
+ * GET /api/v1/auth/github
+ */
+oauthProviderRoutes.get('/github', authRateLimiter, async (c) => {
+  try {
+    const githubAuthUrl = 'https://github.com/login/oauth/authorize';
+    const scope = 'user:email';
+
+    return c
+      .redirect(
+        `${githubAuthUrl}?client_id=${env.GITHUB_CLIENT_ID}&scope=${scope}&redirect_uri=${env.GITHUB_REDIRECT_URI}`,
+      );
+  } catch (err) {
+    console.error('Error initiating GitHub OAuth:', err);
+    // Redirect to frontend error page or return JSON
+    // For now, redirecting to frontend base URL with an error query param
+    const errorUrl = new URL(env.FRONTEND_URL);
+    errorUrl.searchParams.set('error', 'oauth_init_failed');
+    return c.redirect(errorUrl.toString(), 302);
+  }
+});
+
+oauthProviderRoutes.get(
+  '/github/callback',
+  authRateLimiter,
+  publicRouteRlsMiddleware,
+  async (c) => {
+    const code = c.req.query('code');
+    if (!code) {
+      console.warn('Missing code in GitHub callback.');
+      return c.redirect(
+        new URL(
+          `${env.FRONTEND_URL}/error?error=missing_code`,
+        ).toString(),
+        302,
+      );
+    }
+
+    try {
+      const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          client_id: env.GITHUB_CLIENT_ID,
+          client_secret: env.GITHUB_CLIENT_SECRET,
+          code,
+        }),
+      });
+
+      if (!tokenResponse.ok) {
+        console.error('GitHub token response not ok:', tokenResponse.status);
+        const errorText = await tokenResponse.text();
+        return c.json(createApiResponse({
+          error: {
+            code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+            message: `GitHub token response not ok: ${errorText}`,
+          },
+        }), 500);
+      }
+
+      const data = await tokenResponse.json();
+      const accessToken = data.access_token;
+
+      // Get user info
+      const userResponse = await fetch('https://api.github.com/user', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const userData = await userResponse.json();
+
+      return c.json(createApiResponse({
+        data: {
+          message: 'GitHub OAuth callback successful',
+          userData,
+        },
+      }), 200);
+    } catch (err) {
+      console.error('Error handling GitHub OAuth callback:', err);
+      return c.json(createApiResponse({
+        error: {
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+          message: 'GitHub OAuth callback failed',
+        },
+      }), 500);
     }
   },
 );
