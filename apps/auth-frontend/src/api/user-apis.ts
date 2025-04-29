@@ -4,6 +4,8 @@ import { BASE_API_URL } from '@/constants';
 
 import { apiClient } from './api-client';
 
+const USER_API_URL = `${BASE_API_URL}/api/v1/users`;
+
 /**
  * Update user's profile information
  *
@@ -17,7 +19,7 @@ export async function updateUser(userId: string, user: UpdateUserDto) {
 
   // Update the user using apiClient
   const response = await apiClient<{ data: ApiResponse<{ message: string }> }>(
-    `${BASE_API_URL}/api/v1/users/${userId}`,
+    `${USER_API_URL}/${userId}`,
     {
       method: 'PATCH',
       body: JSON.stringify({ name, bio, profilePicture }),
@@ -35,10 +37,13 @@ export async function updateUser(userId: string, user: UpdateUserDto) {
  * (old_password, new_password)
  * @returns {Promise<ApiResponse<{ message: string }>>} The response from the API
  */
-export async function updateUserPassword(userId: string, passwords: UpdateUserPasswordDto) {
+export async function updateUserPassword(
+  userId: string,
+  passwords: UpdateUserPasswordDto,
+) {
   // Update the user's password using apiClient
   const response = await apiClient<{ data: ApiResponse<{ message: string }> }>(
-    `${BASE_API_URL}/api/v1/users/${userId}/password`,
+    `${USER_API_URL}/${userId}/password`,
     {
       method: 'PUT',
       body: JSON.stringify(passwords),
