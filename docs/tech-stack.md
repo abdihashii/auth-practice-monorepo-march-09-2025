@@ -5,13 +5,6 @@
 - **Database Engine:** [PostgreSQL](https://www.postgresql.org/docs) - Robust, open-source relational database.
 - **ORM:** [Drizzle](https://orm.drizzle.team/docs/overview) - TypeScript ORM for interacting with the database.
 
-## Deployment
-
-- **Containerization:** [Docker](https://docs.docker.com/) - For packaging applications and their dependencies.
-- **Local Development:** [Docker Compose](https://docs.docker.com/compose) - For defining and running multi-container Docker applications locally.
-- **Hosting (App):** [Fly.io](https://fly.io/docs) - Platform for deploying backend and frontend applications globally.
-- **Hosting (DB):** [Neon](https://neon.tech/docs) - Serverless PostgreSQL platform.
-
 ## Backend
 
 ### Core
@@ -51,6 +44,13 @@
 ### Forms
 - **Form Management:** [React Hook Form](https://react-hook-form.com/) - Performant, flexible form library.
 - **Validation Integration:** [@hookform/resolvers](https://github.com/react-hook-form/resolvers) - To integrate shared Zod schemas with React Hook Form.
+
+## Deployment
+
+- **Containerization:** [Docker](https://docs.docker.com/) - For packaging applications and their dependencies.
+- **Local Development:** [Docker Compose](https://docs.docker.com/compose) - For defining and running multi-container Docker applications locally.
+- **Hosting (App):** [Fly.io](https://fly.io/docs) - Platform for deploying backend and frontend applications globally.
+- **Hosting (DB):** [Neon](https://neon.tech/docs) - Serverless PostgreSQL platform.
 
 ## Shared Packages & Tooling
 
