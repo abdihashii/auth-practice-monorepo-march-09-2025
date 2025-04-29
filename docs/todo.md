@@ -36,7 +36,7 @@ Bonus
 
 - [ ] Add role-based access control (RBAC) for different user types
 - [ ] Create token denylist/revocation system
-- [ ] Delete account
+- [x] Delete account, profile, and oauth connections
 
 ## Frontend TODOs
 
@@ -60,4 +60,4 @@ Bonus
   - [ ] Connected accounts page (social logins)
     - [ ] Link/unlink social accounts
   - [ ] User preferences page
-  - [ ] Delete account page
+  - [x] Delete account page
