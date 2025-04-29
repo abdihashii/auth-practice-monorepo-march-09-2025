@@ -17,14 +17,13 @@
 ### Core
 - **Runtime:** [Bun](https://bun.sh/docs) - Fast JavaScript runtime and toolkit.
 - **Web Framework:** [Hono](https://hono.dev/docs) - Lightweight, fast web framework suitable for edge environments.
-- **Language:** [TypeScript](https://www.typescriptlang.org/docs) - Statically typed superset of JavaScript.
 
 ### Services & Integrations
 - **Email:** [Resend](https://resend.com/docs) - API for sending transactional emails.
 - **Cache:** [Upstash](https://upstash.com/docs) - Serverless Redis provider for caching and session management.
 - **Authentication:** 
   - [Google Auth Library](https://cloud.google.com/nodejs/docs/reference/google-auth-library/latest) - For implementing Google OAuth sign-in.
-- **Validation:** [Zod](https://zod.dev/) with [@hono/zod-validator](https://hono.dev/middleware/builtin/zod-validator) - For defining schemas and validating request data.
+- **Validation:** [@hono/zod-validator](https://hono.dev/middleware/builtin/zod-validator) - Middleware for validating request data using shared Zod schemas.
 - **Rate Limiting:** [hono-rate-limiter](https://github.com/honojs/middleware/tree/main/packages/rate-limiter) with Redis - To prevent abuse by limiting request frequency.
 - **Object Storage:** [Cloudflare R2](https://developers.cloudflare.com/r2) - S3-compatible storage for files.
 - **Storage SDK:** [AWS S3 SDK](https://aws.amazon.com/sdk-for-javascript) - Used to interact with R2 via its S3-compatible API.
@@ -35,7 +34,6 @@
 ### Core & Build
 - **Framework:** [React](https://react.dev/) - JavaScript library for building user interfaces.
 - **Build Tool:** [Vite](https://vitejs.dev/) - Fast frontend build tool and development server.
-- **Language:** [TypeScript](https://www.typescriptlang.org/docs) - Statically typed superset of JavaScript.
 
 ### Routing & State
 - **Routing:** [TanStack Router](https://tanstack.com/router/latest) - Type-safe routing for React applications.
@@ -52,12 +50,13 @@
 
 ### Forms
 - **Form Management:** [React Hook Form](https://react-hook-form.com/) - Performant, flexible form library.
-- **Validation Integration:** [@hookform/resolvers](https://github.com/react-hook-form/resolvers) - To integrate validation libraries (like Zod) with React Hook Form.
+- **Validation Integration:** [@hookform/resolvers](https://github.com/react-hook-form/resolvers) - To integrate shared Zod schemas with React Hook Form.
 
 ## Shared Packages & Tooling
 
+- **Primary Language:** [TypeScript](https://www.typescriptlang.org/docs) - Statically typed superset of JavaScript used throughout the monorepo.
 - **Package Manager:** [PNPM](https://pnpm.io/workspaces) - Used for managing this monorepo and its workspaces.
-- **Shared Logic:** `@roll-your-own-auth/shared` - Internal package containing shared TypeScript types, constants, validation functions, and [Zod](https://zod.dev/) schemas used across the backend and frontend.
+- **Shared Logic:** `@roll-your-own-auth/shared` - Internal package containing shared types, constants, validation functions, and [Zod](https://zod.dev/) schemas used across the backend and frontend.
 - **Linting Configuration:** `@roll-your-own-auth/eslint-config` - Internal package providing a consistent ESLint setup (based on `@antfu/eslint-config`) for the entire monorepo.
 - **Build Path Aliases:** [tsc-alias](https://github.com/justkey007/tsc-alias) - Used to resolve TypeScript path aliases during the build process.
 - **Git Hooks:** [Husky](https://typicode.github.io/husky/) & [lint-staged](https://github.com/okonet/lint-staged) - Used to enforce code quality (e.g., linting) before commits.
