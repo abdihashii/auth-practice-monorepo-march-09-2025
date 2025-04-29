@@ -24,6 +24,32 @@
 - **Cache:** [Upstash](https://upstash.com/docs) - Serverless Redis provider for caching and session management.
 - **Authentication:** 
   - [Google Auth Library](https://cloud.google.com/nodejs/docs/reference/google-auth-library/latest) - For implementing Google OAuth sign-in.
+- **Validation:** [Zod](https://zod.dev/) with [@hono/zod-validator](https://hono.dev/middleware/builtin/zod-validator) - For defining schemas and validating request data.
+- **Rate Limiting:** [hono-rate-limiter](https://github.com/honojs/middleware/tree/main/packages/rate-limiter) with Redis - To prevent abuse by limiting request frequency.
 - **Object Storage:** [Cloudflare R2](https://developers.cloudflare.com/r2) - S3-compatible storage for files.
 - **Storage SDK:** [AWS S3 SDK](https://aws.amazon.com/sdk-for-javascript) - Used to interact with R2 via its S3-compatible API.
 - **Monitoring:** [Sentry](https://docs.sentry.io/platforms/javascript/guides/bun) - Error tracking and performance monitoring.
+
+## Frontend
+
+### Core & Build
+- **Framework:** [React](https://react.dev/) - JavaScript library for building user interfaces.
+- **Build Tool:** [Vite](https://vitejs.dev/) - Fast frontend build tool and development server.
+- **Language:** [TypeScript](https://www.typescriptlang.org/docs) - Statically typed superset of JavaScript.
+
+### Routing & State
+- **Routing:** [TanStack Router](https://tanstack.com/router/latest) - Type-safe routing for React applications.
+- **Data Fetching:** [TanStack Query](https://tanstack.com/query/latest) - Asynchronous state management, data fetching, and caching.
+
+### UI & Styling
+- **CSS Framework:** [Tailwind CSS](https://tailwindcss.com/docs) - Utility-first CSS framework.
+- **Component Primitives:** [Radix UI](https://www.radix-ui.com/primitives) - Unstyled, accessible UI components.
+- **Styling Utilities:** [clsx](https://github.com/lukeed/clsx), [tailwind-merge](https://github.com/dcastil/tailwind-merge), [class-variance-authority](https://cva.style/docs) - For managing CSS classes.
+- **Animations:** [tailwindcss-animate](https://github.com/jamiebuilds/tailwindcss-animate) - Tailwind plugin for animations.
+- **Icons:** [Lucide React](https://lucide.dev/) - Icon library.
+- **Theming:** [next-themes](https://github.com/pacocoursey/next-themes) - Theme (e.g., dark/light mode) management.
+- **Notifications:** [Sonner](https://sonner.emilkowal.ski/) - Toast notification library.
+
+### Forms
+- **Form Management:** [React Hook Form](https://react-hook-form.com/) - Performant, flexible form library.
+- **Validation Integration:** [@hookform/resolvers](https://github.com/react-hook-form/resolvers) - To integrate validation libraries (like Zod) with React Hook Form.
