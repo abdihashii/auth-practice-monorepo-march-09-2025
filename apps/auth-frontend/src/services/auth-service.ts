@@ -11,7 +11,9 @@ import { authStorage } from '@/services/auth-storage-service';
  *
  * Can be called from anywhere in the application.
  */
-export async function handleLogout(options = { silent: false }): Promise<void> {
+export async function handleLogout(
+  options = { silent: false },
+): Promise<void> {
   try {
     // Call the logout API endpoint to clear the HTTP-only refresh and access
     // token cookies

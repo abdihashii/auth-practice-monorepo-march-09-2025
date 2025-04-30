@@ -11,7 +11,9 @@ const isCI = process.env.CI === 'true'
 // This is because the env vars are stored in Fly.io secrets and will be
 // available at runtime for validation and use in the app.
 if (isCI) {
-  console.log('✅ Skipping environment schema validation in CI/CD or build environment');
+  console.log(
+    '✅ Skipping environment schema validation in CI/CD or build environment',
+  );
   process.exit(0);
 }
 

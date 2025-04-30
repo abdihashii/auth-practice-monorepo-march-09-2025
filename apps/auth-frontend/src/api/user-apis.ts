@@ -1,4 +1,8 @@
-import type { ApiResponse, UpdateUserDto, UpdateUserPasswordDto } from '@roll-your-own-auth/shared/types';
+import type {
+  ApiResponse,
+  UpdateUserDto,
+  UpdateUserPasswordDto,
+} from '@roll-your-own-auth/shared/types';
 
 import { BASE_API_URL } from '@/constants';
 

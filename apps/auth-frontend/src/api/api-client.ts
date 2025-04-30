@@ -1,4 +1,7 @@
-import { ApiErrorCode, authErrorCodesRequiringLogout } from '@roll-your-own-auth/shared/types';
+import {
+  ApiErrorCode,
+  authErrorCodesRequiringLogout,
+} from '@roll-your-own-auth/shared/types';
 
 import { BASE_API_URL } from '@/constants';
 import { handleLogout } from '@/services/auth-service';
@@ -133,14 +136,19 @@ export async function apiClient<T>(
         try {
           // Call the refresh endpoint - server handles setting the new cookies
           // to the HTTP-only cookies.
-          const refreshResponse = await fetch(`${BASE_API_URL}/api/v1/auth/refresh`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-          });
+          const refreshResponse = await fetch(
+            `${BASE_API_URL}/api/v1/auth/refresh`,
+            {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+            },
+          );
 
           if (!refreshResponse.ok) {
-            throw new Error(`Failed to refresh token: HTTP ${refreshResponse.status}`);
+            throw new Error(
+              `Failed to refresh token: HTTP ${refreshResponse.status}`,
+            );
           }
 
           // Reset refreshing flag
@@ -177,7 +185,10 @@ export async function apiClient<T>(
         // Then handle the logout API call and cleanup
         await handleLogout({ silent: true });
 
-        throw new Error(responseData.error?.message || 'Session expired. Please log in again.');
+        throw new Error(
+          responseData.error?.message
+          || 'Session expired. Please log in again.',
+        );
       }
 
       // Other 401 errors
