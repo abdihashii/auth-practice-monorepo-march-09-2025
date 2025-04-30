@@ -43,7 +43,10 @@ export async function verifyPassword(
  * @param {string} passwordTwo - The hashed password from the database
  * @returns {Promise<boolean>} True if the password is valid, false otherwise
  */
-export async function comparePasswords(passwordOne: string, passwordTwo: string): Promise<boolean> {
+export async function comparePasswords(
+  passwordOne: string,
+  passwordTwo: string,
+): Promise<boolean> {
   return await verifyPassword(passwordOne, passwordTwo);
 }
 
@@ -62,7 +65,11 @@ export async function generateAccessToken(userId: string, secret: string) {
       secret,
     );
   } catch (error) {
-    throw new Error(`Failed to generate access token: ${error instanceof Error ? error.message : 'unknown error'}`);
+    throw new Error(
+      `Failed to generate access token: ${error instanceof Error
+        ? error.message
+        : 'unknown error'}`,
+    );
   }
 }
 
@@ -85,7 +92,11 @@ export async function generateRefreshToken(userId: string, secret: string) {
       secret,
     );
   } catch (error) {
-    throw new Error(`Failed to generate refresh token: ${error instanceof Error ? error.message : 'unknown error'}`);
+    throw new Error(
+      `Failed to generate refresh token: ${error instanceof Error
+        ? error.message
+        : 'unknown error'}`,
+    );
   }
 }
 
@@ -115,11 +126,18 @@ export async function generateTokens(userId: string): Promise<{
  * Generates a random UUID verification token with a 24 hour expiration
  * time
  *
- * @returns {Promise<{ verificationToken: string; verificationTokenExpiresAt: Date }>} The verification token and expiration date
+ * @returns {Promise<
+ * {
+ *   verificationToken: string;
+ *   verificationTokenExpiresAt: Date
+ * }>}
+ * The verification token and expiration date
  */
 export async function generateVerificationToken() {
   const verificationToken = crypto.randomUUID();
-  const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  const verificationTokenExpiresAt = new Date(
+    Date.now() + 24 * 60 * 60 * 1000,
+  ); // 24 hours
 
   return { verificationToken, verificationTokenExpiresAt };
 }
@@ -133,7 +151,9 @@ export async function generateVerificationToken() {
  * @returns {Promise<string>} The new access token
  * @throws {Error} If JWT_SECRET is missing, refresh token is invalid or expired
  */
-export async function refreshAccessToken(refreshToken: string): Promise<string> {
+export async function refreshAccessToken(
+  refreshToken: string,
+): Promise<string> {
   const secret = env.JWT_SECRET;
   if (!secret) {
     throw new Error('JWT_SECRET is not defined');
@@ -162,6 +182,10 @@ export async function refreshAccessToken(refreshToken: string): Promise<string> 
     return accessToken;
   } catch (error) {
     // Propagate the error with a clear message
-    throw new Error(`Failed to refresh access token: ${error instanceof Error ? error.message : 'unknown error'}`);
+    throw new Error(
+      `Failed to refresh access token: ${error instanceof Error
+        ? error.message
+        : 'unknown error'}`,
+    );
   }
 }

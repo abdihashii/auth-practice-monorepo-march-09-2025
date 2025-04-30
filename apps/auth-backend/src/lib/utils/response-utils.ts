@@ -1,4 +1,9 @@
-import type { ApiErrorCode, ApiResponse, CollectionResponse, SingleResourceResponse } from '@roll-your-own-auth/shared/types';
+import type {
+  ApiErrorCode,
+  ApiResponse,
+  CollectionResponse,
+  SingleResourceResponse,
+} from '@roll-your-own-auth/shared/types';
 
 import { createApiErrorResponse } from '@/lib/utils';
 

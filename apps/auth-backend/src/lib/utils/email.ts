@@ -13,7 +13,11 @@ const resend = new Resend(env.RESEND_API_KEY);
  * @param token - The token to verify the email
  * @param baseUrl - The base URL of the application
  */
-export async function sendVerificationEmail(email: string, token: string, baseUrl: string): Promise<{
+export async function sendVerificationEmail(
+  email: string,
+  token: string,
+  baseUrl: string,
+): Promise<{
   success: boolean;
   data: CreateEmailResponseSuccess | null;
   error?: undefined;

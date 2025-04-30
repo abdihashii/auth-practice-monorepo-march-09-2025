@@ -91,12 +91,21 @@ export class GoogleOAuthAdapter implements IOAuthProvider {
    * @throws {Error} If the authorization code is invalid or expired.
    * @throws {Error} For general failures during the token exchange or verification process.
    */
-  async handleCallback(code: string, state: string, storedState: string): Promise<ProviderUserProfile> {
+  async handleCallback(
+    code: string,
+    state: string,
+    storedState: string,
+  ): Promise<ProviderUserProfile> {
     if (state !== storedState) {
       throw new Error('Invalid state parameter (CSRF detected)');
     }
 
-    let userInfoPayload: { sub: string; email: string; name?: string; picture?: string } | null = null;
+    let userInfoPayload: {
+      sub: string;
+      email: string;
+      name?: string;
+      picture?: string;
+    } | null = null;
     let idTokenPayload: { sub: string; email: string } | null = null;
 
     try {
@@ -143,7 +152,11 @@ export class GoogleOAuthAdapter implements IOAuthProvider {
         // Clear credentials after use if desired
         // this.oauth2Client.setCredentials(null); // Optional: Credentials are short-lived anyway
 
-        if (!userInfoResponse || !userInfoResponse.data || !userInfoResponse.data.sub) {
+        if (
+          !userInfoResponse
+          || !userInfoResponse.data
+          || !userInfoResponse.data.sub
+        ) {
           throw new Error('Failed to fetch user info or invalid response');
         }
         userInfoPayload = userInfoResponse.data;
@@ -159,7 +172,9 @@ export class GoogleOAuthAdapter implements IOAuthProvider {
       }
       // Optional: Also check if email matches, though sub is the primary identifier
       if (userInfoPayload.email !== idTokenPayload.email) {
-        console.warn('Mismatch between ID token email and UserInfo email. Using ID token email.');
+        console.warn(
+          'Mismatch between ID token email and UserInfo email. Using ID token email.',
+        );
       }
 
       // 5. Construct the standardized user profile using UserInfo data where available,
@@ -179,7 +194,9 @@ export class GoogleOAuthAdapter implements IOAuthProvider {
         throw new Error('Invalid or expired authorization code.');
       }
       // Re-throw other specific errors or a generic one
-      throw error instanceof Error ? error : new Error('Failed to process Google authentication.');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to process Google authentication.');
     }
   }
 }
