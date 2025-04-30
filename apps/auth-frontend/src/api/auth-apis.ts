@@ -1,8 +1,14 @@
 import type { AuthResponse, User } from '@roll-your-own-auth/shared/types';
 
-import { BASE_API_URL } from '@/constants';
+import {
+  BASE_API_URL,
+  CURRENT_SERVER_API_VERSION_PATH_PART,
+} from '@/constants';
 
 import { apiClient } from './api-client';
+
+const AUTH_API_URL
+= `${BASE_API_URL}/${CURRENT_SERVER_API_VERSION_PATH_PART}/auth`;
 
 /**
  * Log in a user with email and password
@@ -12,12 +18,18 @@ import { apiClient } from './api-client';
  *
  * @returns AuthResponse containing user data
  */
-export async function login(email: string, password: string): Promise<AuthResponse> {
+export async function login(
+  email: string,
+  password: string,
+): Promise<AuthResponse> {
   try {
-    const response = await apiClient<{ data: AuthResponse }>(`${BASE_API_URL}/api/v1/auth/login`, {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
+    const response = await apiClient<{ data: AuthResponse }>(
+      `${BASE_API_URL}/api/v1/auth/login`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      },
+    );
 
     return response.data;
   } catch (error: any) {
@@ -33,14 +45,20 @@ export async function login(email: string, password: string): Promise<AuthRespon
  *
  * @returns AuthResponse containing registration status
  */
-export async function register(email: string, password: string, confirmPassword: string): Promise<AuthResponse> {
+export async function register(
+  email: string,
+  password: string,
+  confirmPassword: string,
+): Promise<AuthResponse> {
   // Double validate the password and confirm password
   if (password !== confirmPassword) {
     throw new Error('Passwords do not match');
   }
 
   try {
-    const response = await apiClient<{ data: AuthResponse }>(`${BASE_API_URL}/api/v1/auth/register`, {
+    const response = await apiClient<
+      { data: AuthResponse }
+    >(`${AUTH_API_URL}/register`, {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -55,13 +73,13 @@ export async function register(email: string, password: string, confirmPassword:
 /**
  * Get the current authenticated user
  *
- * This function fetches the currently authenticated user by calling the /me endpoint.
- * Authentication is handled via HTTP-only cookies that are automatically included
- * in the request by the apiClient.
+ * This function fetches the currently authenticated user by calling the /me
+ * endpoint. Authentication is handled via HTTP-only cookies that are
+ * automatically included in the request by the apiClient.
  *
- * If the user is not authenticated or the access token has expired, the apiClient
- * will automatically attempt to refresh the token before failing. If the token
- * refresh fails, the user will be logged out.
+ * If the user is not authenticated or the access token has expired, the
+ * apiClient will automatically attempt to refresh the token before failing.
+ * If the token refresh fails, the user will be logged out.
  *
  * @returns User data if authenticated, null if unauthenticated or on error
  */
@@ -69,13 +87,14 @@ export async function getCurrentUser(): Promise<User | null> {
   try {
     // Use the apiClient which handles authentication via HTTP-only cookies
     // and automatically refreshes tokens if needed
-    const response = await apiClient<{ data: User }>(`${BASE_API_URL}/api/v1/auth/me`, {
+    const response = await apiClient<{ data: User }>(`${AUTH_API_URL}/me`, {
       method: 'GET',
     });
 
     return response.data;
   } catch (error) {
-    // If there's an error, the user is not authenticated or something else went wrong
+    // If there's an error, the user is not authenticated or something else
+    // went wrong
     console.error('Error fetching current user:', error);
     return null;
   }
@@ -90,7 +109,7 @@ export async function getCurrentUser(): Promise<User | null> {
  */
 export async function logout(): Promise<void> {
   try {
-    await apiClient<{ data: { message: string } }>(`${BASE_API_URL}/api/v1/auth/logout`, {
+    await apiClient<{ data: { message: string } }>(`${AUTH_API_URL}/logout`, {
       method: 'POST',
     });
   } catch (error) {
@@ -107,16 +126,19 @@ export async function logout(): Promise<void> {
  *
  * @returns Result of email verification attempt
  */
-export async function verifyEmail(token: string, signal?: AbortSignal): Promise<{
-  success: boolean;
-  error?: {
-    code?: string;
-    message: string;
-  };
-}> {
+export async function verifyEmail(
+  token: string,
+  signal?: AbortSignal,
+): Promise<{
+    success: boolean;
+    error?: {
+      code?: string;
+      message: string;
+    };
+  }> {
   try {
     // Call the API but we don't need the response data, just success/failure
-    await apiClient<{ data: any }>(`${BASE_API_URL}/api/v1/auth/verify-email/${token}`, {
+    await apiClient<{ data: any }>(`${AUTH_API_URL}/verify-email/${token}`, {
       method: 'POST',
       signal,
     });
@@ -158,7 +180,7 @@ export async function resendVerificationEmail(email: string): Promise<{
 }> {
   try {
     const response = await apiClient<{ data: { message: string } }>(
-      `${BASE_API_URL}/api/v1/auth/resend-verification-email`,
+      `${AUTH_API_URL}/resend-verification-email`,
       {
         method: 'POST',
         body: JSON.stringify({ email }),
