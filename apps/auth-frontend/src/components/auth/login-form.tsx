@@ -77,7 +77,9 @@ export function LoginForm({
             <div className="flex flex-col gap-6">
               {/* Server error message */}
               {errors.root?.message && (
-                <div className="flex items-center gap-2 p-4 text-sm border border-red-500 bg-red-50 text-red-900 rounded-md">
+                <div
+                  className="flex items-center gap-2 p-4 text-sm border border-red-500 bg-red-50 text-red-900 rounded-md"
+                >
                   <AlertCircle className="h-4 w-4" />
                   <div>{errors.root.message}</div>
                 </div>
@@ -147,7 +149,11 @@ export function LoginForm({
                   <p className="text-red-500">{errors.password.message}</p>
                 )}
               </div>
-              <Button type="submit" className="w-full hover:cursor-pointer" disabled={isLoggingIn}>
+              <Button
+                type="submit"
+                className="w-full hover:cursor-pointer"
+                disabled={isLoggingIn}
+              >
                 {isLoggingIn
                   ? (
                       <>
@@ -163,7 +169,10 @@ export function LoginForm({
                 Use an anchor tag for direct navigation to the Google OAuth
                 login page
               */}
-              <a href={`${BASE_API_URL}/api/v1/auth/google`} className="block w-full">
+              <a
+                href={`${BASE_API_URL}/api/v1/auth/google`}
+                className="block w-full"
+              >
                 <Button
                   type="button"
                   variant="outline"
@@ -172,7 +181,10 @@ export function LoginForm({
                   Login with Google
                 </Button>
               </a>
-              <a href={`${BASE_API_URL}/api/v1/auth/github`} className="block w-full">
+              <a
+                href={`${BASE_API_URL}/api/v1/auth/github`}
+                className="block w-full"
+              >
                 <Button
                   type="button"
                   variant="outline"
