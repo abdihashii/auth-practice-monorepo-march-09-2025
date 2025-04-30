@@ -160,9 +160,9 @@ export function LoginForm({
                     )}
               </Button>
               {/*
-                * Use an anchor tag for direct navigation to the Google OAuth
-                * login page
-                */}
+                Use an anchor tag for direct navigation to the Google OAuth
+                login page
+              */}
               <a href={`${BASE_API_URL}/api/v1/auth/google`} className="block w-full">
                 <Button
                   type="button"
@@ -170,6 +170,15 @@ export function LoginForm({
                   className="w-full hover:cursor-pointer"
                 >
                   Login with Google
+                </Button>
+              </a>
+              <a href={`${BASE_API_URL}/api/v1/auth/github`} className="block w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full hover:cursor-pointer"
+                >
+                  Login with GitHub
                 </Button>
               </a>
             </div>
