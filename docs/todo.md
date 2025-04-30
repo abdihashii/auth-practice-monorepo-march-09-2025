@@ -23,7 +23,7 @@
 OAuth Providers Support
 
 - [x] Google OAuth2.0
-- [ ] GitHub OAuth2.0
+- [x] GitHub OAuth2.0
 - [ ] Apple OAuth2.0
 
 Other Auth Methods
