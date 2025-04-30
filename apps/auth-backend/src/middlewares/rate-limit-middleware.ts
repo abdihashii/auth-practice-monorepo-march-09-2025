@@ -23,7 +23,10 @@ let redisClient: any;
       });
 
       // Connect to Redis and handle events
-      redisClient.on('error', (err: any) => console.error('Redis Client Error:', err));
+      redisClient.on('error', (err: any) => console.error(
+        'Redis Client Error:',
+        err,
+      ));
       await redisClient.connect();
 
       // eslint-disable-next-line no-console
@@ -87,7 +90,11 @@ function keyGenerator(c: Context<Env, string, Input>) {
         // Cast to CustomEnv to access our custom variables
         const customContext = c as Context<CustomEnv>;
         const rateLimitEmail = customContext.get('rateLimitEmail');
-        if (rateLimitEmail && typeof rateLimitEmail === 'string' && rateLimitEmail.trim().length > 0) {
+        if (
+          rateLimitEmail
+          && typeof rateLimitEmail === 'string'
+          && rateLimitEmail.trim().length > 0
+        ) {
           return `email:${rateLimitEmail}:${path}`;
         }
       } catch {

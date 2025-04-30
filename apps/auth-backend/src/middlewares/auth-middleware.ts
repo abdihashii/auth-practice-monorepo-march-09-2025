@@ -7,7 +7,12 @@ import { verify } from 'hono/jwt';
 
 import { authUsersTable, profilesTable } from '@/db/schema';
 import env from '@/env';
-import { ACCESS_TOKEN_COOKIE_NAME_DEV, ACCESS_TOKEN_COOKIE_NAME_PROD, REFRESH_TOKEN_COOKIE_NAME_DEV, REFRESH_TOKEN_COOKIE_NAME_PROD } from '@/lib/constants';
+import {
+  ACCESS_TOKEN_COOKIE_NAME_DEV,
+  ACCESS_TOKEN_COOKIE_NAME_PROD,
+  REFRESH_TOKEN_COOKIE_NAME_DEV,
+  REFRESH_TOKEN_COOKIE_NAME_PROD,
+} from '@/lib/constants';
 import { createApiResponse, refreshAccessToken } from '@/lib/utils';
 
 interface AccessTokenJWTPayload {
@@ -92,7 +97,8 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 
         // Decode the new access token to get user ID
         const decodedAccessToken = await verify(newAccessToken, jwtSecret);
-        const accessTokenPayload = decodedAccessToken as unknown as AccessTokenJWTPayload;
+        const accessTokenPayload
+        = decodedAccessToken as unknown as AccessTokenJWTPayload;
         userId = accessTokenPayload.userId;
       } catch (error) {
         console.error('Failed to refresh access token:', error);
@@ -128,7 +134,8 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
       // appropriate client-side.
       try {
         const decodedAccessToken = await verify(accessToken, jwtSecret);
-        const accessTokenPayload = decodedAccessToken as unknown as AccessTokenJWTPayload;
+        const accessTokenPayload
+        = decodedAccessToken as unknown as AccessTokenJWTPayload;
 
         // Check if the user id is present in the payload
         if (!accessTokenPayload.userId) {
@@ -226,7 +233,8 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 
           // Decode the new access token to get user ID
           const decodedAccessToken = await verify(newAccessToken, jwtSecret);
-          const accessTokenPayload = decodedAccessToken as unknown as AccessTokenJWTPayload;
+          const accessTokenPayload
+          = decodedAccessToken as unknown as AccessTokenJWTPayload;
 
           // Use the user ID from the payload
           userId = accessTokenPayload.userId;
@@ -265,10 +273,17 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
     // connection against RLS for service requests.
     try {
       // Execute set_config calls separately to allow proper parameter binding
-      await db.execute(sql`SELECT set_config('app.current_user_id', ${userId}::text, FALSE)`);
-      await db.execute(sql`SELECT set_config('app.is_service_request', 'false', FALSE)`);
+      await db.execute(
+        sql`SELECT set_config('app.current_user_id', ${userId}::text, FALSE)`,
+      );
+      await db.execute(
+        sql`SELECT set_config('app.is_service_request', 'false', FALSE)`,
+      );
     } catch (dbError) {
-      console.error(`[AuthMiddleware] Error setting DB config for userId: ${userId}`, dbError);
+      console.error(
+        `[AuthMiddleware] Error setting DB config for userId: ${userId}`,
+        dbError,
+      );
       // Re-throw or handle as appropriate, maybe return 500?
       // For now, let's return a generic unauthorized to match existing behavior but log the real cause
       return c.json(
@@ -323,7 +338,8 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
       if (accessToken) {
         try {
           const decodedAccessToken = await verify(accessToken, jwtSecret);
-          const accessTokenPayload = decodedAccessToken as unknown as AccessTokenJWTPayload;
+          const accessTokenPayload
+          = decodedAccessToken as unknown as AccessTokenJWTPayload;
           tokenIssuedAt = accessTokenPayload.iat;
         } catch {
           // If we can't decode the access token, we'll use the current time
@@ -360,7 +376,10 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
         WHERE ${profilesTable.userId} = ${user.id}
       `);
     } catch (updateError) {
-      console.error(`[AuthMiddleware] Error updating last activity for userId: ${userId}`, updateError);
+      console.error(
+        `[AuthMiddleware] Error updating last activity for userId: ${userId}`,
+        updateError,
+      );
       // Depending on policy, you might want to let the request proceed or return an error
       // For now, let's log and continue.
     }

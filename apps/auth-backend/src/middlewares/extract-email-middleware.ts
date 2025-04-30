@@ -6,7 +6,10 @@ import type { CustomEnv } from '@/lib/types';
  * Middleware that extracts email from request body for login/register routes
  * and stores it in the context for rate limiting purposes
  */
-export const extractEmailMiddleware: MiddlewareHandler<CustomEnv> = async (c, next) => {
+export const extractEmailMiddleware: MiddlewareHandler<CustomEnv> = async (
+  c,
+  next,
+) => {
   const path = new URL(c.req.url).pathname;
 
   // Only process login and register routes
@@ -19,7 +22,12 @@ export const extractEmailMiddleware: MiddlewareHandler<CustomEnv> = async (c, ne
       const body = await clonedRequest.json();
 
       // If email exists in the body, store it in the context for rate limiting
-      if (body && typeof body === 'object' && 'email' in body && typeof body.email === 'string') {
+      if (
+        body
+        && typeof body === 'object'
+        && 'email' in body
+        && typeof body.email === 'string'
+      ) {
         // Use context storage instead of modifying request headers
         c.set('rateLimitEmail', body.email);
       }
