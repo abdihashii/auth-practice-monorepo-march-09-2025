@@ -9,10 +9,8 @@ import {
   AuthLink,
   PasswordInput,
 } from '@/components/auth/auth-form';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { BASE_API_URL } from '@/constants';
 import { useAuthContext } from '@/hooks/use-auth-context';
 
 interface LoginFormProps {
@@ -50,35 +48,6 @@ export function LoginForm({
     }
   }
 
-  const socialAuth = (
-    <>
-      <a
-        href={`${BASE_API_URL}/api/v1/auth/google`}
-        className="block w-full"
-      >
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full hover:cursor-pointer"
-        >
-          Login with Google
-        </Button>
-      </a>
-      <a
-        href={`${BASE_API_URL}/api/v1/auth/github`}
-        className="block w-full"
-      >
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full hover:cursor-pointer"
-        >
-          Login with GitHub
-        </Button>
-      </a>
-    </>
-  );
-
   return (
     <AuthForm
       className={className}
@@ -96,6 +65,7 @@ export function LoginForm({
           linkText="Register"
         />
       )}
+      mode="login"
     >
       <div className="grid gap-2">
         <Label htmlFor="email">Email</Label>
@@ -116,8 +86,6 @@ export function LoginForm({
         register={register('password')}
         error={errors.password?.message}
       />
-
-      {socialAuth}
     </AuthForm>
   );
 }

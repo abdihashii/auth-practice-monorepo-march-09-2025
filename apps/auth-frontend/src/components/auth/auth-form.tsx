@@ -13,7 +13,24 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { BASE_API_URL } from '@/constants';
 import { cn } from '@/lib/utils';
+
+const socialAuthOptions = [
+  {
+    provider: 'Google',
+    authUrl: `${BASE_API_URL}/api/v1/auth/google`,
+  },
+  {
+    provider: 'GitHub',
+    authUrl: `${BASE_API_URL}/api/v1/auth/github`,
+  },
+];
+
+interface SocialAuthOption {
+  provider: string;
+  authUrl: string;
+}
 
 interface AuthFormProps {
   className?: string;
@@ -25,6 +42,7 @@ interface AuthFormProps {
   submitText: string;
   loadingText?: string;
   footer?: ReactNode;
+  mode: 'login' | 'register';
   children: ReactNode;
 }
 
@@ -38,6 +56,7 @@ export function AuthForm({
   submitText,
   loadingText,
   footer,
+  mode,
   children,
   ...props
 }: AuthFormProps) {
@@ -82,6 +101,8 @@ export function AuthForm({
                       submitText
                     )}
               </Button>
+
+              {socialAuthOptions.length > 0 && <SocialAuth options={socialAuthOptions} mode={mode} />}
             </div>
             {footer
               && (
@@ -93,6 +114,32 @@ export function AuthForm({
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function SocialAuth({ options, mode }: { options: SocialAuthOption[]; mode: 'login' | 'register' }) {
+  return (
+    <>
+      {options.map((option) => (
+        <a
+          key={option.provider}
+          href={option.authUrl}
+          className="block w-full"
+        >
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full hover:cursor-pointer"
+          >
+            {mode === 'login' ? 'Login' : 'Register'}
+            {' '}
+            with
+            {' '}
+            {option.provider}
+          </Button>
+        </a>
+      ))}
+    </>
   );
 }
 

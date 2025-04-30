@@ -23,7 +23,6 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { BASE_API_URL } from '@/constants';
 import { useAuthContext } from '@/hooks/use-auth-context';
 import { cn } from '@/lib/utils';
 
@@ -70,21 +69,6 @@ export function RegisterForm({
       });
     }
   }
-
-  const socialAuth = (
-    <a
-      href={`${BASE_API_URL}/api/v1/auth/google`}
-      className="block w-full"
-    >
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full hover:cursor-pointer"
-      >
-        Register with Google
-      </Button>
-    </a>
-  );
 
   if (registrationSuccess) {
     return (
@@ -157,6 +141,7 @@ export function RegisterForm({
           linkText="Login"
         />
       )}
+      mode="register"
     >
       <div className="grid gap-2">
         <Label htmlFor="email">Email</Label>
@@ -184,8 +169,6 @@ export function RegisterForm({
         register={register('confirmPassword')}
         error={errors.confirmPassword?.message}
       />
-
-      {socialAuth}
     </AuthForm>
   );
 }
