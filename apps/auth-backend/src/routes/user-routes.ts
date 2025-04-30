@@ -1,8 +1,15 @@
-import type { UserDetail, UserListItem } from '@roll-your-own-auth/shared/types';
+import type {
+  UserDetail,
+  UserListItem,
+} from '@roll-your-own-auth/shared/types';
 
 import { zValidator } from '@hono/zod-validator';
 import { ImageMimeTypes } from '@roll-your-own-auth/shared/constants';
-import { idParamSchema, updatePasswordSchema, updateUserSchema } from '@roll-your-own-auth/shared/schemas';
+import {
+  idParamSchema,
+  updatePasswordSchema,
+  updateUserSchema,
+} from '@roll-your-own-auth/shared/schemas';
 import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
@@ -20,7 +27,12 @@ import {
   DEFAULT_USER_LIST_COLUMNS,
 } from '@/lib/constants';
 import { imageUploadService } from '@/lib/services/image-upload-service';
-import { comparePasswords, createApiResponse, createSelectObject, hashPassword } from '@/lib/utils';
+import {
+  comparePasswords,
+  createApiResponse,
+  createSelectObject,
+  hashPassword,
+} from '@/lib/utils';
 import { authMiddleware } from '@/middlewares/auth-middleware';
 
 export const userRoutes = new Hono<CustomEnv>();
@@ -34,7 +46,10 @@ userRoutes.get('/', async (c) => {
     const db = c.get('db');
 
     // Create select object using the helper function
-    const selectObj = createSelectObject(authUsersTable, DEFAULT_USER_LIST_COLUMNS);
+    const selectObj = createSelectObject(
+      authUsersTable,
+      DEFAULT_USER_LIST_COLUMNS,
+    );
 
     // Only select the necessary columns based on default list columns
     const users = await db.select(selectObj).from(authUsersTable);
@@ -122,165 +137,187 @@ userRoutes.get('/:id', zValidator('param', idParamSchema), async (c) => {
  * being updated.
  * PATCH /users/:id
  */
-userRoutes.patch('/:id', every(zValidator('param', idParamSchema), zValidator('json', updateUserSchema)), async (c) => {
-  try {
-    const db = c.get('db');
-    const { id } = c.req.param();
+userRoutes.patch(
+  '/:id',
+  every(
+    zValidator('param', idParamSchema),
+    zValidator('json', updateUserSchema),
+  ),
+  async (c) => {
+    try {
+      const db = c.get('db');
+      const { id } = c.req.param();
 
-    // Get the request body
-    const body = await c.req.json();
+      // Get the request body
+      const body = await c.req.json();
 
-    // Build the update object dynamically
-    const updateData: Partial<{ name?: string; bio?: string; profilePicture?: string }> = {};
-    if (body.name !== undefined) {
-      updateData.name = body.name;
-    }
-    if (body.bio !== undefined) {
-      updateData.bio = body.bio;
-    }
-    if (body.profilePicture !== undefined) {
-      updateData.profilePicture = body.profilePicture;
-    }
+      // Build the update object dynamically
+      const updateData: Partial<
+        { name?: string; bio?: string; profilePicture?: string }
+      > = {};
+      if (body.name !== undefined) {
+        updateData.name = body.name;
+      }
+      if (body.bio !== undefined) {
+        updateData.bio = body.bio;
+      }
+      if (body.profilePicture !== undefined) {
+        updateData.profilePicture = body.profilePicture;
+      }
 
-    // Check if any fields were provided for update
-    if (Object.keys(updateData).length === 0) {
+      // Check if any fields were provided for update
+      if (Object.keys(updateData).length === 0) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.VALIDATION_ERROR,
+              message: 'No fields provided for update',
+            },
+          }),
+          400,
+        );
+      }
+
+      const [updatedProfile] = await db
+        .update(profilesTable)
+        .set(updateData)
+        .where(eq(profilesTable.userId, id))
+        .returning();
+      if (!updatedProfile) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.NOT_FOUND,
+              message: 'User profile not found',
+            },
+          }),
+          404,
+        );
+      }
+
+      return c.json(
+        createApiResponse({
+          data: {
+            message: 'User profile updated successfully',
+          },
+        }),
+        200,
+      );
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+
       return c.json(
         createApiResponse({
           error: {
-            code: ApiErrorCode.VALIDATION_ERROR,
-            message: 'No fields provided for update',
+            code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+            message: 'Failed to update user profile',
           },
         }),
-        400,
+        500,
       );
     }
-
-    const [updatedProfile] = await db
-      .update(profilesTable)
-      .set(updateData)
-      .where(eq(profilesTable.userId, id))
-      .returning();
-    if (!updatedProfile) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.NOT_FOUND,
-            message: 'User profile not found',
-          },
-        }),
-        404,
-      );
-    }
-
-    return c.json(
-      createApiResponse({
-        data: {
-          message: 'User profile updated successfully',
-        },
-      }),
-      200,
-    );
-  } catch (error) {
-    console.error('Error updating user profile:', error);
-
-    return c.json(
-      createApiResponse({
-        error: {
-          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: 'Failed to update user profile',
-        },
-      }),
-      500,
-    );
-  }
-});
+  },
+);
 
 /**
  * Change a user's password
  * PUT /users/:id/password
  */
-userRoutes.put('/:id/password', every(zValidator('param', idParamSchema), zValidator('json', updatePasswordSchema)), async (c) => {
-  try {
+userRoutes.put(
+  '/:id/password',
+  every(
+    zValidator('param', idParamSchema),
+    zValidator('json', updatePasswordSchema),
+  ),
+  async (c) => {
+    try {
     // Get the database connection from the context
-    const db = c.get('db');
+      const db = c.get('db');
 
-    // Get the user id from the request parameters
-    const { id } = c.req.param();
+      // Get the user id from the request parameters
+      const { id } = c.req.param();
 
-    // Get the old and new passwords from the request body
-    const { old_password, new_password } = await c.req.json();
+      // Get the old and new passwords from the request body
+      const { old_password, new_password } = await c.req.json();
 
-    // Get the user from the database
-    const user = await db.query.authUsersTable.findFirst({
-      where: eq(authUsersTable.id, id),
-    });
-    if (!user) {
+      // Get the user from the database
+      const user = await db.query.authUsersTable.findFirst({
+        where: eq(authUsersTable.id, id),
+      });
+      if (!user) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.NOT_FOUND,
+              message: 'User not found',
+            },
+          }),
+          404,
+        );
+      }
+
+      // Check if the user has a password set (might be null for OAuth users)
+      if (!user.hashedPassword) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.INVALID_CREDENTIALS,
+              message: 'Invalid credentials', // Keep message generic for security
+            },
+          }),
+          401,
+        );
+      }
+
+      // Check if the old password is correct
+      const isPasswordCorrect = await comparePasswords(
+        old_password,
+        user.hashedPassword,
+      );
+      if (!isPasswordCorrect) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.INVALID_CREDENTIALS,
+              message: 'Invalid old password. Please try again.',
+            },
+          }),
+          401,
+        );
+      }
+
+      // Hash the new password if user is able to confirm their old password
+      const hashedNewPassword = await hashPassword(new_password);
+
+      // Update the user's password
+      await db
+        .update(authUsersTable)
+        .set({ hashedPassword: hashedNewPassword })
+        .where(eq(authUsersTable.id, id));
+
+      return c.json(
+        createApiResponse({
+          data: {
+            message: 'Password updated successfully',
+          },
+        }),
+        200,
+      );
+    } catch (error) {
+      console.error('Error updating user password:', error);
+
       return c.json(
         createApiResponse({
           error: {
-            code: ApiErrorCode.NOT_FOUND,
-            message: 'User not found',
+            code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+            message: 'Failed to update user password',
           },
         }),
-        404,
+        500,
       );
     }
-
-    // Check if the user has a password set (might be null for OAuth users)
-    if (!user.hashedPassword) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.INVALID_CREDENTIALS,
-            message: 'Invalid credentials', // Keep message generic for security
-          },
-        }),
-        401,
-      );
-    }
-
-    // Check if the old password is correct
-    const isPasswordCorrect = await comparePasswords(old_password, user.hashedPassword);
-    if (!isPasswordCorrect) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.INVALID_CREDENTIALS,
-            message: 'Invalid old password. Please try again.',
-          },
-        }),
-        401,
-      );
-    }
-
-    // Hash the new password if user is able to confirm their old password
-    const hashedNewPassword = await hashPassword(new_password);
-
-    // Update the user's password
-    await db.update(authUsersTable).set({ hashedPassword: hashedNewPassword }).where(eq(authUsersTable.id, id));
-
-    return c.json(
-      createApiResponse({
-        data: {
-          message: 'Password updated successfully',
-        },
-      }),
-      200,
-    );
-  } catch (error) {
-    console.error('Error updating user password:', error);
-
-    return c.json(
-      createApiResponse({
-        error: {
-          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: 'Failed to update user password',
-        },
-      }),
-      500,
-    );
-  }
-});
+  },
+);
 
 userRoutes.post('/:id/profile-picture', async (c) => {
   try {
@@ -391,7 +428,9 @@ userRoutes.delete('/:id', zValidator('param', idParamSchema), async (c) => {
     await db.delete(profilesTable).where(eq(profilesTable.userId, userId));
 
     // Delete the user connections from the auth.user_connections table.
-    await db.delete(authUserConnections).where(eq(authUserConnections.userId, userId));
+    await db
+      .delete(authUserConnections)
+      .where(eq(authUserConnections.userId, userId));
 
     return c.json(
       createApiResponse({

@@ -1,4 +1,10 @@
-import type { AuthResponse, CreateUserDto, NotificationPreferences, User, UserSettings } from '@roll-your-own-auth/shared/types';
+import type {
+  AuthResponse,
+  CreateUserDto,
+  NotificationPreferences,
+  User,
+  UserSettings,
+} from '@roll-your-own-auth/shared/types';
 
 import {
   createUserSchema,
@@ -33,8 +39,12 @@ import {
 } from '@/lib/utils';
 import { sendVerificationEmail } from '@/lib/utils/email';
 import { authMiddleware } from '@/middlewares/auth-middleware';
-import { extractEmailMiddleware } from '@/middlewares/extract-email-middleware';
-import { publicRouteRlsMiddleware } from '@/middlewares/public-route-rls-middleware';
+import {
+  extractEmailMiddleware,
+} from '@/middlewares/extract-email-middleware';
+import {
+  publicRouteRlsMiddleware,
+} from '@/middlewares/public-route-rls-middleware';
 import { authRateLimiter } from '@/middlewares/rate-limit-middleware';
 import { oauthProviderRoutes } from '@/routes/oauth-provider-routes';
 
@@ -48,354 +58,377 @@ publicRoutes.route('', oauthProviderRoutes);
  * Register a new user
  * POST /api/v1/auth/register
  */
-publicRoutes.post('/register', every(extractEmailMiddleware, authRateLimiter, publicRouteRlsMiddleware), async (c) => {
-  try {
-    // Get db connection
-    const db = c.get('db');
-
-    // Get body from request of type application/json
-    const rawBody = await c.req.json();
-
-    // Check if user already exists and return error if so
-    const existingUser = await db.query.authUsersTable.findFirst({
-      where: eq(authUsersTable.email, rawBody.email),
-    });
-    if (existingUser) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.USER_ALREADY_EXISTS,
-            message: 'User already exists',
-          },
-        }),
-        400,
-      );
-    }
-
-    // Validate user input data (email, password, and optional name)
-    const validationResult = validateAuthSchema(createUserSchema, rawBody);
-    if (!validationResult.isValid) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.VALIDATION_ERROR,
-            message: 'Invalid input data',
-            details: { errors: validationResult.errors },
-          },
-        }),
-        400,
-      );
-    }
-
-    // Create a body object from the validated data
-    const body = validationResult.data as CreateUserDto;
-
-    // Get email and password from body
-    const { email, password } = body;
-
-    // Hash user password using Argon2
-    const hashedPassword = await hashPassword(password);
-
-    // Generate verification token and expiration date
-    const { verificationToken, verificationTokenExpiresAt } = await generateVerificationToken();
-
-    // Wrap user and profile creation in a transaction
-    const { user, profile: _profile } = await db.transaction(async (tx) => {
-      // Create user
-      const [user] = await tx
-        .insert(authUsersTable)
-        .values({
-          email,
-          hashedPassword,
-          verificationToken,
-          verificationTokenExpiresAt,
-        })
-        .returning();
-
-      // If user creation fails, throw error to rollback transaction
-      if (!user) {
-        throw new Error('Failed to create user within transaction');
-      }
-
-      // Create profile for user
-      const [profile] = await tx.insert(profilesTable).values({
-        userId: user.id,
-        email: user.email,
-        // name: user.email, // Use email as default name
-      }).returning();
-
-      // If profile creation fails, throw error to rollback transaction
-      if (!profile) {
-        throw new Error('Failed to create profile within transaction');
-      }
-
-      return { user, profile };
-    });
-
-    // If the transaction failed, user/profile will not be populated,
-    // but the catch block below should handle the thrown error.
-    // We might add an explicit check here if needed, but transaction errors should bubble up.
-
-    // Send verification email
+publicRoutes.post(
+  '/register',
+  every(extractEmailMiddleware, authRateLimiter, publicRouteRlsMiddleware),
+  async (c) => {
     try {
-      const emailResult = await sendVerificationEmail(email, verificationToken, env.FRONTEND_URL);
-      if (!emailResult.success) {
-        // Delete the user if email sending fails
-        await db.delete(authUsersTable).where(eq(authUsersTable.id, user.id));
+    // Get db connection
+      const db = c.get('db');
 
-        const errorDetails = emailResult.error as { message?: string; name?: string; code?: string };
+      // Get body from request of type application/json
+      const rawBody = await c.req.json();
 
+      // Check if user already exists and return error if so
+      const existingUser = await db.query.authUsersTable.findFirst({
+        where: eq(authUsersTable.email, rawBody.email),
+      });
+      if (existingUser) {
         return c.json(
           createApiResponse({
             error: {
-              code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
-              message: 'Failed to send verification email. Registration canceled.',
-              details: errorDetails
-                ? {
-                    message: errorDetails.message || 'Unknown error',
-                    name: errorDetails.name || 'Error',
-                    ...(errorDetails.code && { code: errorDetails.code }),
-                  }
-                : undefined,
+              code: ApiErrorCode.USER_ALREADY_EXISTS,
+              message: 'User already exists',
             },
           }),
           400,
         );
       }
-    } catch (error) {
-      // Delete the user if email sending fails
-      await db.delete(authUsersTable).where(eq(authUsersTable.id, user.id));
 
-      console.error('Failed to send verification email:', error);
+      // Validate user input data (email, password, and optional name)
+      const validationResult = validateAuthSchema(createUserSchema, rawBody);
+      if (!validationResult.isValid) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.VALIDATION_ERROR,
+              message: 'Invalid input data',
+              details: { errors: validationResult.errors },
+            },
+          }),
+          400,
+        );
+      }
+
+      // Create a body object from the validated data
+      const body = validationResult.data as CreateUserDto;
+
+      // Get email and password from body
+      const { email, password } = body;
+
+      // Hash user password using Argon2
+      const hashedPassword = await hashPassword(password);
+
+      // Generate verification token and expiration date
+      const {
+        verificationToken,
+        verificationTokenExpiresAt,
+      } = await generateVerificationToken();
+
+      // Wrap user and profile creation in a transaction
+      const { user, profile: _profile } = await db.transaction(async (tx) => {
+      // Create user
+        const [user] = await tx
+          .insert(authUsersTable)
+          .values({
+            email,
+            hashedPassword,
+            verificationToken,
+            verificationTokenExpiresAt,
+          })
+          .returning();
+
+        // If user creation fails, throw error to rollback transaction
+        if (!user) {
+          throw new Error('Failed to create user within transaction');
+        }
+
+        // Create profile for user
+        const [profile] = await tx.insert(profilesTable).values({
+          userId: user.id,
+          email: user.email,
+        // name: user.email, // Use email as default name
+        }).returning();
+
+        // If profile creation fails, throw error to rollback transaction
+        if (!profile) {
+          throw new Error('Failed to create profile within transaction');
+        }
+
+        return { user, profile };
+      });
+
+      // If the transaction failed, user/profile will not be populated,
+      // but the catch block below should handle the thrown error.
+      // We might add an explicit check here if needed, but transaction errors should bubble up.
+
+      // Send verification email
+      try {
+        const emailResult = await sendVerificationEmail(
+          email,
+          verificationToken,
+          env.FRONTEND_URL,
+        );
+        if (!emailResult.success) {
+        // Delete the user if email sending fails
+          await db.delete(authUsersTable).where(eq(authUsersTable.id, user.id));
+
+          const errorDetails = emailResult.error as {
+            message?: string;
+            name?: string;
+            code?: string;
+          };
+
+          return c.json(
+            createApiResponse({
+              error: {
+                code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
+                message: 'Failed to send verification email. Registration canceled.',
+                details: errorDetails
+                  ? {
+                      message: errorDetails.message || 'Unknown error',
+                      name: errorDetails.name || 'Error',
+                      ...(errorDetails.code && { code: errorDetails.code }),
+                    }
+                  : undefined,
+              },
+            }),
+            400,
+          );
+        }
+      } catch (error) {
+      // Delete the user if email sending fails
+        await db.delete(authUsersTable).where(eq(authUsersTable.id, user.id));
+
+        console.error('Failed to send verification email:', error);
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
+              message: 'Failed to send verification email. Registration canceled.',
+            },
+          }),
+          400,
+        );
+      }
+
+      // Combine user and access token into auth response
+      const authResponse: AuthResponse = {
+        message: 'Registration successful. Please verify your email before logging in.',
+        emailVerificationRequired: true,
+      };
+
+      return c.json(
+        createApiResponse({
+          data: authResponse,
+        }),
+        200,
+      );
+    } catch (err) {
       return c.json(
         createApiResponse({
           error: {
-            code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
-            message: 'Failed to send verification email. Registration canceled.',
+            code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+            message: err instanceof Error ? err.message : 'Internal server error',
           },
         }),
-        400,
+        500,
       );
     }
-
-    // Combine user and access token into auth response
-    const authResponse: AuthResponse = {
-      message: 'Registration successful. Please verify your email before logging in.',
-      emailVerificationRequired: true,
-    };
-
-    return c.json(
-      createApiResponse({
-        data: authResponse,
-      }),
-      200,
-    );
-  } catch (err) {
-    return c.json(
-      createApiResponse({
-        error: {
-          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: err instanceof Error ? err.message : 'Internal server error',
-        },
-      }),
-      500,
-    );
-  }
-});
+  },
+);
 
 /**
  * Login a user
  * POST /api/v1/auth/login
  */
-publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter, publicRouteRlsMiddleware), async (c) => {
-  try {
+publicRoutes.post(
+  '/login',
+  every(extractEmailMiddleware, authRateLimiter, publicRouteRlsMiddleware),
+  async (c) => {
+    try {
     // Get db connection
-    const db = c.get('db');
+      const db = c.get('db');
 
-    // Get body from request of type application/json
-    const rawBody = await c.req.json();
+      // Get body from request of type application/json
+      const rawBody = await c.req.json();
 
-    // Validate user input data (email and password)
-    const validationResult = validateAuthSchema(loginUserSchema, rawBody);
-    if (!validationResult.isValid || !validationResult.data) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.VALIDATION_ERROR,
-            message: 'Invalid input data',
-          },
-        }),
-        400,
-      );
-    }
-
-    // Get the email and password from the validated data
-    const { email, password } = validationResult.data;
-
-    // Check if user exists in the database
-    const user = await db.query.authUsersTable.findFirst({
-      where: eq(authUsersTable.email, email),
-    });
-    if (!user) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.USER_NOT_FOUND,
-            message: 'User not found',
-          },
-        }),
-        404,
-      );
-    }
-
-    // Check if the user has a password set (might be null for OAuth users)
-    if (!user.hashedPassword) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.INVALID_CREDENTIALS,
-            message: 'Invalid credentials', // Keep message generic for security
-          },
-        }),
-        401,
-      );
-    }
-
-    // Check if user profile exists
-    const profile = await db.query.profilesTable.findFirst({
-      where: eq(profilesTable.userId, user.id),
-    });
-    if (!profile) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.USER_NOT_FOUND,
-            message: 'User profile not found',
-          },
-        }),
-        404,
-      );
-    }
-
-    // Verify entered password using Argon2
-    const isPasswordValid = await verifyPassword(password, user.hashedPassword);
-    if (!isPasswordValid) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.INVALID_CREDENTIALS,
-            message: 'Invalid credentials',
-          },
-        }),
-        401,
-      );
-    }
-
-    // Check if email is verified
-    if (!user.emailVerified) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.EMAIL_NOT_VERIFIED,
-            message: 'Please verify your email before logging in',
-            details: {
-              email: user.email,
-              emailVerificationRequired: true,
-              // Don't include registered date for security reasons
+      // Validate user input data (email and password)
+      const validationResult = validateAuthSchema(loginUserSchema, rawBody);
+      if (!validationResult.isValid || !validationResult.data) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.VALIDATION_ERROR,
+              message: 'Invalid input data',
             },
-          },
-        }),
-        403,
+          }),
+          400,
+        );
+      }
+
+      // Get the email and password from the validated data
+      const { email, password } = validationResult.data;
+
+      // Check if user exists in the database
+      const user = await db.query.authUsersTable.findFirst({
+        where: eq(authUsersTable.email, email),
+      });
+      if (!user) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.USER_NOT_FOUND,
+              message: 'User not found',
+            },
+          }),
+          404,
+        );
+      }
+
+      // Check if the user has a password set (might be null for OAuth users)
+      if (!user.hashedPassword) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.INVALID_CREDENTIALS,
+              message: 'Invalid credentials', // Keep message generic for security
+            },
+          }),
+          401,
+        );
+      }
+
+      // Check if user profile exists
+      const profile = await db.query.profilesTable.findFirst({
+        where: eq(profilesTable.userId, user.id),
+      });
+      if (!profile) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.USER_NOT_FOUND,
+              message: 'User profile not found',
+            },
+          }),
+          404,
+        );
+      }
+
+      // Verify entered password using Argon2
+      const isPasswordValid = await verifyPassword(
+        password,
+        user.hashedPassword,
       );
-    }
+      if (!isPasswordValid) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.INVALID_CREDENTIALS,
+              message: 'Invalid credentials',
+            },
+          }),
+          401,
+        );
+      }
 
-    // Generate JWT tokens
-    const { accessToken, refreshToken } = await generateTokens(user.id);
+      // Check if email is verified
+      if (!user.emailVerified) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.EMAIL_NOT_VERIFIED,
+              message: 'Please verify your email before logging in',
+              details: {
+                email: user.email,
+                emailVerificationRequired: true,
+              // Don't include registered date for security reasons
+              },
+            },
+          }),
+          403,
+        );
+      }
 
-    // Update user with refresh token after successful login
-    await db
-      .update(authUsersTable)
-      .set({
-        refreshToken,
-        refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      })
-      .where(eq(authUsersTable.id, user.id));
+      // Generate JWT tokens
+      const { accessToken, refreshToken } = await generateTokens(user.id);
 
-    // Update profile with user id
-    await db
-      .update(profilesTable)
-      .set({
-        lastSuccessfulLogin: new Date(),
-        loginCount: (profile.loginCount ?? 0) + 1,
-        lastActivityAt: new Date(),
-      })
-      .where(eq(profilesTable.userId, user.id));
+      // Update user with refresh token after successful login
+      await db
+        .update(authUsersTable)
+        .set({
+          refreshToken,
+          refreshTokenExpiresAt: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
+          ), // 7 days
+        })
+        .where(eq(authUsersTable.id, user.id));
 
-    // Set refresh token in HTTP-only cookie
-    if (env.NODE_ENV === 'production') {
-      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD, refreshToken, {
-        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-        secure: true, // Ensures the cookie is only sent over HTTPS
-        sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
-        path: '/', // The cookie is only sent to requests to the root domain
-        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-      });
-    } else {
-      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_DEV, refreshToken, {
-        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-        secure: false, // The cookie is only sent over HTTPS in production
-        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
-        path: '/', // The cookie is only sent to requests to the root domain
-        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-      });
-    }
+      // Update profile with user id
+      await db
+        .update(profilesTable)
+        .set({
+          lastSuccessfulLogin: new Date(),
+          loginCount: (profile.loginCount ?? 0) + 1,
+          lastActivityAt: new Date(),
+        })
+        .where(eq(profilesTable.userId, user.id));
 
-    // Set the access token in the HTTP-only cookie
-    if (env.NODE_ENV === 'production') {
-      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, accessToken, {
-        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-        secure: true, // Ensures the cookie is only sent over HTTPS
-        sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
-        path: '/', // The cookie is only sent to requests to the root domain
-        maxAge: 15 * 60, // 15 minutes in seconds
-      });
-    } else {
-      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_DEV, accessToken, {
-        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-        secure: false, // The cookie is only sent over HTTPS in production
-        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
-        path: '/', // The cookie is only sent to requests to the root domain
-        maxAge: 15 * 60, // 15 minutes in seconds
-      });
-    }
+      // Set refresh token in HTTP-only cookie
+      if (env.NODE_ENV === 'production') {
+        setCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD, refreshToken, {
+          httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+          secure: true, // Ensures the cookie is only sent over HTTPS
+          sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
+          path: '/', // The cookie is only sent to requests to the root domain
+          maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+        });
+      } else {
+        setCookie(c, REFRESH_TOKEN_COOKIE_NAME_DEV, refreshToken, {
+          httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+          secure: false, // The cookie is only sent over HTTPS in production
+          sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+          path: '/', // The cookie is only sent to requests to the root domain
+          maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+        });
+      }
 
-    // Create a safe user object (excluding sensitive data)
-    const safeUser: User = {
+      // Set the access token in the HTTP-only cookie
+      if (env.NODE_ENV === 'production') {
+        setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, accessToken, {
+          httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+          secure: true, // Ensures the cookie is only sent over HTTPS
+          sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
+          path: '/', // The cookie is only sent to requests to the root domain
+          maxAge: 15 * 60, // 15 minutes in seconds
+        });
+      } else {
+        setCookie(c, ACCESS_TOKEN_COOKIE_NAME_DEV, accessToken, {
+          httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+          secure: false, // The cookie is only sent over HTTPS in production
+          sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+          path: '/', // The cookie is only sent to requests to the root domain
+          maxAge: 15 * 60, // 15 minutes in seconds
+        });
+      }
+
+      // Create a safe user object (excluding sensitive data)
+      const safeUser: User = {
       // Core user information
-      id: user.id,
-      email: user.email,
-      name: profile.name,
-      bio: profile.bio,
-      profilePicture: profile.profilePicture,
-      createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
-      updatedAt: user.updatedAt?.toISOString() ?? new Date().toISOString(),
+        id: user.id,
+        email: user.email,
+        name: profile.name,
+        bio: profile.bio,
+        profilePicture: profile.profilePicture,
+        createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
+        updatedAt: user.updatedAt?.toISOString() ?? new Date().toISOString(),
 
-      // Email verification
-      emailVerified: user.emailVerified ?? false,
+        // Email verification
+        emailVerified: user.emailVerified ?? false,
 
-      // Account status & management
-      isActive: user.isActive ?? true,
-      deletedAt: profile.deletedAt?.toISOString() ?? null,
+        // Account status & management
+        isActive: user.isActive ?? true,
+        deletedAt: profile.deletedAt?.toISOString() ?? null,
 
-      // User preferences & settings
-      settings: (profile.settings as UserSettings) ?? {
-        theme: 'system',
-        language: 'en',
-        timezone: 'UTC',
-      },
+        // User preferences & settings
+        settings: (profile.settings as UserSettings) ?? {
+          theme: 'system',
+          language: 'en',
+          timezone: 'UTC',
+        },
 
-      // User preferences & settings
-      notificationPreferences:
+        // User preferences & settings
+        notificationPreferences:
         (profile.notificationPreferences as NotificationPreferences) ?? {
           email: {
             enabled: false,
@@ -408,37 +441,40 @@ publicRoutes.post('/login', every(extractEmailMiddleware, authRateLimiter, publi
           },
         },
 
-      // Activity tracking
-      lastActivityAt:
+        // Activity tracking
+        lastActivityAt:
       profile.lastActivityAt?.toISOString() ?? new Date().toISOString(),
-      lastSuccessfulLogin:
+        lastSuccessfulLogin:
       profile.lastSuccessfulLogin?.toISOString() ?? new Date().toISOString(),
-      loginCount: (profile.loginCount ?? 0) + 1,
-    };
+        loginCount: (profile.loginCount ?? 0) + 1,
+      };
 
-    // Combine user and access token into auth response
-    const authResponse: AuthResponse = {
-      user: safeUser,
-    };
+      // Combine user and access token into auth response
+      const authResponse: AuthResponse = {
+        user: safeUser,
+      };
 
-    return c.json(
-      createApiResponse({
-        data: authResponse,
-      }),
-      200,
-    );
-  } catch (err) {
-    return c.json(
-      createApiResponse({
-        error: {
-          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: err instanceof Error ? err.message : 'Internal server error',
-        },
-      }),
-      500,
-    );
-  }
-});
+      return c.json(
+        createApiResponse({
+          data: authResponse,
+        }),
+        200,
+      );
+    } catch (err) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+            message: err instanceof Error
+              ? err.message
+              : 'Internal server error',
+          },
+        }),
+        500,
+      );
+    }
+  },
+);
 
 /**
  * Logout a user
@@ -530,7 +566,9 @@ publicRoutes.post('/logout', async (c) => {
       createApiResponse({
         error: {
           code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: err instanceof Error ? err.message : 'Internal server error',
+          message: err instanceof Error
+            ? err.message
+            : 'Internal server error',
         },
       }),
       500,
@@ -630,7 +668,9 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
         createApiResponse({
           error: {
             code: ApiErrorCode.INVALID_REFRESH_TOKEN,
-            message: error instanceof Error ? error.message : 'Failed to refresh token',
+            message: error instanceof Error
+              ? error.message
+              : 'Failed to refresh token',
           },
         }),
         401,
@@ -661,7 +701,9 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
       .update(authUsersTable)
       .set({
         refreshToken: newRefreshToken,
-        refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        refreshTokenExpiresAt: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000,
+        ), // 7 days
       })
       .where(eq(authUsersTable.id, user.id));
 
@@ -726,7 +768,9 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
       createApiResponse({
         error: {
           code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: err instanceof Error ? err.message : 'Internal server error',
+          message: err instanceof Error
+            ? err.message
+            : 'Internal server error',
         },
       }),
       500,
@@ -738,172 +782,180 @@ publicRoutes.post('/refresh', authRateLimiter, async (c) => {
  * Verify a user's email address
  * POST /api/v1/auth/verify-email/:token
  */
-publicRoutes.post('/verify-email/:token', every(publicRouteRlsMiddleware), async (c) => {
-  try {
+publicRoutes.post(
+  '/verify-email/:token',
+  every(publicRouteRlsMiddleware),
+  async (c) => {
+    try {
     // Get db connection
-    const db = c.get('db');
+      const db = c.get('db');
 
-    // Get the token from the request params
-    const token = c.req.param('token');
-    if (!token) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.VALIDATION_ERROR,
-            message: 'Invalid input data',
-          },
-        }),
-        400,
-      );
-    }
+      // Get the token from the request params
+      const token = c.req.param('token');
+      if (!token) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.VALIDATION_ERROR,
+              message: 'Invalid input data',
+            },
+          }),
+          400,
+        );
+      }
 
-    // Find the user with this verification token
-    const user = await db.query.authUsersTable.findFirst({
-      where: eq(authUsersTable.verificationToken, token),
-    });
-    if (!user) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.INVALID_EMAIL_VERIFICATION_TOKEN,
-            message: 'Invalid email verification token',
-          },
-        }),
-        401,
-      );
-    }
-
-    // Find the user profile
-    const profile = await db.query.profilesTable.findFirst({
-      where: eq(profilesTable.userId, user.id),
-    });
-    if (!profile) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.USER_NOT_FOUND,
-            message: 'User profile not found',
-          },
-        }),
-        404,
-      );
-    }
-
-    // Check if the token has expired
-    if (!user.verificationTokenExpiresAt || user.verificationTokenExpiresAt < new Date()) {
-      return c.json(
-        createApiResponse({
-          error: {
-            code: ApiErrorCode.EMAIL_VERIFICATION_TOKEN_EXPIRED,
-            message: 'Email verification token expired',
-          },
-        }),
-        401,
-      );
-    }
-
-    // If user is already verified, return success
-    if (user.emailVerified) {
-      return c.json(
-        createApiResponse({
-          data: {
-            message: 'Email already verified',
-            emailVerified: true,
-          },
-        }),
-        200,
-      );
-    }
-
-    // Generate JWT tokens now that email is verified
-    const { accessToken, refreshToken } = await generateTokens(user.id);
-
-    // Update user as verified, clear verification token, and set refresh token
-    await db
-      .update(authUsersTable)
-      .set({
-        emailVerified: true,
-        verificationToken: null,
-        verificationTokenExpiresAt: null,
-        refreshToken,
-        refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-        updatedAt: new Date(),
-      })
-      .where(eq(authUsersTable.id, user.id));
-
-    // Update profile with last successful login and login count
-    await db
-      .update(profilesTable)
-      .set({
-        lastSuccessfulLogin: new Date(),
-        loginCount: 1,
-        updatedAt: new Date(),
-      })
-      .where(eq(profilesTable.userId, user.id));
-
-    // Set refresh token in HTTP-only cookie
-    if (env.NODE_ENV === 'production') {
-      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD, refreshToken, {
-        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-        secure: true, // Ensures the cookie is only sent over HTTPS
-        sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
-        path: '/', // The cookie is only sent to requests to the root domain
-        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      // Find the user with this verification token
+      const user = await db.query.authUsersTable.findFirst({
+        where: eq(authUsersTable.verificationToken, token),
       });
-    } else {
-      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_DEV, refreshToken, {
-        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-        secure: false, // The cookie is only sent over HTTPS in production
-        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
-        path: '/', // The cookie is only sent to requests to the root domain
-        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-      });
-    }
+      if (!user) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.INVALID_EMAIL_VERIFICATION_TOKEN,
+              message: 'Invalid email verification token',
+            },
+          }),
+          401,
+        );
+      }
 
-    // Set the access token in the HTTP-only cookie
-    if (env.NODE_ENV === 'production') {
-      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, accessToken, {
-        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-        secure: true, // Ensures the cookie is only sent over HTTPS
-        sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
-        path: '/', // The cookie is only sent to requests to the root domain
-        maxAge: 15 * 60, // 15 minutes in seconds
+      // Find the user profile
+      const profile = await db.query.profilesTable.findFirst({
+        where: eq(profilesTable.userId, user.id),
       });
-    } else {
-      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_DEV, accessToken, {
-        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-        secure: false, // The cookie is only sent over HTTPS in production
-        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
-        path: '/', // The cookie is only sent to requests to the root domain
-        maxAge: 15 * 60, // 15 minutes in seconds
-      });
-    }
+      if (!profile) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.USER_NOT_FOUND,
+              message: 'User profile not found',
+            },
+          }),
+          404,
+        );
+      }
 
-    // Create a safe user object
-    const safeUser: User = {
+      // Check if the token has expired
+      if (
+        !user.verificationTokenExpiresAt
+        || user.verificationTokenExpiresAt < new Date()
+      ) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.EMAIL_VERIFICATION_TOKEN_EXPIRED,
+              message: 'Email verification token expired',
+            },
+          }),
+          401,
+        );
+      }
+
+      // If user is already verified, return success
+      if (user.emailVerified) {
+        return c.json(
+          createApiResponse({
+            data: {
+              message: 'Email already verified',
+              emailVerified: true,
+            },
+          }),
+          200,
+        );
+      }
+
+      // Generate JWT tokens now that email is verified
+      const { accessToken, refreshToken } = await generateTokens(user.id);
+
+      // Update user as verified, clear verification token, and set refresh token
+      await db
+        .update(authUsersTable)
+        .set({
+          emailVerified: true,
+          verificationToken: null,
+          verificationTokenExpiresAt: null,
+          refreshToken,
+          refreshTokenExpiresAt: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
+          ), // 7 days
+          updatedAt: new Date(),
+        })
+        .where(eq(authUsersTable.id, user.id));
+
+      // Update profile with last successful login and login count
+      await db
+        .update(profilesTable)
+        .set({
+          lastSuccessfulLogin: new Date(),
+          loginCount: 1,
+          updatedAt: new Date(),
+        })
+        .where(eq(profilesTable.userId, user.id));
+
+      // Set refresh token in HTTP-only cookie
+      if (env.NODE_ENV === 'production') {
+        setCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD, refreshToken, {
+          httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+          secure: true, // Ensures the cookie is only sent over HTTPS
+          sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
+          path: '/', // The cookie is only sent to requests to the root domain
+          maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+        });
+      } else {
+        setCookie(c, REFRESH_TOKEN_COOKIE_NAME_DEV, refreshToken, {
+          httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+          secure: false, // The cookie is only sent over HTTPS in production
+          sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+          path: '/', // The cookie is only sent to requests to the root domain
+          maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+        });
+      }
+
+      // Set the access token in the HTTP-only cookie
+      if (env.NODE_ENV === 'production') {
+        setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, accessToken, {
+          httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+          secure: true, // Ensures the cookie is only sent over HTTPS
+          sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
+          path: '/', // The cookie is only sent to requests to the root domain
+          maxAge: 15 * 60, // 15 minutes in seconds
+        });
+      } else {
+        setCookie(c, ACCESS_TOKEN_COOKIE_NAME_DEV, accessToken, {
+          httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+          secure: false, // The cookie is only sent over HTTPS in production
+          sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+          path: '/', // The cookie is only sent to requests to the root domain
+          maxAge: 15 * 60, // 15 minutes in seconds
+        });
+      }
+
+      // Create a safe user object
+      const safeUser: User = {
       // Core user information
-      id: user.id,
-      email: user.email,
-      name: profile.name,
-      bio: profile.bio,
-      profilePicture: profile.profilePicture,
-      createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+        id: user.id,
+        email: user.email,
+        name: profile.name,
+        bio: profile.bio,
+        profilePicture: profile.profilePicture,
+        createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
 
-      // Email verification
-      emailVerified: true,
+        // Email verification
+        emailVerified: true,
 
-      // Account status & management
-      isActive: user.isActive ?? true,
-      deletedAt: profile.deletedAt?.toISOString() ?? null,
+        // Account status & management
+        isActive: user.isActive ?? true,
+        deletedAt: profile.deletedAt?.toISOString() ?? null,
 
-      // User preferences & settings
-      settings: (profile.settings as UserSettings) ?? {
-        theme: 'system',
-        language: 'en',
-        timezone: 'UTC',
-      },
-      notificationPreferences:
+        // User preferences & settings
+        settings: (profile.settings as UserSettings) ?? {
+          theme: 'system',
+          language: 'en',
+          timezone: 'UTC',
+        },
+        notificationPreferences:
         (profile.notificationPreferences as NotificationPreferences) ?? {
           email: {
             enabled: false,
@@ -916,32 +968,35 @@ publicRoutes.post('/verify-email/:token', every(publicRouteRlsMiddleware), async
           },
         },
 
-      // Activity tracking
-      lastActivityAt: new Date().toISOString(),
-      lastSuccessfulLogin: new Date().toISOString(),
-      loginCount: 1,
-    };
+        // Activity tracking
+        lastActivityAt: new Date().toISOString(),
+        lastSuccessfulLogin: new Date().toISOString(),
+        loginCount: 1,
+      };
 
-    const authResponse: AuthResponse = {
-      user: safeUser,
-      message: 'Email verified successfully',
-    };
+      const authResponse: AuthResponse = {
+        user: safeUser,
+        message: 'Email verified successfully',
+      };
 
-    return c.json(createApiResponse({
-      data: authResponse,
-    }), 200);
-  } catch (err) {
-    return c.json(
-      createApiResponse({
-        error: {
-          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: err instanceof Error ? err.message : 'Internal server error',
-        },
-      }),
-      500,
-    );
-  }
-});
+      return c.json(createApiResponse({
+        data: authResponse,
+      }), 200);
+    } catch (err) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+            message: err instanceof Error
+              ? err.message
+              : 'Internal server error',
+          },
+        }),
+        500,
+      );
+    }
+  },
+);
 
 /**
  * Resend verification email
