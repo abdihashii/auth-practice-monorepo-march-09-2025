@@ -2,7 +2,7 @@ import {
   CheckCircleIcon,
   EyeIcon,
   EyeOffIcon,
-  KeyRoundIcon,
+  RotateCcwKeyIcon,
 } from 'lucide-react';
 
 import {
@@ -186,7 +186,7 @@ export default function ChangePasswordCard() {
                     disabled={isSubmitting}
                     className="gap-2 hover:cursor-pointer"
                   >
-                    <KeyRoundIcon className="h-4 w-4" />
+                    <RotateCcwKeyIcon className="h-4 w-4" />
                     {isSubmitting ? 'Updating...' : 'Update Password'}
                   </Button>
                 </div>
