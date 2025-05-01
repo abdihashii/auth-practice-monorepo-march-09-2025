@@ -129,7 +129,17 @@ export const createUserSchema = z.object({
 export const updatePasswordSchema = z.object({
   old_password: passwordSchema,
   new_password: passwordSchema,
-}).strict();
+  confirm_password: passwordSchema,
+})
+  .strict() // Ensures only expected fields are processed when changing password
+  .refine((data) => data.new_password === data.confirm_password, {
+    message: 'Passwords do not match',
+    path: ['confirm_password'],
+  })
+  .refine((data) => data.new_password !== data.old_password, {
+    message: 'New password cannot be the same as the old password',
+    path: ['new_password'],
+  });
 
 /**
  * Validation schema for user update

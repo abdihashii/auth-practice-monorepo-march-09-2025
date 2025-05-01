@@ -20,7 +20,7 @@ import { Route as PrivacyIndexImport } from './routes/privacy/index'
 import { Route as LoginIndexImport } from './routes/login/index'
 import { Route as ForgotPasswordIndexImport } from './routes/forgot-password/index'
 import { Route as AccountIndexImport } from './routes/account/index'
-import { Route as AccountPasswordIndexImport } from './routes/account/password/index'
+import { Route as AccountSecurityIndexImport } from './routes/account/security/index'
 
 // Create/Update Routes
 
@@ -78,9 +78,9 @@ const AccountIndexRoute = AccountIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const AccountPasswordIndexRoute = AccountPasswordIndexImport.update({
-  id: '/account/password/',
-  path: '/account/password/',
+const AccountSecurityIndexRoute = AccountSecurityIndexImport.update({
+  id: '/account/security/',
+  path: '/account/security/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -151,11 +151,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyIndexImport
       parentRoute: typeof rootRoute
     }
-    '/account/password/': {
-      id: '/account/password/'
-      path: '/account/password'
-      fullPath: '/account/password'
-      preLoaderRoute: typeof AccountPasswordIndexImport
+    '/account/security/': {
+      id: '/account/security/'
+      path: '/account/security'
+      fullPath: '/account/security'
+      preLoaderRoute: typeof AccountSecurityIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -173,7 +173,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterIndexRoute
   '/terms': typeof TermsIndexRoute
   '/verify': typeof VerifyIndexRoute
-  '/account/password': typeof AccountPasswordIndexRoute
+  '/account/security': typeof AccountSecurityIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -186,7 +186,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterIndexRoute
   '/terms': typeof TermsIndexRoute
   '/verify': typeof VerifyIndexRoute
-  '/account/password': typeof AccountPasswordIndexRoute
+  '/account/security': typeof AccountSecurityIndexRoute
 }
 
 export interface FileRoutesById {
@@ -200,7 +200,7 @@ export interface FileRoutesById {
   '/register/': typeof RegisterIndexRoute
   '/terms/': typeof TermsIndexRoute
   '/verify/': typeof VerifyIndexRoute
-  '/account/password/': typeof AccountPasswordIndexRoute
+  '/account/security/': typeof AccountSecurityIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -215,7 +215,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/terms'
     | '/verify'
-    | '/account/password'
+    | '/account/security'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -227,7 +227,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/terms'
     | '/verify'
-    | '/account/password'
+    | '/account/security'
   id:
     | '__root__'
     | '/'
@@ -239,7 +239,7 @@ export interface FileRouteTypes {
     | '/register/'
     | '/terms/'
     | '/verify/'
-    | '/account/password/'
+    | '/account/security/'
   fileRoutesById: FileRoutesById
 }
 
@@ -253,7 +253,7 @@ export interface RootRouteChildren {
   RegisterIndexRoute: typeof RegisterIndexRoute
   TermsIndexRoute: typeof TermsIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
-  AccountPasswordIndexRoute: typeof AccountPasswordIndexRoute
+  AccountSecurityIndexRoute: typeof AccountSecurityIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -266,7 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterIndexRoute: RegisterIndexRoute,
   TermsIndexRoute: TermsIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,
-  AccountPasswordIndexRoute: AccountPasswordIndexRoute,
+  AccountSecurityIndexRoute: AccountSecurityIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -288,7 +288,7 @@ export const routeTree = rootRoute
         "/register/",
         "/terms/",
         "/verify/",
-        "/account/password/"
+        "/account/security/"
       ]
     },
     "/": {
@@ -318,8 +318,8 @@ export const routeTree = rootRoute
     "/verify/": {
       "filePath": "verify/index.tsx"
     },
-    "/account/password/": {
-      "filePath": "account/password/index.tsx"
+    "/account/security/": {
+      "filePath": "account/security/index.tsx"
     }
   }
 }

@@ -238,7 +238,37 @@ userRoutes.put(
       const { id } = c.req.param();
 
       // Get the old and new passwords from the request body
-      const { old_password, new_password } = await c.req.json();
+      const {
+        old_password,
+        new_password,
+        confirm_password,
+      } = await c.req.json();
+
+      // Final check to ensure the new password and confirm password match
+      if (new_password !== confirm_password) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.VALIDATION_ERROR,
+              message: 'Passwords do not match',
+            },
+          }),
+          400,
+        );
+      }
+
+      // Check if the new password is the same as the old password
+      if (new_password === old_password) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.VALIDATION_ERROR,
+              message: 'New password cannot be the same as the old password',
+            },
+          }),
+          400,
+        );
+      }
 
       // Get the user from the database
       const user = await db.query.authUsersTable.findFirst({
