@@ -3,10 +3,18 @@ import type { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerFormSchema } from '@roll-your-own-auth/shared/schemas';
 import { Link } from '@tanstack/react-router';
-import { CheckCircleIcon, EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react';
-import { useState } from 'react';
+import { CheckCircleIcon } from 'lucide-react';
+import { useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import {
+  AuthForm,
+  AuthLink,
+  PasswordInput,
+} from '@/components/auth/auth-form';
+import {
+  PasswordRequirementsChecker,
+} from '@/components/auth/password-requirements-checker';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -18,56 +26,59 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { BASE_API_URL } from '@/constants';
 import { useAuthContext } from '@/hooks/use-auth-context';
 import { cn } from '@/lib/utils';
 
+interface RegisterFormProps {
+  className?: string;
+}
+
 export function RegisterForm({
   className,
-  ...props
-}: React.ComponentPropsWithoutRef<'div'>) {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+}: RegisterFormProps) {
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const { register: registerAuth, isRegistering } = useAuthContext();
+  const passwordStrengthId = useId();
+  const emailErrorId = useId();
+  const passwordErrorId = useId();
+  const confirmPasswordErrorId = useId();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setError,
     watch,
+    setError,
   } = useForm<z.infer<typeof registerFormSchema>>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
       email: '',
       password: '',
+      confirmPassword: '',
     },
   });
 
-  // Watch the email field
   const email = watch('email');
+  const password = watch('password');
 
   async function onSubmit(data: z.infer<typeof registerFormSchema>) {
     try {
       await registerAuth(data.email, data.password, data.confirmPassword);
       setRegistrationSuccess(true);
     } catch (error) {
-      // Set form error for server-side errors
       setError('root', {
-        type: 'server',
-        message:
-          error instanceof Error
-            ? error.message
-            : 'Failed to register. Please try again.',
+        type: 'manual',
+        message: error instanceof Error
+          ? error.message
+          : 'Failed to register. Please try again.',
       });
     }
   }
 
   if (registrationSuccess) {
     return (
-      <div className={cn('flex flex-col gap-6', className)} {...props}>
+      <div className={cn('flex flex-col gap-6', className)}>
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl flex items-center">
@@ -120,130 +131,85 @@ export function RegisterForm({
   }
 
   return (
-    <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Register</CardTitle>
-          <CardDescription>
-            Enter your email below to register for an account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  {...register('email')}
-                  id="email"
-                  type="email"
-                  placeholder="test@example.com"
-                  required
-                />
-                {errors.email && (
-                  <p className="text-red-500">{errors.email.message}</p>
-                )}
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    {...register('password')}
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                  />
-                  <Button
-                    type="button"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent bg-transparent hover:cursor-pointer text-muted-foreground"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword
-                      ? (
-                          <EyeOffIcon className="h-4 w-4" />
-                        )
-                      : (
-                          <EyeIcon className="h-4 w-4" />
-                        )}
-                  </Button>
-                </div>
-                {errors.password && (
-                  <p className="text-red-500">{errors.password.message}</p>
-                )}
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <div className="relative">
-                  <Input
-                    {...register('confirmPassword')}
-                    id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    required
-                  />
-                  <Button
-                    type="button"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent bg-transparent hover:cursor-pointer text-muted-foreground"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showConfirmPassword
-                      ? (
-                          <EyeOffIcon className="h-4 w-4" />
-                        )
-                      : (
-                          <EyeIcon className="h-4 w-4" />
-                        )}
-                  </Button>
-                </div>
-                {errors.confirmPassword && (
-                  <p className="text-red-500">{errors.confirmPassword.message}</p>
-                )}
-              </div>
-              {errors.root && (
-                <p className="text-red-500 text-center">{errors.root.message}</p>
-              )}
-              <Button type="submit" className="w-full hover:cursor-pointer" disabled={isRegistering}>
-                {isRegistering
-                  ? (
-                      <>
-                        <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                        Registering...
-                      </>
-                    )
-                  : (
-                      'Register'
-                    )}
-              </Button>
-              {/*
-                * Use an anchor tag for direct navigation to the Google OAuth
-                * login page
-                */}
-              <a href={`${BASE_API_URL}/api/v1/auth/google`} className="block w-full">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full hover:cursor-pointer"
-                >
-                  Register with Google
-                </Button>
-              </a>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              Already have an account?
-              {' '}
-              <Link
-                to="/login"
-                className="underline underline-offset-4 hover:text-primary"
-              >
-                Login
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthForm
+      className={className}
+      title="Register"
+      description="Enter your email below to register for an account"
+      error={errors.root?.message}
+      isSubmitting={isRegistering}
+      onSubmit={handleSubmit(onSubmit)}
+      submitText="Register"
+      loadingText="Registering..."
+      footer={(
+        <>
+          <div className="text-xs text-muted-foreground text-center mb-4">
+            By registering, you agree to our
+            {' '}
+            <Link
+              to="/terms"
+              className="underline underline-offset-4 hover:text-primary"
+            >
+              Terms of Service
+            </Link>
+            {' and '}
+            <Link
+              to="/privacy"
+              className="underline underline-offset-4 hover:text-primary"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </div>
+          <AuthLink
+            text="Already have an account?"
+            to="/login"
+            linkText="Login"
+          />
+        </>
+      )}
+      mode="register"
+    >
+      <div className="grid gap-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          {...register('email')}
+          id="email"
+          type="email"
+          placeholder="test@example.com"
+          aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? emailErrorId : undefined}
+        />
+        {errors.email && (
+          <p id={emailErrorId} className="text-red-500 text-sm">
+            {errors.email.message}
+          </p>
+        )}
+      </div>
+
+      <PasswordInput
+        id="password"
+        label="Password"
+        register={register('password')}
+        error={errors.password?.message}
+        aria-describedby={cn(
+          errors.password ? passwordErrorId : undefined,
+          password && passwordStrengthId,
+        ).trim() || undefined}
+      />
+      <PasswordRequirementsChecker
+        password={password}
+        id={passwordStrengthId}
+      />
+
+      <PasswordInput
+        id="confirmPassword"
+        label="Confirm Password"
+        register={register('confirmPassword')}
+        error={errors.confirmPassword?.message}
+        aria-describedby={
+          errors.confirmPassword ? confirmPasswordErrorId : undefined
+        }
+      />
+    </AuthForm>
   );
 }

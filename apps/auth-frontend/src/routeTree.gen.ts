@@ -13,9 +13,12 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as VerifyIndexImport } from './routes/verify/index'
+import { Route as TermsIndexImport } from './routes/terms/index'
 import { Route as RegisterIndexImport } from './routes/register/index'
 import { Route as PublicIndexImport } from './routes/public/index'
+import { Route as PrivacyIndexImport } from './routes/privacy/index'
 import { Route as LoginIndexImport } from './routes/login/index'
+import { Route as ForgotPasswordIndexImport } from './routes/forgot-password/index'
 import { Route as AccountIndexImport } from './routes/account/index'
 import { Route as AccountPasswordIndexImport } from './routes/account/password/index'
 
@@ -33,6 +36,12 @@ const VerifyIndexRoute = VerifyIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const TermsIndexRoute = TermsIndexImport.update({
+  id: '/terms/',
+  path: '/terms/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const RegisterIndexRoute = RegisterIndexImport.update({
   id: '/register/',
   path: '/register/',
@@ -45,9 +54,21 @@ const PublicIndexRoute = PublicIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const PrivacyIndexRoute = PrivacyIndexImport.update({
+  id: '/privacy/',
+  path: '/privacy/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const LoginIndexRoute = LoginIndexImport.update({
   id: '/login/',
   path: '/login/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ForgotPasswordIndexRoute = ForgotPasswordIndexImport.update({
+  id: '/forgot-password/',
+  path: '/forgot-password/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -81,11 +102,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountIndexImport
       parentRoute: typeof rootRoute
     }
+    '/forgot-password/': {
+      id: '/forgot-password/'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/login/': {
       id: '/login/'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/privacy/': {
+      id: '/privacy/'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyIndexImport
       parentRoute: typeof rootRoute
     }
     '/public/': {
@@ -100,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/terms/': {
+      id: '/terms/'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsIndexImport
       parentRoute: typeof rootRoute
     }
     '/verify/': {
@@ -124,9 +166,12 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountIndexRoute
+  '/forgot-password': typeof ForgotPasswordIndexRoute
   '/login': typeof LoginIndexRoute
+  '/privacy': typeof PrivacyIndexRoute
   '/public': typeof PublicIndexRoute
   '/register': typeof RegisterIndexRoute
+  '/terms': typeof TermsIndexRoute
   '/verify': typeof VerifyIndexRoute
   '/account/password': typeof AccountPasswordIndexRoute
 }
@@ -134,9 +179,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountIndexRoute
+  '/forgot-password': typeof ForgotPasswordIndexRoute
   '/login': typeof LoginIndexRoute
+  '/privacy': typeof PrivacyIndexRoute
   '/public': typeof PublicIndexRoute
   '/register': typeof RegisterIndexRoute
+  '/terms': typeof TermsIndexRoute
   '/verify': typeof VerifyIndexRoute
   '/account/password': typeof AccountPasswordIndexRoute
 }
@@ -145,9 +193,12 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/account/': typeof AccountIndexRoute
+  '/forgot-password/': typeof ForgotPasswordIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/privacy/': typeof PrivacyIndexRoute
   '/public/': typeof PublicIndexRoute
   '/register/': typeof RegisterIndexRoute
+  '/terms/': typeof TermsIndexRoute
   '/verify/': typeof VerifyIndexRoute
   '/account/password/': typeof AccountPasswordIndexRoute
 }
@@ -157,27 +208,36 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
+    | '/forgot-password'
     | '/login'
+    | '/privacy'
     | '/public'
     | '/register'
+    | '/terms'
     | '/verify'
     | '/account/password'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/account'
+    | '/forgot-password'
     | '/login'
+    | '/privacy'
     | '/public'
     | '/register'
+    | '/terms'
     | '/verify'
     | '/account/password'
   id:
     | '__root__'
     | '/'
     | '/account/'
+    | '/forgot-password/'
     | '/login/'
+    | '/privacy/'
     | '/public/'
     | '/register/'
+    | '/terms/'
     | '/verify/'
     | '/account/password/'
   fileRoutesById: FileRoutesById
@@ -186,9 +246,12 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
+  ForgotPasswordIndexRoute: typeof ForgotPasswordIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
+  PrivacyIndexRoute: typeof PrivacyIndexRoute
   PublicIndexRoute: typeof PublicIndexRoute
   RegisterIndexRoute: typeof RegisterIndexRoute
+  TermsIndexRoute: typeof TermsIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
   AccountPasswordIndexRoute: typeof AccountPasswordIndexRoute
 }
@@ -196,9 +259,12 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountIndexRoute: AccountIndexRoute,
+  ForgotPasswordIndexRoute: ForgotPasswordIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
+  PrivacyIndexRoute: PrivacyIndexRoute,
   PublicIndexRoute: PublicIndexRoute,
   RegisterIndexRoute: RegisterIndexRoute,
+  TermsIndexRoute: TermsIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,
   AccountPasswordIndexRoute: AccountPasswordIndexRoute,
 }
@@ -215,9 +281,12 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/account/",
+        "/forgot-password/",
         "/login/",
+        "/privacy/",
         "/public/",
         "/register/",
+        "/terms/",
         "/verify/",
         "/account/password/"
       ]
@@ -228,14 +297,23 @@ export const routeTree = rootRoute
     "/account/": {
       "filePath": "account/index.tsx"
     },
+    "/forgot-password/": {
+      "filePath": "forgot-password/index.tsx"
+    },
     "/login/": {
       "filePath": "login/index.tsx"
+    },
+    "/privacy/": {
+      "filePath": "privacy/index.tsx"
     },
     "/public/": {
       "filePath": "public/index.tsx"
     },
     "/register/": {
       "filePath": "register/index.tsx"
+    },
+    "/terms/": {
+      "filePath": "terms/index.tsx"
     },
     "/verify/": {
       "filePath": "verify/index.tsx"
