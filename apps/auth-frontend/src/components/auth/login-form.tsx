@@ -11,9 +11,13 @@ import {
   AuthLink,
   PasswordInput,
 } from '@/components/auth/auth-form';
+import {
+  PasswordRequirementsChecker,
+} from '@/components/auth/password-requirements-checker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthContext } from '@/hooks/use-auth-context';
+import { cn } from '@/lib/utils';
 
 interface LoginFormProps {
   className?: string;
@@ -25,12 +29,14 @@ export function LoginForm({
   const { login, isLoggingIn } = useAuthContext();
   const emailErrorId = useId();
   const passwordErrorId = useId();
+  const passwordCheckerId = useId();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setError,
+    watch,
   } = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -38,6 +44,8 @@ export function LoginForm({
       password: '',
     },
   });
+
+  const password = watch('password');
 
   async function onSubmit(data: z.infer<typeof loginFormSchema>) {
     try {
@@ -93,8 +101,16 @@ export function LoginForm({
         label="Password"
         register={register('password')}
         error={errors.password?.message}
-        aria-describedby={errors.password ? passwordErrorId : undefined}
+        aria-describedby={cn(
+          errors.password ? passwordErrorId : undefined,
+          password && passwordCheckerId,
+        ).trim() || undefined}
       />
+      <PasswordRequirementsChecker
+        password={password}
+        id={passwordCheckerId}
+      />
+
       <div className="text-right text-sm">
         <Link
           to="/forgot-password"

@@ -12,6 +12,9 @@ import {
   AuthLink,
   PasswordInput,
 } from '@/components/auth/auth-form';
+import {
+  PasswordRequirementsChecker,
+} from '@/components/auth/password-requirements-checker';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -36,6 +39,7 @@ export function RegisterForm({
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const { register: registerAuth, isRegistering } = useAuthContext();
+  const passwordStrengthId = useId();
   const emailErrorId = useId();
   const passwordErrorId = useId();
   const confirmPasswordErrorId = useId();
@@ -55,15 +59,15 @@ export function RegisterForm({
     },
   });
 
-  // Watch the email field to use in the success message
+  // Watch the email and password fields to use in the success message
   const email = watch('email');
+  const password = watch('password');
 
   async function onSubmit(data: z.infer<typeof registerFormSchema>) {
     try {
       await registerAuth(data.email, data.password, data.confirmPassword);
       setRegistrationSuccess(true);
     } catch (error) {
-      // Use react-hook-form's setError to set a root error
       setError('root', {
         type: 'manual',
         message: error instanceof Error
@@ -188,7 +192,14 @@ export function RegisterForm({
         label="Password"
         register={register('password')}
         error={errors.password?.message}
-        aria-describedby={errors.password ? passwordErrorId : undefined}
+        aria-describedby={cn(
+          errors.password ? passwordErrorId : undefined,
+          password && passwordStrengthId,
+        ).trim() || undefined}
+      />
+      <PasswordRequirementsChecker
+        password={password}
+        id={passwordStrengthId}
       />
 
       <PasswordInput
