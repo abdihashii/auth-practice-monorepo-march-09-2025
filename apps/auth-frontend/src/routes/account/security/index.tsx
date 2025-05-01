@@ -139,7 +139,7 @@ function RouteComponent() {
                         </div>
 
                         <div className="grid gap-2">
-                          <Label htmlFor="newPassword">New Password</Label>
+                          <Label htmlFor="new_password">New Password</Label>
                           <div className="relative">
                             <Input
                               {...register('new_password')}
