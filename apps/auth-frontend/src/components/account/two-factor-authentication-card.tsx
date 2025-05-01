@@ -79,11 +79,11 @@ export default function TwoFactorAuthenticationCard() {
                 </div>
               </div>
               <Button
-                className="w-[90px]"
+                className="w-[60px]"
                 variant="outline"
                 disabled
               >
-                Set up
+                Edit
               </Button>
             </div>
 
@@ -101,11 +101,11 @@ export default function TwoFactorAuthenticationCard() {
                 </div>
               </div>
               <Button
-                className="w-[90px]"
+                className="w-[60px]"
                 variant="outline"
                 disabled
               >
-                Add key
+                Add
               </Button>
             </div>
 
@@ -123,11 +123,11 @@ export default function TwoFactorAuthenticationCard() {
                 </div>
               </div>
               <Button
-                className="w-[90px]"
+                className="w-[60px]"
                 variant="outline"
                 disabled
               >
-                Enable
+                Add
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
