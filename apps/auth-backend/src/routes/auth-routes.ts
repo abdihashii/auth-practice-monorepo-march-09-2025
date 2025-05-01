@@ -787,7 +787,7 @@ publicRoutes.post(
   every(publicRouteRlsMiddleware),
   async (c) => {
     try {
-    // Get db connection
+      // Get db connection
       const db = c.get('db');
 
       // Get the token from the request params
@@ -1033,7 +1033,10 @@ publicRoutes.post('/resend-verification-email', async (c) => {
     }
 
     // Generate verification token and expiration date
-    const { verificationToken, verificationTokenExpiresAt } = await generateVerificationToken();
+    const {
+      verificationToken,
+      verificationTokenExpiresAt,
+    } = await generateVerificationToken();
 
     // Update user with new verification token
     await db.update(authUsersTable).set({
@@ -1044,11 +1047,19 @@ publicRoutes.post('/resend-verification-email', async (c) => {
 
     // Send verification email
     try {
-      const emailResult = await sendVerificationEmail(email, verificationToken, env.FRONTEND_URL);
+      const emailResult = await sendVerificationEmail(
+        email,
+        verificationToken,
+        env.FRONTEND_URL,
+      );
       if (!emailResult.success) {
         console.error('Failed to send verification email:', emailResult.error);
 
-        const errorDetails = emailResult.error as { message?: string; name?: string; code?: string };
+        const errorDetails = emailResult.error as {
+          message?: string;
+          name?: string;
+          code?: string;
+        };
 
         return c.json(createApiResponse({
           error: {
@@ -1084,7 +1095,9 @@ publicRoutes.post('/resend-verification-email', async (c) => {
       createApiResponse({
         error: {
           code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: err instanceof Error ? err.message : 'Internal server error',
+          message: err instanceof Error
+            ? err.message
+            : 'Internal server error',
         },
       }),
       500,
