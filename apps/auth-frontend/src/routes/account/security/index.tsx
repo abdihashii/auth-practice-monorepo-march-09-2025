@@ -27,7 +27,7 @@ export const Route = createFileRoute('/account/security/')({
 });
 
 function RouteComponent() {
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [updatePasswordServerError, setUpdatePasswordServerError] = useState<string | null>(null);
@@ -106,21 +106,21 @@ function RouteComponent() {
                     <div className="space-y-6">
                       <div className="grid gap-4">
                         <div className="grid gap-2">
-                          <Label htmlFor="currentPassword">Current Password</Label>
+                          <Label htmlFor="old_password">Old Password</Label>
                           <div className="relative">
                             <Input
                               {...register('old_password')}
-                              type={showCurrentPassword ? 'text' : 'password'}
-                              placeholder="Enter your current password"
+                              type={showOldPassword ? 'text' : 'password'}
+                              placeholder="Enter your old password"
                             />
                             <Button
                               type="button"
                               variant="ghost"
                               size="icon"
                               className="absolute right-0 top-0 h-full"
-                              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                              onClick={() => setShowOldPassword(!showOldPassword)}
                             >
-                              {showCurrentPassword
+                              {showOldPassword
                                 ? (
                                     <EyeOffIcon className="h-4 w-4" />
                                   )
@@ -128,7 +128,7 @@ function RouteComponent() {
                                     <EyeIcon className="h-4 w-4" />
                                   )}
                               <span className="sr-only">
-                                {showCurrentPassword ? 'Hide password' : 'Show password'}
+                                {showOldPassword ? 'Hide password' : 'Show password'}
                               </span>
                             </Button>
                           </div>
