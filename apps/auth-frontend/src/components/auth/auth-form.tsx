@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
+import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -21,8 +22,6 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { BASE_API_URL } from '@/constants';
 import { cn } from '@/lib/utils';
-
-import { Icons } from '../icons';
 
 interface SocialAuthOption {
   provider: string;
@@ -88,7 +87,9 @@ export function AuthForm({
 
               <div className="grid grid-cols-3 items-center justify-between">
                 <Separator />
-                <p className="bg-transparent text-muted-foreground text-xs w-full text-center">
+                <p
+                  className="bg-transparent text-muted-foreground text-xs w-full text-center"
+                >
                   Or continue with
                 </p>
                 <Separator />
