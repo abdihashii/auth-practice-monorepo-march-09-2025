@@ -36,19 +36,21 @@ export default function TwoFactorAuthenticationCard() {
             Set your preferred method to use two-factor authentication when
             signing in.
           </p>
-          <Select disabled>
-            <SelectTrigger className="mt-2 w-[280px]">
-              <SelectValue placeholder="Select preferred method" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="authenticator">Authenticator app</SelectItem>
-              <SelectItem value="security_key">Security key</SelectItem>
-              <SelectItem value="email">Emailed code</SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="text-sm text-muted-foreground">
-            This feature is currently in development.
-          </p>
+          <div className="space-y-4">
+            <Select disabled>
+              <SelectTrigger className="mt-2 w-[280px]">
+                <SelectValue placeholder="Select preferred method" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="authenticator">Authenticator app</SelectItem>
+                <SelectItem value="security_key">Security key</SelectItem>
+                <SelectItem value="email">Emailed code</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              This feature is currently in development.
+            </p>
+          </div>
         </div>
 
         <Separator />
