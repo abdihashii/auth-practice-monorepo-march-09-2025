@@ -27,11 +27,19 @@ function ForgotPassword() {
         <div className="w-full max-w-md">
           <AuthForm
             title="Forgot Password"
-            description="Enter your email below to reset your password"
+            description={
+              token
+                ? 'Enter your new password below'
+                : 'Enter your email below to reset your password'
+            }
             mode="forgot-password"
             onSubmit={() => {}}
-            submitText="Reset Password"
-            loadingText="Resetting password..."
+            submitText={token ? 'Reset Password' : 'Send Reset Link'}
+            loadingText={
+              token
+                ? 'Resetting password...'
+                : 'Sending reset link...'
+            }
           >
             {!token
               ? (
