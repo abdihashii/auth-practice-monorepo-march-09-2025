@@ -257,6 +257,19 @@ userRoutes.put(
         );
       }
 
+      // Check if the new password is the same as the old password
+      if (new_password === old_password) {
+        return c.json(
+          createApiResponse({
+            error: {
+              code: ApiErrorCode.VALIDATION_ERROR,
+              message: 'New password cannot be the same as the old password',
+            },
+          }),
+          400,
+        );
+      }
+
       // Get the user from the database
       const user = await db.query.authUsersTable.findFirst({
         where: eq(authUsersTable.id, id),

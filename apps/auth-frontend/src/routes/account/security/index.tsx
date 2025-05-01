@@ -9,6 +9,9 @@ import { useForm } from 'react-hook-form';
 
 import { updateUserPassword } from '@/api/user-apis';
 import { AuthGuard } from '@/components/auth/auth-guard';
+import {
+  PasswordRequirementsChecker,
+} from '@/components/auth/password-requirements-checker';
 import { AppLayout } from '@/components/layout/app-layout';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,7 +38,7 @@ function RouteComponent() {
   const [updatePasswordServerSuccess, setUpdatePasswordServerSuccess] = useState<boolean>(false);
 
   const { user } = useAuthContext();
-  const { register, handleSubmit, reset, formState: {
+  const { register, handleSubmit, reset, watch, formState: {
     errors,
   } } = useForm<z.infer<typeof updatePasswordSchema>>({
     resolver: zodResolver(updatePasswordSchema),
@@ -45,6 +48,8 @@ function RouteComponent() {
       confirm_password: '',
     },
   });
+
+  const newPasswordValue = watch('new_password');
 
   const onSubmit = async (data: z.infer<typeof updatePasswordSchema>) => {
     setIsSubmitting(true);
@@ -58,6 +63,7 @@ function RouteComponent() {
       await updateUserPassword(user.id, {
         old_password: data.old_password,
         new_password: data.new_password,
+        confirm_password: data.confirm_password,
       });
 
       setUpdatePasswordServerSuccess(true);
@@ -172,6 +178,8 @@ function RouteComponent() {
                             <p className="text-red-500">{errors.new_password.message}</p>
                           )}
                         </div>
+
+                        <PasswordRequirementsChecker password={newPasswordValue} />
 
                         <div className="grid gap-2">
                           <Label htmlFor="confirm_password">Confirm Password</Label>
