@@ -37,13 +37,21 @@ function ForgotPassword() {
               ? (
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="test@example.com" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="test@example.com"
+                    />
                   </div>
                 )
               : (
                   <div className="grid gap-2">
                     <Label htmlFor="password">New Password</Label>
-                    <Input id="password" type="password" placeholder="********" />
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="********"
+                    />
                   </div>
                 )}
           </AuthForm>
