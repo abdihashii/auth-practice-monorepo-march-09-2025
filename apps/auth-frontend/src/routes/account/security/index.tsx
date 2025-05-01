@@ -72,7 +72,28 @@ function RouteComponent() {
       reset();
     } catch (error) {
       console.error('Error changing password:', error);
-      setUpdatePasswordServerError(error instanceof Error ? error.message : 'An unknown error occurred');
+      let errorMessage = 'An unknown error occurred';
+      if (error instanceof Error) {
+        try {
+          // Attempt to parse the error message as JSON (expecting ZodError structure)
+          const parsedError = JSON.parse(error.message);
+          if (parsedError && parsedError.error?.issues?.[0]?.message) {
+            // Use the message from the first Zod issue
+            errorMessage = parsedError.error.issues[0].message;
+          } else if (parsedError.error?.message) {
+            // Fallback to the general error message if issues aren't present
+            errorMessage = parsedError.error.message;
+          } else {
+            // If parsing succeeds but structure is unexpected, use the original message
+            errorMessage = error.message;
+          }
+        } catch {
+          // If parsing fails, it's likely not a JSON error message, use the original message
+          // We don't need to use parseError, so we can ignore it.
+          errorMessage = error.message;
+        }
+      }
+      setUpdatePasswordServerError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

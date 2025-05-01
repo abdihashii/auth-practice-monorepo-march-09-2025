@@ -197,10 +197,10 @@ export async function apiClient<T>(
 
     // Handle other error responses
     const errorData = await parseResponseData<any>(response);
-    throw new Error(
-      errorData.error?.message
-      || `Request failed with status ${response.status}`,
-    );
+
+    // Throw the stringified error data to preserve the structure (e.g., Zod issues)
+    // The calling function will need to parse this JSON string.
+    throw new Error(JSON.stringify(errorData));
   } catch (error) {
     console.error('API request error:', error);
     throw error;
