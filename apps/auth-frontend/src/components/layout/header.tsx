@@ -1,6 +1,7 @@
 'use client';
 
-import { MenuIcon, MoonIcon, SunIcon } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { LogOutIcon, MenuIcon, MoonIcon, SunIcon, UserIcon } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -81,33 +82,43 @@ export function Header({ onMenuClick }: HeaderProps) {
                   </p>
                 </div>
               </DropdownMenuLabel>
-              {/* <DropdownMenuSeparator /> */}
-              {/* <DropdownMenuItem asChild>
-                <Link to="/account">
-                  <User className="mr-2 h-4 w-4" />
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/account" className="cursor-pointer">
+                  <UserIcon className="h-4 w-4" />
                   <span>Profile</span>
                 </Link>
-              </DropdownMenuItem> */}
+              </DropdownMenuItem>
               {/* <DropdownMenuItem asChild>
                 <Link to="/account/preferences">
                   <span>Settings</span>
                 </Link>
               </DropdownMenuItem> */}
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <>
-                  <Button type="button" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-                    {theme === 'dark' ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
-                  </Button>
-                  <span className="ml-2 text-sm font-medium">
-                    Switch to
-                    {' '}
-                    {theme === 'dark' ? 'light' : 'dark'}
-                  </span>
-                </>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent menu from closing
+                  setTheme(theme === 'dark' ? 'light' : 'dark');
+                }}
+                className="cursor-pointer"
+              >
+                {theme === 'dark'
+                  ? <SunIcon className="h-4 w-4" />
+                  : <MoonIcon className="h-4 w-4" />}
+                <span>
+                  Switch to
+                  {' '}
+                  {theme === 'dark' ? 'light' : 'dark'}
+                </span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer" onClick={logout}>Log out</DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={logout}
+              >
+                <LogOutIcon className="h-4 w-4" />
+                Log out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
