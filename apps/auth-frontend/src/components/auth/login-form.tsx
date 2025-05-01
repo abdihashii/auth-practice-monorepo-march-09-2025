@@ -2,6 +2,7 @@ import type { z } from 'zod';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginFormSchema } from '@roll-your-own-auth/shared/schemas';
+import { Link } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 
 import {
@@ -86,6 +87,14 @@ export function LoginForm({
         register={register('password')}
         error={errors.password?.message}
       />
+      <div className="text-right text-sm">
+        <Link
+          to="/forgot-password"
+          className="underline underline-offset-4 hover:text-primary"
+        >
+          Forgot Password?
+        </Link>
+      </div>
     </AuthForm>
   );
 }
