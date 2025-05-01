@@ -29,6 +29,7 @@ export const Route = createFileRoute('/account/security/')({
 function RouteComponent() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [updatePasswordServerError, setUpdatePasswordServerError] = useState<string | null>(null);
   const [updatePasswordServerSuccess, setUpdatePasswordServerSuccess] = useState<boolean>(false);
@@ -41,6 +42,7 @@ function RouteComponent() {
     defaultValues: {
       old_password: '',
       new_password: '',
+      confirm_password: '',
     },
   });
 
@@ -168,6 +170,39 @@ function RouteComponent() {
 
                           {errors.new_password && (
                             <p className="text-red-500">{errors.new_password.message}</p>
+                          )}
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="confirm_password">Confirm Password</Label>
+                          <div className="relative">
+                            <Input
+                              {...register('confirm_password')}
+                              type={showConfirmPassword ? 'text' : 'password'}
+                              placeholder="Confirm your new password"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-0 top-0 h-full"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            >
+                              {showConfirmPassword
+                                ? (
+                                    <EyeOffIcon className="h-4 w-4" />
+                                  )
+                                : (
+                                    <EyeIcon className="h-4 w-4" />
+                                  )}
+                              <span className="sr-only">
+                                {showConfirmPassword ? 'Hide password' : 'Show password'}
+                              </span>
+                            </Button>
+                          </div>
+
+                          {errors.confirm_password && (
+                            <p className="text-red-500">{errors.confirm_password.message}</p>
                           )}
                         </div>
                       </div>
