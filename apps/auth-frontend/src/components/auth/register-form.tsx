@@ -59,7 +59,6 @@ export function RegisterForm({
     },
   });
 
-  // Watch the email and password fields to use in the success message
   const email = watch('email');
   const password = watch('password');
 
