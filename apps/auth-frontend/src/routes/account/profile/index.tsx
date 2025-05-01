@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 
 import DeleteAccountCard from '@/components/account/delete-account-card';
-import { ProfileCard } from '@/components/account/profile-card';
+import ProfileCard from '@/components/account/profile-card';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { AppLayout } from '@/components/layout/app-layout';
 
-export const Route = createFileRoute('/account/')({
+export const Route = createFileRoute('/account/profile/')({
   component: RouteComponent,
 });
 
