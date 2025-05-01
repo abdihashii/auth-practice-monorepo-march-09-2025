@@ -17,7 +17,7 @@ export function NavigationSidebar() {
   // ];
 
   const accountNavItems = [
-    { href: '/account', label: 'Profile', icon: UserIcon },
+    { href: '/account/profile', label: 'Profile', icon: UserIcon },
     { href: '/account/security', label: 'Security', icon: LockIcon },
     { href: '/account/preferences', label: 'Preferences', icon: SlidersIcon },
   ];
