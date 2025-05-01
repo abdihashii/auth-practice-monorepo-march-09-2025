@@ -72,7 +72,10 @@ export function RegisterForm({
 
   if (registrationSuccess) {
     return (
-      <div className={cn('flex flex-col gap-6', className)}>
+      <div
+        className={cn('flex flex-col gap-6', className)}
+        role="alert"
+      >
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl flex items-center">
@@ -135,11 +138,31 @@ export function RegisterForm({
       submitText="Register"
       loadingText="Registering..."
       footer={(
-        <AuthLink
-          text="Already have an account?"
-          to="/login"
-          linkText="Login"
-        />
+        <>
+          <div className="text-xs text-muted-foreground text-center mb-4">
+            By registering, you agree to our
+            {' '}
+            <Link
+              to="/terms"
+              className="underline underline-offset-4 hover:text-primary"
+            >
+              Terms of Service
+            </Link>
+            {' and '}
+            <Link
+              to="/privacy"
+              className="underline underline-offset-4 hover:text-primary"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </div>
+          <AuthLink
+            text="Already have an account?"
+            to="/login"
+            linkText="Login"
+          />
+        </>
       )}
       mode="register"
     >
@@ -150,9 +173,16 @@ export function RegisterForm({
           id="email"
           type="email"
           placeholder="test@example.com"
+          aria-invalid={errors.email ? 'true' : 'false'}
+          aria-describedby={errors.email ? 'email-error' : undefined}
         />
         {errors.email && (
-          <p className="text-red-500">{errors.email.message}</p>
+          <p
+            id="email-error"
+            className="text-red-500"
+          >
+            {errors.email.message}
+          </p>
         )}
       </div>
 
@@ -160,28 +190,35 @@ export function RegisterForm({
         id="password"
         label="Password"
         register={register('password')}
-        error={errors.password?.message}
+        aria-invalid={errors.password ? 'true' : 'false'}
+        aria-describedby={errors.password ? 'password-error' : undefined}
       />
+      {errors.password && (
+        <p
+          id="password-error"
+          className="text-red-500 text-sm"
+        >
+          {errors.password.message}
+        </p>
+      )}
 
       <PasswordInput
         id="confirmPassword"
         label="Confirm Password"
         register={register('confirmPassword')}
-        error={errors.confirmPassword?.message}
+        aria-invalid={errors.confirmPassword ? 'true' : 'false'}
+        aria-describedby={
+          errors.confirmPassword ? 'confirmPassword-error' : undefined
+        }
       />
-
-      <div className="text-sm text-muted-foreground">
-        By registering, you agree to our
-        {' '}
-        <Link to="/terms" className="underline underline-offset-4 hover:text-primary">
-          Terms of Service
-        </Link>
-        {' and '}
-        <Link to="/privacy" className="underline underline-offset-4 hover:text-primary">
-          Privacy Policy
-        </Link>
-        .
-      </div>
+      {errors.confirmPassword && (
+        <p
+          id="confirmPassword-error"
+          className="text-red-500 text-sm"
+        >
+          {errors.confirmPassword.message}
+        </p>
+      )}
     </AuthForm>
   );
 }
