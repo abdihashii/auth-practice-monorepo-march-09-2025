@@ -46,7 +46,7 @@ export default function TwoFactorAuthenticationCard() {
               <SelectItem value="email">Emailed code</SelectItem>
             </SelectContent>
           </Select>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             This feature is currently in development.
           </p>
         </div>
@@ -125,7 +125,7 @@ export default function TwoFactorAuthenticationCard() {
                 Enable
               </Button>
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               This feature is currently in development.
             </p>
           </div>
