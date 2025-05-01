@@ -37,7 +37,12 @@ export async function sendVerificationEmail(
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #333;">Verify Your Email</h1>
           <p>Thank you for registering. Please click the button below to verify your email address:</p>
-          <a href="${verificationUrl}" style="display: inline-block; background-color: #4a5568; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin: 20px 0;">Verify Email</a>
+          <a 
+            href="${verificationUrl}"
+            style="display: inline-block; background-color: #4a5568; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin: 20px 0;"
+          >
+            Verify Email
+          </a>
           <p>Or copy and paste this link in your browser:</p>
           <p style="word-break: break-all;">${verificationUrl}</p>
           <p>This link will expire in 24 hours.</p>
