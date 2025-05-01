@@ -7,7 +7,7 @@ import {
   EyeOffIcon,
   Loader2Icon,
 } from 'lucide-react';
-import { useState } from 'react';
+import React, { useId, useState } from 'react';
 
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -98,9 +98,10 @@ export function AuthForm({
               {/* Error message */}
               {error && (
                 <div
+                  role="alert"
                   className="flex items-center gap-2 p-4 text-sm border border-red-500 bg-red-50 text-red-900 rounded-md"
                 >
-                  <AlertCircleIcon className="h-4 w-4" />
+                  <AlertCircleIcon className="h-4 w-4" aria-hidden="true" />
                   <div>{error}</div>
                 </div>
               )}
@@ -164,7 +165,10 @@ function SocialAuth(
                 : 'Sign up'} with ${option.provider}`
             }
           >
-            {option.icon}
+            {/* Wrap the icon in a span with aria-hidden instead of cloning */}
+            {option.icon && (
+              <span aria-hidden="true">{option.icon}</span>
+            )}
           </Button>
         </a>
       ))}
@@ -173,49 +177,61 @@ function SocialAuth(
 }
 
 interface PasswordInputProps {
-  id: string;
-  label: string;
-  register: any;
-  error?: string;
+  'id': string;
+  'label': string;
+  'register': any;
+  'error'?: string;
+  'aria-describedby'?: string;
 }
 
-export function PasswordInput(
-  {
-    id,
-    label,
-    register,
-    error,
-  }: PasswordInputProps,
-) {
+export function PasswordInput({
+  id,
+  label,
+  register,
+  error,
+  'aria-describedby': customAriaDescribedby,
+}: PasswordInputProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const errorId = useId();
+  const describedBy = error
+    ? `${errorId} ${customAriaDescribedby || ''}`.trim()
+    : customAriaDescribedby;
 
   return (
     <div className="grid gap-2">
-      <label htmlFor={id} className="text-sm font-medium">{label}</label>
+      <label htmlFor={id} className="text-sm font-medium">
+        {label}
+      </label>
       <div className="relative">
         <Input
           {...register}
           id={id}
           type={showPassword ? 'text' : 'password'}
-          placeholder="********"
+          aria-invalid={!!error}
+          aria-describedby={describedBy}
         />
         <Button
           type="button"
           size="icon"
           className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent bg-transparent hover:cursor-pointer text-muted-foreground"
           onClick={() => setShowPassword(!showPassword)}
-          aria-label={
-            showPassword
-              ? 'Hide password'
-              : 'Show password'
-          }
+          aria-label={showPassword ? 'Hide password' : 'Show password'}
+          aria-controls={id}
         >
           {showPassword
-            ? <EyeOffIcon className="h-4 w-4" />
-            : <EyeIcon className="h-4 w-4" />}
+            ? (
+                <EyeOffIcon className="h-4 w-4" aria-hidden="true" />
+              )
+            : (
+                <EyeIcon className="h-4 w-4" aria-hidden="true" />
+              )}
         </Button>
       </div>
-      {error && <p className="text-red-500">{error}</p>}
+      {error && (
+        <p id={errorId} className="text-red-500 text-sm">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

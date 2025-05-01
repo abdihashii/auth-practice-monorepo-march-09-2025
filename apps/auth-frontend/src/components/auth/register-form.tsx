@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { registerFormSchema } from '@roll-your-own-auth/shared/schemas';
 import { Link } from '@tanstack/react-router';
 import { CheckCircleIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import {
@@ -36,6 +36,9 @@ export function RegisterForm({
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const { register: registerAuth, isRegistering } = useAuthContext();
+  const emailErrorId = useId();
+  const passwordErrorId = useId();
+  const confirmPasswordErrorId = useId();
 
   const {
     register,
@@ -170,9 +173,13 @@ export function RegisterForm({
           id="email"
           type="email"
           placeholder="test@example.com"
+          aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? emailErrorId : undefined}
         />
         {errors.email && (
-          <p className="text-red-500">{errors.email.message}</p>
+          <p id={emailErrorId} className="text-red-500 text-sm">
+            {errors.email.message}
+          </p>
         )}
       </div>
 
@@ -181,6 +188,7 @@ export function RegisterForm({
         label="Password"
         register={register('password')}
         error={errors.password?.message}
+        aria-describedby={errors.password ? passwordErrorId : undefined}
       />
 
       <PasswordInput
@@ -188,6 +196,9 @@ export function RegisterForm({
         label="Confirm Password"
         register={register('confirmPassword')}
         error={errors.confirmPassword?.message}
+        aria-describedby={
+          errors.confirmPassword ? confirmPasswordErrorId : undefined
+        }
       />
     </AuthForm>
   );
