@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
-export default function PasskeysCard() {
+export function PasskeysCard() {
   return (
     <Card className="w-full max-w-2xl">
       <CardHeader>

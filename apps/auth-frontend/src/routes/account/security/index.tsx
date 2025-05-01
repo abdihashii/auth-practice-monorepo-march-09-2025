@@ -1,8 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import ChangePasswordCard from '@/components/account/change-password-card';
-import PasskeysCard from '@/components/account/passkeys-card';
-import TwoFactorAuthenticationCard from '@/components/account/two-factor-authentication-card';
+import { ChangePasswordCard } from '@/components/account/change-password-card';
+import { PasskeysCard } from '@/components/account/passkeys-card';
+import {
+  TwoFactorAuthenticationCard,
+} from '@/components/account/two-factor-authentication-card';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { AppLayout } from '@/components/layout/app-layout';
 

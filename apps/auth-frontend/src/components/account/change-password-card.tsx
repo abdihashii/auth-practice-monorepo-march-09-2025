@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useSecurity } from '@/hooks/use-security';
 
-export default function ChangePasswordCard() {
+export function ChangePasswordCard() {
   const {
     // State
     showOldPassword,

@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 
-export default function TwoFactorAuthenticationCard() {
+export function TwoFactorAuthenticationCard() {
   return (
     <Card className="w-full max-w-2xl">
       <CardHeader>
