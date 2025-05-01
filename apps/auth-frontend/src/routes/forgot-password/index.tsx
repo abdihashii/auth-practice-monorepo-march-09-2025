@@ -33,7 +33,13 @@ function ForgotPassword() {
                 : 'Enter your email below to reset your password'
             }
             mode="forgot-password"
-            onSubmit={() => {}}
+            onSubmit={() => {
+              if (token) {
+                // Reset password
+              } else {
+                // Send reset link
+              }
+            }}
             submitText={token ? 'Reset Password' : 'Send Reset Link'}
             loadingText={
               token
