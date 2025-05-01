@@ -262,7 +262,7 @@ export async function setAuthTokensAndCookies(
   });
 
   // Create success redirect URL
-  const successUrl = new URL(`${env.FRONTEND_URL}/account`);
+  const successUrl = new URL(`${env.FRONTEND_URL}/account/profile`);
   return successUrl.toString();
 }
 

@@ -84,7 +84,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/account" className="cursor-pointer">
+                <Link to="/account/profile" className="cursor-pointer">
                   <UserIcon className="h-4 w-4" />
                   <span>Profile</span>
                 </Link>

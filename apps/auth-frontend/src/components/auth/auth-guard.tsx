@@ -50,7 +50,7 @@ export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
 
   // For public routes that require guest access (like login): redirect to home if authenticated
   if (!requireAuth && isAuthenticated) {
-    return <Navigate to="/account" replace />;
+    return <Navigate to="/account/profile" replace />;
   }
 
   // Authentication check passed, render children
