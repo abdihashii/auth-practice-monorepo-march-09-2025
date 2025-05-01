@@ -1,5 +1,10 @@
-import { LockKeyholeIcon } from 'lucide-react';
+import {
+  KeyRoundIcon,
+  MailIcon,
+  SmartphoneIcon,
+} from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -15,8 +20,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-
-import { Button } from '../ui/button';
 
 export default function TwoFactorAuthenticationCard() {
   return (
@@ -67,7 +70,7 @@ export default function TwoFactorAuthenticationCard() {
               className="flex items-center justify-between rounded-md border p-4"
             >
               <div className="flex items-center gap-3">
-                <LockKeyholeIcon className="h-5 w-5 text-muted-foreground" />
+                <SmartphoneIcon className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="font-medium">Authenticator app</p>
                   <p className="text-sm text-muted-foreground">
@@ -89,7 +92,7 @@ export default function TwoFactorAuthenticationCard() {
               className="flex items-center justify-between rounded-md border p-4"
             >
               <div className="flex items-center gap-3">
-                <LockKeyholeIcon className="h-5 w-5 text-muted-foreground" />
+                <KeyRoundIcon className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="font-medium">Security keys</p>
                   <p className="text-sm text-muted-foreground">
@@ -111,7 +114,7 @@ export default function TwoFactorAuthenticationCard() {
               className="flex items-center justify-between rounded-md border p-4"
             >
               <div className="flex items-center gap-3">
-                <LockKeyholeIcon className="h-5 w-5 text-muted-foreground" />
+                <MailIcon className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="font-medium">Emailed code</p>
                   <p className="text-sm text-muted-foreground">
