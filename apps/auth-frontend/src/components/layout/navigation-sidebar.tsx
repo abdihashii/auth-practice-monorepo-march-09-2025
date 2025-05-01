@@ -18,7 +18,7 @@ export function NavigationSidebar() {
 
   const accountNavItems = [
     { href: '/account', label: 'Profile', icon: UserIcon },
-    { href: '/account/password', label: 'Password', icon: LockIcon },
+    { href: '/account/security', label: 'Security', icon: LockIcon },
     { href: '/account/two-factor', label: 'Two-Factor Auth', icon: ShieldIcon },
     { href: '/account/connections', label: 'Connected Accounts', icon: Link2Icon },
     { href: '/account/preferences', label: 'Preferences', icon: SlidersIcon },

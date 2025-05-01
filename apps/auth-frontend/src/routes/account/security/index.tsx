@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthContext } from '@/hooks/use-auth-context';
 
-export const Route = createFileRoute('/account/password/')({
+export const Route = createFileRoute('/account/security/')({
   component: RouteComponent,
 });
 
