@@ -72,10 +72,7 @@ export function RegisterForm({
 
   if (registrationSuccess) {
     return (
-      <div
-        className={cn('flex flex-col gap-6', className)}
-        role="alert"
-      >
+      <div className={cn('flex flex-col gap-6', className)}>
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl flex items-center">
@@ -173,16 +170,9 @@ export function RegisterForm({
           id="email"
           type="email"
           placeholder="test@example.com"
-          aria-invalid={errors.email ? 'true' : 'false'}
-          aria-describedby={errors.email ? 'email-error' : undefined}
         />
         {errors.email && (
-          <p
-            id="email-error"
-            className="text-red-500"
-          >
-            {errors.email.message}
-          </p>
+          <p className="text-red-500">{errors.email.message}</p>
         )}
       </div>
 
@@ -190,35 +180,15 @@ export function RegisterForm({
         id="password"
         label="Password"
         register={register('password')}
-        aria-invalid={errors.password ? 'true' : 'false'}
-        aria-describedby={errors.password ? 'password-error' : undefined}
+        error={errors.password?.message}
       />
-      {errors.password && (
-        <p
-          id="password-error"
-          className="text-red-500 text-sm"
-        >
-          {errors.password.message}
-        </p>
-      )}
 
       <PasswordInput
         id="confirmPassword"
         label="Confirm Password"
         register={register('confirmPassword')}
-        aria-invalid={errors.confirmPassword ? 'true' : 'false'}
-        aria-describedby={
-          errors.confirmPassword ? 'confirmPassword-error' : undefined
-        }
+        error={errors.confirmPassword?.message}
       />
-      {errors.confirmPassword && (
-        <p
-          id="confirmPassword-error"
-          className="text-red-500 text-sm"
-        >
-          {errors.confirmPassword.message}
-        </p>
-      )}
     </AuthForm>
   );
 }
