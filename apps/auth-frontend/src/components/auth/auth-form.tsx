@@ -207,6 +207,7 @@ export function PasswordInput({
           {...register}
           id={id}
           type={showPassword ? 'text' : 'password'}
+          placeholder="********"
           aria-invalid={!!error}
           aria-describedby={describedBy}
         />
