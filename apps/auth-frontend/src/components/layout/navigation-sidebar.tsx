@@ -1,7 +1,7 @@
 'use client';
 
 import { Link, useLocation } from '@tanstack/react-router';
-import { Link2Icon, LockIcon, ShieldIcon, SlidersIcon, UserIcon } from 'lucide-react';
+import { LockIcon, SlidersIcon, UserIcon } from 'lucide-react';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -19,8 +19,6 @@ export function NavigationSidebar() {
   const accountNavItems = [
     { href: '/account', label: 'Profile', icon: UserIcon },
     { href: '/account/security', label: 'Security', icon: LockIcon },
-    { href: '/account/two-factor', label: 'Two-Factor Auth', icon: ShieldIcon },
-    { href: '/account/connections', label: 'Connected Accounts', icon: Link2Icon },
     { href: '/account/preferences', label: 'Preferences', icon: SlidersIcon },
   ];
 
