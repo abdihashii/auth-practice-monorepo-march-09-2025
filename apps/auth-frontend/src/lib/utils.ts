@@ -10,7 +10,10 @@ export function cn(...inputs: ClassValue[]) {
 
 // Regex for allowed symbols
 const allowedSymbolsRegex = new RegExp(
-  `[${PASSWORD_REQUIREMENTS.allowedSymbols.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}]`,
+  `[${PASSWORD_REQUIREMENTS.allowedSymbols.replace(
+    /[-[\]{}()*+?.,\\^$|#\s]/g,
+    '\\$&',
+  )}]`,
   'g',
 );
 
