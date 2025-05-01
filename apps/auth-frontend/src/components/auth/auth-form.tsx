@@ -1,7 +1,12 @@
 import type { ReactNode } from 'react';
 
 import { Link } from '@tanstack/react-router';
-import { AlertCircle, Eye, EyeOff, Loader2Icon } from 'lucide-react';
+import {
+  AlertCircleIcon,
+  EyeIcon,
+  EyeOffIcon,
+  Loader2Icon,
+} from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,24 +18,30 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import { BASE_API_URL } from '@/constants';
 import { cn } from '@/lib/utils';
 
-const socialAuthOptions = [
-  {
-    provider: 'Google',
-    authUrl: `${BASE_API_URL}/api/v1/auth/google`,
-  },
-  {
-    provider: 'GitHub',
-    authUrl: `${BASE_API_URL}/api/v1/auth/github`,
-  },
-];
+import { Icons } from '../icons';
 
 interface SocialAuthOption {
   provider: string;
   authUrl: string;
+  icon: React.ReactNode;
 }
+
+const socialAuthOptions: SocialAuthOption[] = [
+  {
+    provider: 'Google',
+    authUrl: `${BASE_API_URL}/api/v1/auth/google`,
+    icon: Icons.google,
+  },
+  {
+    provider: 'GitHub',
+    authUrl: `${BASE_API_URL}/api/v1/auth/github`,
+    icon: Icons.github,
+  },
+];
 
 interface AuthFormProps {
   className?: string;
@@ -73,12 +84,22 @@ export function AuthForm({
         <CardContent>
           <form onSubmit={onSubmit}>
             <div className="flex flex-col gap-6">
+              <SocialAuth options={socialAuthOptions} mode={mode} />
+
+              <div className="grid grid-cols-3 items-center justify-between">
+                <Separator />
+                <p className="bg-transparent text-muted-foreground text-xs w-full text-center">
+                  Or continue with
+                </p>
+                <Separator />
+              </div>
+
               {/* Error message */}
               {error && (
                 <div
                   className="flex items-center gap-2 p-4 text-sm border border-red-500 bg-red-50 text-red-900 rounded-md"
                 >
-                  <AlertCircle className="h-4 w-4" />
+                  <AlertCircleIcon className="h-4 w-4" />
                   <div>{error}</div>
                 </div>
               )}
@@ -101,8 +122,6 @@ export function AuthForm({
                       submitText
                     )}
               </Button>
-
-              {socialAuthOptions.length > 0 && <SocialAuth options={socialAuthOptions} mode={mode} />}
             </div>
             {footer
               && (
@@ -117,29 +136,38 @@ export function AuthForm({
   );
 }
 
-function SocialAuth({ options, mode }: { options: SocialAuthOption[]; mode: 'login' | 'register' }) {
+function SocialAuth(
+  {
+    options,
+    mode,
+  }: {
+    options: SocialAuthOption[];
+    mode: 'login' | 'register';
+  },
+) {
   return (
-    <>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       {options.map((option) => (
         <a
           key={option.provider}
           href={option.authUrl}
-          className="block w-full"
+          className="inline-flex"
         >
           <Button
             type="button"
             variant="outline"
-            className="w-full hover:cursor-pointer"
+            className="w-full h-9 px-3 flex justify-center items-center hover:cursor-pointer"
+            aria-label={
+              `${mode === 'login'
+                ? 'Sign in'
+                : 'Sign up'} with ${option.provider}`
+            }
           >
-            {mode === 'login' ? 'Login' : 'Register'}
-            {' '}
-            with
-            {' '}
-            {option.provider}
+            {option.icon}
           </Button>
         </a>
       ))}
-    </>
+    </div>
   );
 }
 
@@ -182,8 +210,8 @@ export function PasswordInput(
           }
         >
           {showPassword
-            ? <EyeOff className="h-4 w-4" />
-            : <Eye className="h-4 w-4" />}
+            ? <EyeOffIcon className="h-4 w-4" />
+            : <EyeIcon className="h-4 w-4" />}
         </Button>
       </div>
       {error && <p className="text-red-500">{error}</p>}
