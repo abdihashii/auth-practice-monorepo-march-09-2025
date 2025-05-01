@@ -23,7 +23,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
         {/* Content Area */}
-        <main className="flex-1 overflow-auto p-4 md:p-6">
+        <main
+          className="flex-1 overflow-auto px-4 pt-4 pb-20 md:px-6 md:pt-6"
+        >
           <div className="max-w-7xl">{children}</div>
         </main>
       </div>
