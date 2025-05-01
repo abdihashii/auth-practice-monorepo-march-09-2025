@@ -129,7 +129,7 @@ export const createUserSchema = z.object({
 export const updatePasswordSchema = z.object({
   old_password: passwordSchema,
   new_password: passwordSchema,
-  confirm_password: z.string().min(1, 'Confirm password is required'),
+  confirm_password: passwordSchema,
 })
   .strict() // Ensures only expected fields are processed when changing password
   .refine((data) => data.new_password === data.confirm_password, {
