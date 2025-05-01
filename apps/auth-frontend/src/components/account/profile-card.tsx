@@ -33,7 +33,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuthContext } from '@/hooks/use-auth-context';
 import { useProfileCard } from '@/hooks/use-profile-card';
 
-export function ProfileCard() {
+export default function ProfileCard() {
   const { user } = useAuthContext();
   const {
     // State
