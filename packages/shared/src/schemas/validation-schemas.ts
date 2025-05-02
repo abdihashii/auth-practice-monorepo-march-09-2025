@@ -84,10 +84,10 @@ export const idParamSchema = z.object({
 });
 
 /**
- * Validation schema for forgot password token
+ * Validation schema for token parameter
  * Ensures the token is a valid UUID format
  */
-export const forgotPasswordTokenSchema = z.object({
+export const tokenParamSchema = z.object({
   token: z.string().uuid('Invalid token format'),
 });
 

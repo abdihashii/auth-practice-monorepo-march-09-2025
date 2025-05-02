@@ -9,9 +9,9 @@ import type {
 import { zValidator } from '@hono/zod-validator';
 import {
   createUserSchema,
-  forgotPasswordTokenSchema,
   loginUserSchema,
   passwordSchema,
+  tokenParamSchema,
 } from '@roll-your-own-auth/shared/schemas';
 import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { validateAuthSchema } from '@roll-your-own-auth/shared/validations';
@@ -19,6 +19,7 @@ import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { every } from 'hono/combine';
 import { getCookie, setCookie } from 'hono/cookie';
+import { z } from 'zod';
 
 import type { CustomEnv } from '@/lib/types';
 
@@ -1006,219 +1007,228 @@ publicRoutes.post(
  * Resend verification email
  * POST /api/v1/auth/resend-verification-email
  */
-publicRoutes.post('/resend-verification-email', async (c) => {
-  try {
-    // Get db connection
-    const db = c.get('db');
+publicRoutes.post(
+  '/resend-verification-email',
+  every(publicRouteRlsMiddleware),
+  async (c) => {
+    try {
+      // Get db connection
+      const db = c.get('db');
 
-    // Get email from request body
-    const { email } = await c.req.json();
-    if (!email || typeof email !== 'string') {
-      return c.json(createApiResponse({
-        error: {
-          code: ApiErrorCode.VALIDATION_ERROR,
-          message: 'Valid email is required',
-        },
-      }), 400);
-    }
+      // Get email from request body
+      const { email } = await c.req.json();
+      if (!email || typeof email !== 'string') {
+        return c.json(createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: 'Valid email is required',
+          },
+        }), 400);
+      }
 
-    // Find the user with this email
-    const user = await db.query.authUsersTable.findFirst({
-      where: eq(authUsersTable.email, email),
-    });
-    // For security reasons, don't reveal if user exists or not
-    // We'll return the same message either way
-    if (!user || user.emailVerified) {
+      // Find the user with this email
+      const user = await db.query.authUsersTable.findFirst({
+        where: eq(authUsersTable.email, email),
+      });
+      // For security reasons, don't reveal if user exists or not
+      // We'll return the same message either way
+      if (!user || user.emailVerified) {
+        return c.json(createApiResponse({
+          data: {
+            message: 'If your email exists in our system, a verification link has been sent to you.',
+          },
+        }), 200);
+      }
+
+      // Generate verification token and expiration date
+      const {
+        verificationToken,
+        verificationTokenExpiresAt,
+      } = await generateVerificationToken();
+
+      // Update user with new verification token
+      await db.update(authUsersTable).set({
+        verificationToken,
+        verificationTokenExpiresAt,
+        updatedAt: new Date(),
+      }).where(eq(authUsersTable.id, user.id));
+
+      // Send verification email
+      try {
+        const emailResult = await sendVerificationEmail(
+          email,
+          verificationToken,
+          env.FRONTEND_URL,
+        );
+        if (!emailResult.success) {
+          console.error('Failed to send verification email:', emailResult.error);
+
+          const errorDetails = emailResult.error as {
+            message?: string;
+            name?: string;
+            code?: string;
+          };
+
+          return c.json(createApiResponse({
+            error: {
+              code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
+              message: 'Failed to send verification email',
+              details: errorDetails
+                ? {
+                    message: errorDetails.message || 'Unknown error',
+                    name: errorDetails.name || 'Error',
+                    ...(errorDetails.code && { code: errorDetails.code }),
+                  }
+                : undefined,
+            },
+          }), 400);
+        }
+      } catch (error) {
+        console.error('Failed to send verification email:', error);
+        return c.json(createApiResponse({
+          error: {
+            code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
+            message: 'Failed to send verification email',
+          },
+        }), 400);
+      }
+
       return c.json(createApiResponse({
         data: {
           message: 'If your email exists in our system, a verification link has been sent to you.',
         },
       }), 200);
-    }
-
-    // Generate verification token and expiration date
-    const {
-      verificationToken,
-      verificationTokenExpiresAt,
-    } = await generateVerificationToken();
-
-    // Update user with new verification token
-    await db.update(authUsersTable).set({
-      verificationToken,
-      verificationTokenExpiresAt,
-      updatedAt: new Date(),
-    }).where(eq(authUsersTable.id, user.id));
-
-    // Send verification email
-    try {
-      const emailResult = await sendVerificationEmail(
-        email,
-        verificationToken,
-        env.FRONTEND_URL,
-      );
-      if (!emailResult.success) {
-        console.error('Failed to send verification email:', emailResult.error);
-
-        const errorDetails = emailResult.error as {
-          message?: string;
-          name?: string;
-          code?: string;
-        };
-
-        return c.json(createApiResponse({
+    } catch (err) {
+      return c.json(
+        createApiResponse({
           error: {
-            code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
-            message: 'Failed to send verification email',
-            details: errorDetails
-              ? {
-                  message: errorDetails.message || 'Unknown error',
-                  name: errorDetails.name || 'Error',
-                  ...(errorDetails.code && { code: errorDetails.code }),
-                }
-              : undefined,
+            code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+            message: err instanceof Error
+              ? err.message
+              : 'Internal server error',
           },
-        }), 400);
-      }
-    } catch (error) {
-      console.error('Failed to send verification email:', error);
-      return c.json(createApiResponse({
-        error: {
-          code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
-          message: 'Failed to send verification email',
-        },
-      }), 400);
+        }),
+        500,
+      );
     }
-
-    return c.json(createApiResponse({
-      data: {
-        message: 'If your email exists in our system, a verification link has been sent to you.',
-      },
-    }), 200);
-  } catch (err) {
-    return c.json(
-      createApiResponse({
-        error: {
-          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-          message: err instanceof Error
-            ? err.message
-            : 'Internal server error',
-        },
-      }),
-      500,
-    );
-  }
-});
+  },
+);
 
 /**
  * Send forgot password email
  * POST /api/v1/auth/send-forgot-password-email
  */
-publicRoutes.post('/send-forgot-password-email', async (c) => {
-  try {
-    // Get db connection
-    const db = c.get('db');
+publicRoutes.post(
+  '/send-forgot-password-email',
+  every(publicRouteRlsMiddleware),
+  async (c) => {
+    try {
+      // Get db connection
+      const db = c.get('db');
 
-    // Get email from request body
-    const { email } = await c.req.json();
-    if (!email || typeof email !== 'string') {
-      return c.json(createApiResponse({
-        error: {
-          code: ApiErrorCode.VALIDATION_ERROR,
-          message: 'Valid email is required',
-        },
-      }), 400);
-    }
+      // Get email from request body
+      const { email } = await c.req.json();
+      if (!email || typeof email !== 'string') {
+        return c.json(createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: 'Valid email is required',
+          },
+        }), 400);
+      }
 
-    // Find the user with this email
-    const user = await db.query.authUsersTable.findFirst({
-      where: eq(authUsersTable.email, email),
-    });
-    // For security reasons, don't reveal if user exists or not
-    // We'll return the same message either way
-    if (!user) {
+      // Find the user with this email
+      const user = await db.query.authUsersTable.findFirst({
+        where: eq(authUsersTable.email, email),
+      });
+      // For security reasons, don't reveal if user exists or not
+      // We'll return the same message either way
+      if (!user) {
+        return c.json(createApiResponse({
+          data: {
+            message: 'If your email exists in our system, a verification link has been sent to you.',
+          },
+        }), 200);
+      }
+
+      // Generate forgot password token and expiration date
+      const {
+        verificationToken,
+        verificationTokenExpiresAt,
+      } = await generateVerificationToken();
+
+      // Update user with new verification token
+      await db.update(authUsersTable).set({
+        verificationToken,
+        verificationTokenExpiresAt,
+        updatedAt: new Date(),
+      }).where(eq(authUsersTable.id, user.id));
+
+      // Send verification email
+      try {
+        const emailResult = await sendForgotPasswordEmail(
+          email,
+          verificationToken,
+          env.FRONTEND_URL,
+        );
+        if (!emailResult.success) {
+          console.error('Failed to send forgot password email:', emailResult.error);
+
+          const errorDetails = emailResult.error as {
+            message?: string;
+            name?: string;
+            code?: string;
+          };
+
+          return c.json(createApiResponse({
+            error: {
+              code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
+              message: 'Failed to send verification email',
+              details: errorDetails
+                ? {
+                    message: errorDetails.message || 'Unknown error',
+                    name: errorDetails.name || 'Error',
+                    ...(errorDetails.code && { code: errorDetails.code }),
+                  }
+                : undefined,
+            },
+          }), 400);
+        }
+      } catch (error) {
+        console.error('Failed to send verification email:', error);
+        return c.json(createApiResponse({
+          error: {
+            code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
+            message: 'Failed to send forgot password email',
+          },
+        }), 400);
+      }
+
       return c.json(createApiResponse({
         data: {
           message: 'If your email exists in our system, a verification link has been sent to you.',
         },
       }), 200);
-    }
-
-    // Generate forgot password token and expiration date
-    const {
-      verificationToken,
-      verificationTokenExpiresAt,
-    } = await generateVerificationToken();
-
-    // Update user with new verification token
-    await db.update(authUsersTable).set({
-      verificationToken,
-      verificationTokenExpiresAt,
-      updatedAt: new Date(),
-    }).where(eq(authUsersTable.id, user.id));
-
-    // Send verification email
-    try {
-      const emailResult = await sendForgotPasswordEmail(
-        email,
-        verificationToken,
-        env.FRONTEND_URL,
-      );
-      if (!emailResult.success) {
-        console.error('Failed to send forgot password email:', emailResult.error);
-
-        const errorDetails = emailResult.error as {
-          message?: string;
-          name?: string;
-          code?: string;
-        };
-
-        return c.json(createApiResponse({
-          error: {
-            code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
-            message: 'Failed to send verification email',
-            details: errorDetails
-              ? {
-                  message: errorDetails.message || 'Unknown error',
-                  name: errorDetails.name || 'Error',
-                  ...(errorDetails.code && { code: errorDetails.code }),
-                }
-              : undefined,
-          },
-        }), 400);
-      }
     } catch (error) {
-      console.error('Failed to send verification email:', error);
+      console.error('Failed to send forgot password email:', error);
       return c.json(createApiResponse({
         error: {
-          code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
           message: 'Failed to send forgot password email',
         },
-      }), 400);
+      }), 500);
     }
-
-    return c.json(createApiResponse({
-      data: {
-        message: 'If your email exists in our system, a verification link has been sent to you.',
-      },
-    }), 200);
-  } catch (error) {
-    console.error('Failed to send forgot password email:', error);
-    return c.json(createApiResponse({
-      error: {
-        code: ApiErrorCode.INTERNAL_SERVER_ERROR,
-        message: 'Failed to send forgot password email',
-      },
-    }), 500);
-  }
-});
+  },
+);
 
 /**
  * Verify forgot password token and update password
- * POST /api/v1/auth/forgot-password-token/:token
+ * POST /api/v1/auth/verify-forgot-password-token/:token
  */
-publicRoutes.put('/forgot-password-token/:token', every(
-  zValidator('param', forgotPasswordTokenSchema),
-  zValidator('json', passwordSchema),
+publicRoutes.post('/verify-forgot-password-token/:token', every(
+  zValidator('param', tokenParamSchema),
+  zValidator('json', z.object({ password: passwordSchema })),
+  publicRouteRlsMiddleware,
 ), async (c) => {
   try {
     // Get db connection
@@ -1238,15 +1248,18 @@ publicRoutes.put('/forgot-password-token/:token', every(
       );
     }
 
-    // Get the new password from the request body
+    // Get  password from the request body
     const { password } = await c.req.json();
-    if (!password || typeof password !== 'string') {
-      return c.json(createApiResponse({
-        error: {
-          code: ApiErrorCode.VALIDATION_ERROR,
-          message: 'Valid password is required',
-        },
-      }), 400);
+    if (!password) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: 'Invalid input data',
+          },
+        }),
+        400,
+      );
     }
 
     // Find the user with this verification token
