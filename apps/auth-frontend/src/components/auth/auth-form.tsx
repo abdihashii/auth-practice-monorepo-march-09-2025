@@ -23,7 +23,7 @@ import { Separator } from '@/components/ui/separator';
 import { BASE_API_URL } from '@/constants';
 import { cn } from '@/lib/utils';
 
-type AuthFormModes = 'login' | 'register' | 'forgot-password';
+type AuthFormModes = 'login' | 'register';
 
 interface SocialAuthOption {
   provider: string;
@@ -87,17 +87,15 @@ export function AuthForm({
             <div className="flex flex-col gap-6">
               <SocialAuth options={socialAuthOptions} mode={mode} />
 
-              {mode !== 'forgot-password' && (
-                <div className="grid grid-cols-3 items-center justify-between">
-                  <Separator />
-                  <p
-                    className="bg-transparent text-muted-foreground text-xs w-full text-center"
-                  >
-                    Or continue with
-                  </p>
-                  <Separator />
-                </div>
-              )}
+              <div className="grid grid-cols-3 items-center justify-between">
+                <Separator />
+                <p
+                  className="bg-transparent text-muted-foreground text-xs w-full text-center"
+                >
+                  Or continue with
+                </p>
+                <Separator />
+              </div>
 
               {/* Error message */}
               {error && (
@@ -151,12 +149,6 @@ function SocialAuth(
     mode: AuthFormModes;
   },
 ) {
-  // Only show social auth options for login and register, not for
-  // forgot-password
-  if (mode === 'forgot-password') {
-    return null;
-  }
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       {options.map((option) => (
