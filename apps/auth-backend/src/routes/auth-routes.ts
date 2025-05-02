@@ -6,9 +6,12 @@ import type {
   UserSettings,
 } from '@roll-your-own-auth/shared/types';
 
+import { zValidator } from '@hono/zod-validator';
 import {
   createUserSchema,
+  forgotPasswordTokenSchema,
   loginUserSchema,
+  passwordSchema,
 } from '@roll-your-own-auth/shared/schemas';
 import { ApiErrorCode } from '@roll-your-own-auth/shared/types';
 import { validateAuthSchema } from '@roll-your-own-auth/shared/validations';
@@ -37,7 +40,7 @@ import {
   refreshAccessToken,
   verifyPassword,
 } from '@/lib/utils';
-import { sendVerificationEmail } from '@/lib/utils/email';
+import { sendForgotPasswordEmail, sendVerificationEmail } from '@/lib/utils/email';
 import { authMiddleware } from '@/middlewares/auth-middleware';
 import {
   extractEmailMiddleware,
@@ -868,7 +871,8 @@ publicRoutes.post(
       // Generate JWT tokens now that email is verified
       const { accessToken, refreshToken } = await generateTokens(user.id);
 
-      // Update user as verified, clear verification token, and set refresh token
+      // Update user as verified, clear verification token, and set refresh
+      // token
       await db
         .update(authUsersTable)
         .set({
@@ -1098,6 +1102,329 @@ publicRoutes.post('/resend-verification-email', async (c) => {
           message: err instanceof Error
             ? err.message
             : 'Internal server error',
+        },
+      }),
+      500,
+    );
+  }
+});
+
+/**
+ * Send forgot password email
+ * POST /api/v1/auth/send-forgot-password-email
+ */
+publicRoutes.post('/send-forgot-password-email', async (c) => {
+  try {
+    // Get db connection
+    const db = c.get('db');
+
+    // Get email from request body
+    const { email } = await c.req.json();
+    if (!email || typeof email !== 'string') {
+      return c.json(createApiResponse({
+        error: {
+          code: ApiErrorCode.VALIDATION_ERROR,
+          message: 'Valid email is required',
+        },
+      }), 400);
+    }
+
+    // Find the user with this email
+    const user = await db.query.authUsersTable.findFirst({
+      where: eq(authUsersTable.email, email),
+    });
+    // For security reasons, don't reveal if user exists or not
+    // We'll return the same message either way
+    if (!user) {
+      return c.json(createApiResponse({
+        data: {
+          message: 'If your email exists in our system, a verification link has been sent to you.',
+        },
+      }), 200);
+    }
+
+    // Generate forgot password token and expiration date
+    const {
+      verificationToken,
+      verificationTokenExpiresAt,
+    } = await generateVerificationToken();
+
+    // Update user with new verification token
+    await db.update(authUsersTable).set({
+      verificationToken,
+      verificationTokenExpiresAt,
+      updatedAt: new Date(),
+    }).where(eq(authUsersTable.id, user.id));
+
+    // Send verification email
+    try {
+      const emailResult = await sendForgotPasswordEmail(
+        email,
+        verificationToken,
+        env.FRONTEND_URL,
+      );
+      if (!emailResult.success) {
+        console.error('Failed to send forgot password email:', emailResult.error);
+
+        const errorDetails = emailResult.error as {
+          message?: string;
+          name?: string;
+          code?: string;
+        };
+
+        return c.json(createApiResponse({
+          error: {
+            code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
+            message: 'Failed to send verification email',
+            details: errorDetails
+              ? {
+                  message: errorDetails.message || 'Unknown error',
+                  name: errorDetails.name || 'Error',
+                  ...(errorDetails.code && { code: errorDetails.code }),
+                }
+              : undefined,
+          },
+        }), 400);
+      }
+    } catch (error) {
+      console.error('Failed to send verification email:', error);
+      return c.json(createApiResponse({
+        error: {
+          code: ApiErrorCode.EMAIL_VERIFICATION_FAILED,
+          message: 'Failed to send forgot password email',
+        },
+      }), 400);
+    }
+
+    return c.json(createApiResponse({
+      data: {
+        message: 'If your email exists in our system, a verification link has been sent to you.',
+      },
+    }), 200);
+  } catch (error) {
+    console.error('Failed to send forgot password email:', error);
+    return c.json(createApiResponse({
+      error: {
+        code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+        message: 'Failed to send forgot password email',
+      },
+    }), 500);
+  }
+});
+
+/**
+ * Verify forgot password token and update password
+ * POST /api/v1/auth/forgot-password-token/:token
+ */
+publicRoutes.put('/forgot-password-token/:token', every(
+  zValidator('param', forgotPasswordTokenSchema),
+  zValidator('json', passwordSchema),
+), async (c) => {
+  try {
+    // Get db connection
+    const db = c.get('db');
+
+    // Get the token from the request params
+    const { token } = c.req.param();
+    if (!token) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.VALIDATION_ERROR,
+            message: 'Invalid input data',
+          },
+        }),
+        400,
+      );
+    }
+
+    // Get the new password from the request body
+    const { password } = await c.req.json();
+    if (!password || typeof password !== 'string') {
+      return c.json(createApiResponse({
+        error: {
+          code: ApiErrorCode.VALIDATION_ERROR,
+          message: 'Valid password is required',
+        },
+      }), 400);
+    }
+
+    // Find the user with this verification token
+    const user = await db.query.authUsersTable.findFirst({
+      where: eq(authUsersTable.verificationToken, token),
+    });
+    if (!user) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.INVALID_EMAIL_VERIFICATION_TOKEN,
+            message: 'Invalid email verification token',
+          },
+        }),
+        401,
+      );
+    }
+
+    // Find the user profile
+    const profile = await db.query.profilesTable.findFirst({
+      where: eq(profilesTable.userId, user.id),
+    });
+    if (!profile) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.USER_NOT_FOUND,
+            message: 'User profile not found',
+          },
+        }),
+        404,
+      );
+    }
+
+    // Check if the token has expired
+    if (
+      !user.verificationTokenExpiresAt
+      || user.verificationTokenExpiresAt < new Date()
+    ) {
+      return c.json(
+        createApiResponse({
+          error: {
+            code: ApiErrorCode.EMAIL_VERIFICATION_TOKEN_EXPIRED,
+            message: 'Email verification token expired',
+          },
+        }),
+        401,
+      );
+    }
+
+    // Generate JWT tokens now that email is verified
+    const { accessToken, refreshToken } = await generateTokens(user.id);
+
+    // Hash the new password
+    const hashedNewPassword = await hashPassword(password);
+
+    // Update user's password, clear verification token, and set refresh
+    // token
+    await db
+      .update(authUsersTable)
+      .set({
+        hashedPassword: hashedNewPassword,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+        refreshToken,
+        refreshTokenExpiresAt: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000,
+        ), // 7 days
+        updatedAt: new Date(),
+      })
+      .where(eq(authUsersTable.id, user.id));
+
+    // Update profile with last successful login and login count
+    await db
+      .update(profilesTable)
+      .set({
+        lastSuccessfulLogin: new Date(),
+        loginCount: 1,
+        updatedAt: new Date(),
+      })
+      .where(eq(profilesTable.userId, user.id));
+
+    // Set refresh token in HTTP-only cookie
+    if (env.NODE_ENV === 'production') {
+      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_PROD, refreshToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: true, // Ensures the cookie is only sent over HTTPS
+        sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      });
+    } else {
+      setCookie(c, REFRESH_TOKEN_COOKIE_NAME_DEV, refreshToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: false, // The cookie is only sent over HTTPS in production
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      });
+    }
+
+    // Set the access token in the HTTP-only cookie
+    if (env.NODE_ENV === 'production') {
+      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_PROD, accessToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: true, // Ensures the cookie is only sent over HTTPS
+        sameSite: 'None', // Allow cross-site cookie sending in production since both apps are on different domains
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 15 * 60, // 15 minutes in seconds
+      });
+    } else {
+      setCookie(c, ACCESS_TOKEN_COOKIE_NAME_DEV, accessToken, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: false, // The cookie is only sent over HTTPS in production
+        sameSite: 'Lax', // Prevents the cookie from being sent along with requests to other sites
+        path: '/', // The cookie is only sent to requests to the root domain
+        maxAge: 15 * 60, // 15 minutes in seconds
+      });
+    }
+
+    // Create a safe user object
+    const safeUser: User = {
+      // Core user information
+      id: user.id,
+      email: user.email,
+      name: profile.name,
+      bio: profile.bio,
+      profilePicture: profile.profilePicture,
+      createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+
+      // Email verification
+      emailVerified: true,
+
+      // Account status & management
+      isActive: user.isActive ?? true,
+      deletedAt: profile.deletedAt?.toISOString() ?? null,
+
+      // User preferences & settings
+      settings: (profile.settings as UserSettings) ?? {
+        theme: 'system',
+        language: 'en',
+        timezone: 'UTC',
+      },
+      notificationPreferences:
+        (profile.notificationPreferences as NotificationPreferences) ?? {
+          email: {
+            enabled: false,
+            digest: 'never',
+            marketing: false,
+          },
+          push: {
+            enabled: false,
+            alerts: false,
+          },
+        },
+
+      // Activity tracking
+      lastActivityAt: new Date().toISOString(),
+      lastSuccessfulLogin: new Date().toISOString(),
+      loginCount: 1,
+    };
+
+    const authResponse: AuthResponse = {
+      user: safeUser,
+      message: 'Password updated successfully',
+    };
+
+    return c.json(createApiResponse({
+      data: authResponse,
+    }), 200);
+  } catch (error) {
+    console.error('Failed to verify forgot password token:', error);
+    return c.json(
+      createApiResponse({
+        error: {
+          code: ApiErrorCode.INTERNAL_SERVER_ERROR,
+          message: 'Failed to verify forgot password token',
         },
       }),
       500,
