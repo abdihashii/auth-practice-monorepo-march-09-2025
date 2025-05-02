@@ -160,7 +160,7 @@ publicRoutes.post(
           env.FRONTEND_URL,
         );
         if (!emailResult.success) {
-        // Delete the user if email sending fails
+          // Delete the user if email sending fails
           await db.delete(authUsersTable).where(eq(authUsersTable.id, user.id));
 
           const errorDetails = emailResult.error as {
@@ -187,7 +187,7 @@ publicRoutes.post(
           );
         }
       } catch (error) {
-      // Delete the user if email sending fails
+        // Delete the user if email sending fails
         await db.delete(authUsersTable).where(eq(authUsersTable.id, user.id));
 
         console.error('Failed to send verification email:', error);
