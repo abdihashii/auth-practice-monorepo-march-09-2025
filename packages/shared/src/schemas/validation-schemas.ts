@@ -80,7 +80,7 @@ export const passwordSchema = z
  * Ensures the ID is a valid UUID format
  */
 export const idParamSchema = z.object({
-  id: z.string().uuid('Invalid user ID format'),
+  id: z.string().uuid('Invalid ID format'),
 });
 
 /*
