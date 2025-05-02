@@ -243,3 +243,46 @@ export async function sendForgotPasswordEmail(email: string): Promise<{
     };
   }
 }
+
+/**
+ * Verify forgot password token and update password
+ *
+ * This is a public route that doesn't require authentication.
+ *
+ * @returns Result of the forgot password token verification attempt
+ */
+export async function verifyForgotPasswordToken(
+  token: string,
+  password: string,
+): Promise<{
+    success: boolean;
+    message?: string;
+    error?: {
+      code?: string;
+      message: string;
+    };
+  }> {
+  try {
+    const response = await apiClient<{ data: { message: string } }>(
+      `${AUTH_API_URL}/verify-forgot-password-token/${token}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ password }),
+      },
+    );
+
+    return {
+      success: true,
+      message: response.data.message || 'Forgot password token verified successfully',
+    };
+  } catch (error: any) {
+    console.error('Error verifying forgot password token:', error);
+    return {
+      success: false,
+      error: {
+        code: error.code,
+        message: error.message || 'An unexpected error occurred',
+      },
+    };
+  }
+}
