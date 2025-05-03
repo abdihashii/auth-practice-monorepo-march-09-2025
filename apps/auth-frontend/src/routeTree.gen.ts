@@ -22,6 +22,7 @@ import { Route as LoginIndexImport } from './routes/login/index'
 import { Route as ForgotPasswordIndexImport } from './routes/forgot-password/index'
 import { Route as AccountSecurityIndexImport } from './routes/account/security/index'
 import { Route as AccountProfileIndexImport } from './routes/account/profile/index'
+import { Route as AccountPreferencesIndexImport } from './routes/account/preferences/index'
 
 // Create/Update Routes
 
@@ -88,6 +89,12 @@ const AccountSecurityIndexRoute = AccountSecurityIndexImport.update({
 const AccountProfileIndexRoute = AccountProfileIndexImport.update({
   id: '/account/profile/',
   path: '/account/profile/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AccountPreferencesIndexRoute = AccountPreferencesIndexImport.update({
+  id: '/account/preferences/',
+  path: '/account/preferences/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -158,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyIndexImport
       parentRoute: typeof rootRoute
     }
+    '/account/preferences/': {
+      id: '/account/preferences/'
+      path: '/account/preferences'
+      fullPath: '/account/preferences'
+      preLoaderRoute: typeof AccountPreferencesIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/account/profile/': {
       id: '/account/profile/'
       path: '/account/profile'
@@ -187,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordIndexRoute
   '/terms': typeof TermsIndexRoute
   '/verify': typeof VerifyIndexRoute
+  '/account/preferences': typeof AccountPreferencesIndexRoute
   '/account/profile': typeof AccountProfileIndexRoute
   '/account/security': typeof AccountSecurityIndexRoute
 }
@@ -201,6 +216,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordIndexRoute
   '/terms': typeof TermsIndexRoute
   '/verify': typeof VerifyIndexRoute
+  '/account/preferences': typeof AccountPreferencesIndexRoute
   '/account/profile': typeof AccountProfileIndexRoute
   '/account/security': typeof AccountSecurityIndexRoute
 }
@@ -216,6 +232,7 @@ export interface FileRoutesById {
   '/reset-password/': typeof ResetPasswordIndexRoute
   '/terms/': typeof TermsIndexRoute
   '/verify/': typeof VerifyIndexRoute
+  '/account/preferences/': typeof AccountPreferencesIndexRoute
   '/account/profile/': typeof AccountProfileIndexRoute
   '/account/security/': typeof AccountSecurityIndexRoute
 }
@@ -232,6 +249,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/verify'
+    | '/account/preferences'
     | '/account/profile'
     | '/account/security'
   fileRoutesByTo: FileRoutesByTo
@@ -245,6 +263,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/verify'
+    | '/account/preferences'
     | '/account/profile'
     | '/account/security'
   id:
@@ -258,6 +277,7 @@ export interface FileRouteTypes {
     | '/reset-password/'
     | '/terms/'
     | '/verify/'
+    | '/account/preferences/'
     | '/account/profile/'
     | '/account/security/'
   fileRoutesById: FileRoutesById
@@ -273,6 +293,7 @@ export interface RootRouteChildren {
   ResetPasswordIndexRoute: typeof ResetPasswordIndexRoute
   TermsIndexRoute: typeof TermsIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
+  AccountPreferencesIndexRoute: typeof AccountPreferencesIndexRoute
   AccountProfileIndexRoute: typeof AccountProfileIndexRoute
   AccountSecurityIndexRoute: typeof AccountSecurityIndexRoute
 }
@@ -287,6 +308,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordIndexRoute: ResetPasswordIndexRoute,
   TermsIndexRoute: TermsIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,
+  AccountPreferencesIndexRoute: AccountPreferencesIndexRoute,
   AccountProfileIndexRoute: AccountProfileIndexRoute,
   AccountSecurityIndexRoute: AccountSecurityIndexRoute,
 }
@@ -310,6 +332,7 @@ export const routeTree = rootRoute
         "/reset-password/",
         "/terms/",
         "/verify/",
+        "/account/preferences/",
         "/account/profile/",
         "/account/security/"
       ]
@@ -340,6 +363,9 @@ export const routeTree = rootRoute
     },
     "/verify/": {
       "filePath": "verify/index.tsx"
+    },
+    "/account/preferences/": {
+      "filePath": "account/preferences/index.tsx"
     },
     "/account/profile/": {
       "filePath": "account/profile/index.tsx"
