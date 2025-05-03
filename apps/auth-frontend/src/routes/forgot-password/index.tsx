@@ -117,7 +117,7 @@ function ForgotPassword() {
                     </form>
                   )
                 : (
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                       <p className="text-lg font-medium">Check your inbox!</p>
                       {serverMessage && (
                         <p className="text-sm text-muted-foreground">
@@ -131,7 +131,7 @@ function ForgotPassword() {
                         If you still don&apos;t see it,
                         {' '}
                         <span
-                          className="font-semibold hover:cursor-pointer hover:underline"
+                          className="font-semibold hover:cursor-pointer underline"
                           onClick={() => {
                             // Reset the email sent state to allow the user to
                             // send the email again
