@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { Loader2Icon } from 'lucide-react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -27,6 +28,9 @@ const forgotPasswordEmailSchema = z.object({
 });
 
 function ForgotPassword() {
+  const [emailSent, setEmailSent] = useState(false);
+  const [serverMessage, setServerMessage] = useState<string | null>(null);
+
   const {
     register: registerEmail,
     handleSubmit: handleSubmitEmail,
@@ -58,6 +62,8 @@ function ForgotPassword() {
       toast.error(error?.message ?? 'An error occurred');
     } else {
       toast.success(message ?? 'Password reset email sent');
+      setEmailSent(true);
+      setServerMessage(message ?? 'Password reset email sent');
     }
   };
 
@@ -75,37 +81,78 @@ function ForgotPassword() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form
-                onSubmit={handleSubmitEmail(onSubmitEmail)}
-                className="grid gap-6"
-              >
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    {...registerEmail('email')}
-                    id="email"
-                    type="email"
-                    placeholder="test@example.com"
-                  />
-                </div>
+              {!emailSent
+                ? (
+                    <form
+                      onSubmit={handleSubmitEmail(onSubmitEmail)}
+                      className="grid gap-6"
+                    >
+                      <div className="grid gap-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          {...registerEmail('email')}
+                          id="email"
+                          type="email"
+                          placeholder="test@example.com"
+                          disabled={isSubmittingEmail}
+                        />
+                      </div>
 
-                <Button
-                  type="submit"
-                  className="w-full hover:cursor-pointer"
-                  disabled={isSubmittingEmail}
-                >
-                  {isSubmittingEmail
-                    ? (
-                        <>
-                          <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                          Sending reset email...
-                        </>
-                      )
-                    : (
-                        'Reset Password'
+                      <Button
+                        type="submit"
+                        className="w-full hover:cursor-pointer"
+                        disabled={isSubmittingEmail}
+                      >
+                        {isSubmittingEmail
+                          ? (
+                              <>
+                                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                                Sending reset email...
+                              </>
+                            )
+                          : (
+                              'Reset Password'
+                            )}
+                      </Button>
+                    </form>
+                  )
+                : (
+                    <div className="space-y-4">
+                      <p className="text-lg font-medium">Check your inbox!</p>
+                      {serverMessage && (
+                        <p className="text-sm text-muted-foreground">
+                          {serverMessage}
+                        </p>
                       )}
-                </Button>
-              </form>
+                      <p className="text-sm text-muted-foreground">
+                        Didn&apos;t receive it? Check your spam folder.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        If you still don&apos;t see it,
+                        {' '}
+                        <span
+                          className="font-semibold hover:cursor-pointer hover:underline"
+                          onClick={() => {
+                            // Reset the email sent state to allow the user to
+                            // send the email again
+                            setEmailSent(false);
+                            setServerMessage(null);
+                          }}
+                        >
+                          try again.
+                        </span>
+                      </p>
+                    </div>
+                  )}
+
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full hover:cursor-pointer mt-6"
+                asChild
+              >
+                <Link to="/login">Back to login</Link>
+              </Button>
             </CardContent>
           </Card>
         </div>
