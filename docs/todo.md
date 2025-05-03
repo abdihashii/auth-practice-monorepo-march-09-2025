@@ -3,7 +3,7 @@
 - [x] Registration
 - [x] Log in
 - [x] Log out
-- [ ] Forgot password
+- [x] Forgot password
 - [x] Verify email
 - [x] Refresh token endpoint
 - [x] HTTP-only cookie
