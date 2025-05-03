@@ -149,16 +149,16 @@ function ResetPassword() {
                         'Reset Password'
                       )}
                 </Button>
-
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="w-full hover:cursor-pointer"
-                  asChild
-                >
-                  <Link to="/login">Back to login</Link>
-                </Button>
               </form>
+
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full hover:cursor-pointer mt-6"
+                asChild
+              >
+                <Link to="/login">Back to login</Link>
+              </Button>
             </CardContent>
           </Card>
         </div>
