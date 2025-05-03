@@ -46,13 +46,13 @@ function ResetPassword() {
 
   const { token } = useSearch({ from: '/reset-password/' });
   const {
-    register: registerPassword,
-    handleSubmit: handleSubmitPassword,
+    register,
+    handleSubmit,
     formState: {
-      isSubmitting: isSubmittingPassword,
-      errors: errorsPassword,
+      isSubmitting,
+      errors,
     },
-    watch: passwordWatch,
+    watch,
   } = useForm<z.infer<typeof resetPasswordPasswordSchema>>({
     resolver: zodResolver(resetPasswordPasswordSchema),
     defaultValues: {
@@ -61,8 +61,8 @@ function ResetPassword() {
     },
   });
 
-  const newPassword = passwordWatch('new_password');
-  const confirmNewPassword = passwordWatch('confirm_new_password');
+  const newPassword = watch('new_password');
+  const confirmNewPassword = watch('confirm_new_password');
 
   const passwordCheckerId = useId();
 
@@ -104,16 +104,16 @@ function ResetPassword() {
               {!passwordResetSuccess
                 ? (
                     <form
-                      onSubmit={handleSubmitPassword(onSubmitPassword)}
+                      onSubmit={handleSubmit(onSubmitPassword)}
                       className="grid gap-6"
                     >
                       <PasswordInput
                         id="new_password"
                         label="New Password"
-                        register={registerPassword('new_password')}
-                        error={errorsPassword.new_password?.message}
+                        register={register('new_password')}
+                        error={errors.new_password?.message}
                         aria-describedby={cn(
-                          errorsPassword.new_password
+                          errors.new_password
                             ? passwordCheckerId
                             : undefined,
                           newPassword && passwordCheckerId,
@@ -128,10 +128,10 @@ function ResetPassword() {
                       <PasswordInput
                         id="confirm_new_password"
                         label="Confirm New Password"
-                        register={registerPassword('confirm_new_password')}
-                        error={errorsPassword.confirm_new_password?.message}
+                        register={register('confirm_new_password')}
+                        error={errors.confirm_new_password?.message}
                         aria-describedby={cn(
-                          errorsPassword.confirm_new_password
+                          errors.confirm_new_password
                             ? passwordCheckerId
                             : undefined,
                           confirmNewPassword && passwordCheckerId,
@@ -141,9 +141,9 @@ function ResetPassword() {
                       <Button
                         type="submit"
                         className="w-full hover:cursor-pointer"
-                        disabled={isSubmittingPassword}
+                        disabled={isSubmitting}
                       >
-                        {isSubmittingPassword
+                        {isSubmitting
                           ? (
                               <>
                                 <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
