@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { Loader2Icon } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -32,11 +32,11 @@ function ForgotPassword() {
   const [serverMessage, setServerMessage] = useState<string | null>(null);
 
   const {
-    register: registerEmail,
-    handleSubmit: handleSubmitEmail,
+    register,
+    handleSubmit,
     formState: {
-      isSubmitting: isSubmittingEmail,
-      // errors: errorsEmail,
+      isSubmitting,
+      errors,
     },
   } = useForm<z.infer<typeof forgotPasswordEmailSchema>>({
     resolver: zodResolver(forgotPasswordEmailSchema),
@@ -44,6 +44,8 @@ function ForgotPassword() {
       email: '',
     },
   });
+
+  const emailErrorId = useId();
 
   const onSubmitEmail = async (
     data: z.infer<typeof forgotPasswordEmailSchema>,
@@ -84,26 +86,34 @@ function ForgotPassword() {
               {!emailSent
                 ? (
                     <form
-                      onSubmit={handleSubmitEmail(onSubmitEmail)}
+                      onSubmit={handleSubmit(onSubmitEmail)}
                       className="grid gap-6"
                     >
                       <div className="grid gap-2">
                         <Label htmlFor="email">Email</Label>
                         <Input
-                          {...registerEmail('email')}
+                          {...register('email')}
                           id="email"
                           type="email"
                           placeholder="test@example.com"
-                          disabled={isSubmittingEmail}
+                          disabled={isSubmitting}
                         />
+                        {errors.email && (
+                          <p
+                            id={emailErrorId}
+                            className="text-red-500 text-sm"
+                          >
+                            {errors.email.message}
+                          </p>
+                        )}
                       </div>
 
                       <Button
                         type="submit"
                         className="w-full hover:cursor-pointer"
-                        disabled={isSubmittingEmail}
+                        disabled={isSubmitting}
                       >
-                        {isSubmittingEmail
+                        {isSubmitting
                           ? (
                               <>
                                 <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
