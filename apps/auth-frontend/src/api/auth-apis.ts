@@ -203,3 +203,86 @@ export async function resendVerificationEmail(email: string): Promise<{
     };
   }
 }
+
+/**
+ * Send forgot password email to the specified email address
+ *
+ * This is a public route that doesn't require authentication.
+ *
+ * @returns Result of the forgot password email attempt
+ */
+export async function sendForgotPasswordEmail(email: string): Promise<{
+  success: boolean;
+  message?: string;
+  error?: {
+    code?: string;
+    message: string;
+  };
+}> {
+  try {
+    const response = await apiClient<{ data: { message: string } }>(
+      `${AUTH_API_URL}/send-forgot-password-email`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      },
+    );
+
+    return {
+      success: true,
+      message: response.data.message || 'Forgot password email sent successfully',
+    };
+  } catch (error: any) {
+    console.error('Error sending forgot password email:', error);
+    return {
+      success: false,
+      error: {
+        code: error.code,
+        message: error.message || 'An unexpected error occurred',
+      },
+    };
+  }
+}
+
+/**
+ * Verify forgot password token and update password
+ *
+ * This is a public route that doesn't require authentication.
+ *
+ * @returns Result of the forgot password token verification attempt
+ */
+export async function verifyForgotPasswordToken(
+  token: string,
+  password: string,
+): Promise<{
+    success: boolean;
+    message?: string;
+    error?: {
+      code?: string;
+      message: string;
+    };
+  }> {
+  try {
+    const response = await apiClient<{ data: { message: string } }>(
+      `${AUTH_API_URL}/verify-forgot-password-token/${token}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ password }),
+      },
+    );
+
+    return {
+      success: true,
+      message: response.data.message || 'Forgot password token verified successfully',
+    };
+  } catch (error: any) {
+    console.error('Error verifying forgot password token:', error);
+    return {
+      success: false,
+      error: {
+        code: error.code,
+        message: error.message || 'An unexpected error occurred',
+      },
+    };
+  }
+}

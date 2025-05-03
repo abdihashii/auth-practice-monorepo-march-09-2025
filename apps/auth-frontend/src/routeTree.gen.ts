@@ -14,6 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as VerifyIndexImport } from './routes/verify/index'
 import { Route as TermsIndexImport } from './routes/terms/index'
+import { Route as ResetPasswordIndexImport } from './routes/reset-password/index'
 import { Route as RegisterIndexImport } from './routes/register/index'
 import { Route as PublicIndexImport } from './routes/public/index'
 import { Route as PrivacyIndexImport } from './routes/privacy/index'
@@ -39,6 +40,12 @@ const VerifyIndexRoute = VerifyIndexImport.update({
 const TermsIndexRoute = TermsIndexImport.update({
   id: '/terms/',
   path: '/terms/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ResetPasswordIndexRoute = ResetPasswordIndexImport.update({
+  id: '/reset-password/',
+  path: '/reset-password/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -130,6 +137,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterIndexImport
       parentRoute: typeof rootRoute
     }
+    '/reset-password/': {
+      id: '/reset-password/'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/terms/': {
       id: '/terms/'
       path: '/terms'
@@ -170,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyIndexRoute
   '/public': typeof PublicIndexRoute
   '/register': typeof RegisterIndexRoute
+  '/reset-password': typeof ResetPasswordIndexRoute
   '/terms': typeof TermsIndexRoute
   '/verify': typeof VerifyIndexRoute
   '/account/profile': typeof AccountProfileIndexRoute
@@ -183,6 +198,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyIndexRoute
   '/public': typeof PublicIndexRoute
   '/register': typeof RegisterIndexRoute
+  '/reset-password': typeof ResetPasswordIndexRoute
   '/terms': typeof TermsIndexRoute
   '/verify': typeof VerifyIndexRoute
   '/account/profile': typeof AccountProfileIndexRoute
@@ -197,6 +213,7 @@ export interface FileRoutesById {
   '/privacy/': typeof PrivacyIndexRoute
   '/public/': typeof PublicIndexRoute
   '/register/': typeof RegisterIndexRoute
+  '/reset-password/': typeof ResetPasswordIndexRoute
   '/terms/': typeof TermsIndexRoute
   '/verify/': typeof VerifyIndexRoute
   '/account/profile/': typeof AccountProfileIndexRoute
@@ -212,6 +229,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/public'
     | '/register'
+    | '/reset-password'
     | '/terms'
     | '/verify'
     | '/account/profile'
@@ -224,6 +242,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/public'
     | '/register'
+    | '/reset-password'
     | '/terms'
     | '/verify'
     | '/account/profile'
@@ -236,6 +255,7 @@ export interface FileRouteTypes {
     | '/privacy/'
     | '/public/'
     | '/register/'
+    | '/reset-password/'
     | '/terms/'
     | '/verify/'
     | '/account/profile/'
@@ -250,6 +270,7 @@ export interface RootRouteChildren {
   PrivacyIndexRoute: typeof PrivacyIndexRoute
   PublicIndexRoute: typeof PublicIndexRoute
   RegisterIndexRoute: typeof RegisterIndexRoute
+  ResetPasswordIndexRoute: typeof ResetPasswordIndexRoute
   TermsIndexRoute: typeof TermsIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
   AccountProfileIndexRoute: typeof AccountProfileIndexRoute
@@ -263,6 +284,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyIndexRoute: PrivacyIndexRoute,
   PublicIndexRoute: PublicIndexRoute,
   RegisterIndexRoute: RegisterIndexRoute,
+  ResetPasswordIndexRoute: ResetPasswordIndexRoute,
   TermsIndexRoute: TermsIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,
   AccountProfileIndexRoute: AccountProfileIndexRoute,
@@ -285,6 +307,7 @@ export const routeTree = rootRoute
         "/privacy/",
         "/public/",
         "/register/",
+        "/reset-password/",
         "/terms/",
         "/verify/",
         "/account/profile/",
@@ -308,6 +331,9 @@ export const routeTree = rootRoute
     },
     "/register/": {
       "filePath": "register/index.tsx"
+    },
+    "/reset-password/": {
+      "filePath": "reset-password/index.tsx"
     },
     "/terms/": {
       "filePath": "terms/index.tsx"

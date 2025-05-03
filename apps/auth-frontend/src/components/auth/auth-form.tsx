@@ -23,6 +23,8 @@ import { Separator } from '@/components/ui/separator';
 import { BASE_API_URL } from '@/constants';
 import { cn } from '@/lib/utils';
 
+type AuthFormModes = 'login' | 'register';
+
 interface SocialAuthOption {
   provider: string;
   authUrl: string;
@@ -52,7 +54,7 @@ interface AuthFormProps {
   submitText: string;
   loadingText?: string;
   footer?: ReactNode;
-  mode: 'login' | 'register';
+  mode: AuthFormModes;
   children: ReactNode;
 }
 
@@ -144,7 +146,7 @@ function SocialAuth(
     mode,
   }: {
     options: SocialAuthOption[];
-    mode: 'login' | 'register';
+    mode: AuthFormModes;
   },
 ) {
   return (
