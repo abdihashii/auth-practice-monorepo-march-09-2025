@@ -3,7 +3,7 @@ import { passwordSchema } from '@roll-your-own-auth/shared/schemas';
 import { createFileRoute, Link, useSearch } from '@tanstack/react-router';
 import { zodValidator } from '@tanstack/zod-adapter';
 import { Loader2Icon } from 'lucide-react';
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -42,6 +42,8 @@ const resetPasswordPasswordSchema = z.object({
 });
 
 function ResetPassword() {
+  const [passwordResetSuccess, setPasswordResetSuccess] = useState(false);
+
   const { token } = useSearch({ from: '/reset-password/' });
   const {
     register: registerPassword,
@@ -81,6 +83,7 @@ function ResetPassword() {
       toast.error(error?.message ?? 'An error occurred');
     } else {
       toast.success(message ?? 'Password reset successfully');
+      setPasswordResetSuccess(true);
     }
   };
 
@@ -98,58 +101,70 @@ function ResetPassword() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form
-                onSubmit={handleSubmitPassword(onSubmitPassword)}
-                className="grid gap-6"
-              >
-                <PasswordInput
-                  id="new_password"
-                  label="New Password"
-                  register={registerPassword('new_password')}
-                  error={errorsPassword.new_password?.message}
-                  aria-describedby={cn(
-                    errorsPassword.new_password
-                      ? passwordCheckerId
-                      : undefined,
-                    newPassword && passwordCheckerId,
-                  ).trim() || undefined}
-                />
+              {!passwordResetSuccess
+                ? (
+                    <form
+                      onSubmit={handleSubmitPassword(onSubmitPassword)}
+                      className="grid gap-6"
+                    >
+                      <PasswordInput
+                        id="new_password"
+                        label="New Password"
+                        register={registerPassword('new_password')}
+                        error={errorsPassword.new_password?.message}
+                        aria-describedby={cn(
+                          errorsPassword.new_password
+                            ? passwordCheckerId
+                            : undefined,
+                          newPassword && passwordCheckerId,
+                        ).trim() || undefined}
+                      />
 
-                <PasswordRequirementsChecker
-                  password={newPassword}
-                  id={passwordCheckerId}
-                />
+                      <PasswordRequirementsChecker
+                        password={newPassword}
+                        id={passwordCheckerId}
+                      />
 
-                <PasswordInput
-                  id="confirm_new_password"
-                  label="Confirm New Password"
-                  register={registerPassword('confirm_new_password')}
-                  error={errorsPassword.confirm_new_password?.message}
-                  aria-describedby={cn(
-                    errorsPassword.confirm_new_password
-                      ? passwordCheckerId
-                      : undefined,
-                    confirmNewPassword && passwordCheckerId,
-                  ).trim() || undefined}
-                />
+                      <PasswordInput
+                        id="confirm_new_password"
+                        label="Confirm New Password"
+                        register={registerPassword('confirm_new_password')}
+                        error={errorsPassword.confirm_new_password?.message}
+                        aria-describedby={cn(
+                          errorsPassword.confirm_new_password
+                            ? passwordCheckerId
+                            : undefined,
+                          confirmNewPassword && passwordCheckerId,
+                        ).trim() || undefined}
+                      />
 
-                <Button
-                  type="submit"
-                  className="w-full hover:cursor-pointer"
-                  disabled={isSubmittingPassword}
-                >
-                  {isSubmittingPassword
-                    ? (
-                        <>
-                          <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                          Resetting password...
-                        </>
-                      )
-                    : (
-                        'Reset Password'
-                      )}
-                </Button>
-              </form>
+                      <Button
+                        type="submit"
+                        className="w-full hover:cursor-pointer"
+                        disabled={isSubmittingPassword}
+                      >
+                        {isSubmittingPassword
+                          ? (
+                              <>
+                                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                                Resetting password...
+                              </>
+                            )
+                          : (
+                              'Reset Password'
+                            )}
+                      </Button>
+                    </form>
+                  )
+                : (
+                    <div className="space-y-2">
+                      <p className="text-lg font-medium">Password Reset Successful!</p>
+                      <p className="text-muted-foreground">
+                        Your password has been updated. You can now log in with your
+                        new password.
+                      </p>
+                    </div>
+                  )}
 
               <Button
                 type="button"
