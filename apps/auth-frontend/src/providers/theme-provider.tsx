@@ -44,7 +44,6 @@ export function ThemeProvider({
     root.classList.add(theme);
   }, [theme]);
 
-  // Renamed original setTheme to avoid conflict in useEffect below
   const setTheme = useCallback((newTheme: Theme) => {
     localStorage.setItem(storageKey, newTheme);
     // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
