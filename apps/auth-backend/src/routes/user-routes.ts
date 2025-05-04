@@ -153,7 +153,13 @@ userRoutes.patch(
 
       // Build the update object dynamically
       const updateData: Partial<
-        { name?: string; bio?: string; profilePicture?: string }
+        {
+          name?: string;
+          bio?: string;
+          profilePicture?: string;
+          settings?: Record<string, string>;
+          notificationPreferences?: Record<string, unknown>;
+        }
       > = {};
       if (body.name !== undefined) {
         updateData.name = body.name;
@@ -163,6 +169,12 @@ userRoutes.patch(
       }
       if (body.profilePicture !== undefined) {
         updateData.profilePicture = body.profilePicture;
+      }
+      if (body.settings !== undefined) {
+        updateData.settings = body.settings;
+      }
+      if (body.notificationPreferences !== undefined) {
+        updateData.notificationPreferences = body.notificationPreferences;
       }
 
       // Check if any fields were provided for update

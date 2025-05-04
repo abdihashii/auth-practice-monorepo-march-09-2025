@@ -23,8 +23,8 @@ export function useProfileCard() {
    *        bio or an empty string if the user has no bio.
    */
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(user?.name || '');
-  const [bio, setBio] = useState(user?.bio || '');
+  const [name, setName] = useState(user?.name ?? '');
+  const [bio, setBio] = useState(user?.bio ?? '');
 
   /**
    * Handles the profile picture upload.
