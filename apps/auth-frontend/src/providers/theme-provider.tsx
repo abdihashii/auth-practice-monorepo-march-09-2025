@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { Theme } from '@/contexts/theme-context';
 
 import { ThemeProviderContext } from '@/contexts/theme-context';
+import { useAuthContext } from '@/hooks/use-auth-context';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -16,10 +17,15 @@ export function ThemeProvider({
   storageKey = 'vite-ui-theme',
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
+  const { user } = useAuthContext();
+
+  const [theme, setThemeState] = useState<Theme>(
+    () => user?.settings?.theme
+      ?? (localStorage.getItem(storageKey) as Theme)
+      ?? defaultTheme,
   );
 
+  // Effect to apply the theme class to the root element
   useEffect(() => {
     const root = window.document.documentElement;
 
@@ -38,13 +44,27 @@ export function ThemeProvider({
     root.classList.add(theme);
   }, [theme]);
 
+  // Renamed original setTheme to avoid conflict in useEffect below
+  const setTheme = useCallback((newTheme: Theme) => {
+    localStorage.setItem(storageKey, newTheme);
+    setThemeState(newTheme);
+  }, [storageKey]);
+
+  // Effect to synchronize theme with user settings from context
+  useEffect(() => {
+    const userTheme = user?.settings?.theme;
+    if (userTheme && userTheme !== theme) {
+      setTheme(userTheme); // Use the combined setter
+    }
+    // Intentionally only run when user object changes,
+    // specifically when theme setting might update after login or profile fetch/update.
+    // Avoid dependency on `theme` state itself to prevent potential loops if user setting causes context update -> state update -> effect re-run.
+  }, [user?.settings?.theme, theme, setTheme]); // Now includes theme state and setTheme setter
+
   const value = useMemo(() => ({
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
-    },
-  }), [theme, storageKey]);
+    setTheme,
+  }), [theme, setTheme]);
 
   return (
     <ThemeProviderContext {...props} value={value}>
