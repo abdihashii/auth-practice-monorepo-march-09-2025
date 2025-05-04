@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { usePreferencesCard } from '@/hooks/use-preferences-card';
+import { usePreferences } from '@/hooks/use-preferences';
 
 import { Button } from '../ui/button';
 
@@ -28,10 +28,11 @@ export function AccountPreferencesCard() {
     errors,
     isSubmitting,
     isDirty,
+
     // Form actions
     handleSubmit,
     onSubmit,
-  } = usePreferencesCard();
+  } = usePreferences();
 
   return (
     <Card className="w-full max-w-2xl">
