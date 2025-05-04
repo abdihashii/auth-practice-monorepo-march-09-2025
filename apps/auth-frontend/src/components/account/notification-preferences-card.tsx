@@ -1,4 +1,4 @@
-import { Controller } from 'react-hook-form';
+import { Controller, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -44,6 +44,16 @@ export function NotificationPreferencesCard() {
     handlePushNotificationSubmit,
     onPushNotificationSubmit,
   } = usePreferences();
+
+  // Watch the 'enabled' fields to conditionally disable other fields
+  const isEmailEnabled = useWatch({
+    control: emailNotificationControl,
+    name: 'enabled',
+  });
+  const isPushEnabled = useWatch({
+    control: pushNotificationControl,
+    name: 'enabled',
+  });
 
   return (
     <Card className="w-full max-w-2xl">
@@ -106,6 +116,7 @@ export function NotificationPreferencesCard() {
                       onValueChange={field.onChange}
                       value={field.value}
                       name={field.name}
+                      disabled={!isEmailEnabled}
                     >
                       <SelectTrigger id="email.digest" className="w-full">
                         <SelectValue placeholder="Select a duration" />
@@ -141,6 +152,7 @@ export function NotificationPreferencesCard() {
                       id="email.marketing"
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      disabled={!isEmailEnabled}
                     />
                     {emailNotificationErrors?.marketing && (
                       <p className="text-red-500 text-sm">
@@ -206,6 +218,7 @@ export function NotificationPreferencesCard() {
                       id="push.alerts"
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      disabled={!isPushEnabled}
                     />
                     {pushNotificationErrors?.alerts && (
                       <p className="text-red-500 text-sm">
