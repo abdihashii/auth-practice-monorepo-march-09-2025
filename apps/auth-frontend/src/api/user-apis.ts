@@ -15,18 +15,31 @@ const USER_API_URL = `${BASE_API_URL}/api/v1/users`;
  *
  * @param {string} userId - The ID of the user to update
  * @param {UpdateUserDto} user - The user data to update
- * @returns {Promise<ApiResponse<{ message: string }>>} The response from the API
+ * @returns {Promise<ApiResponse<{ message: string }>>} The response from the
+ * API
  */
 export async function updateUser(userId: string, user: UpdateUserDto) {
   // Validate the user data
-  const { name, bio, profilePicture } = user;
+  const {
+    name,
+    bio,
+    profilePicture,
+    settings,
+    notificationPreferences,
+  } = user;
 
   // Update the user using apiClient
   const response = await apiClient<{ data: ApiResponse<{ message: string }> }>(
     `${USER_API_URL}/${userId}`,
     {
       method: 'PATCH',
-      body: JSON.stringify({ name, bio, profilePicture }),
+      body: JSON.stringify({
+        name,
+        bio,
+        profilePicture,
+        settings,
+        notificationPreferences,
+      }),
     },
   );
 
