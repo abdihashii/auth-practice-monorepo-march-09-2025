@@ -21,18 +21,18 @@ function LoadingFallback() {
 
 export const Route = createRootRoute({
   component: () => (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <QueryClientProvider client={queryClient}>
-        {/* Use Suspense to handle async data loading */}
-        <Suspense fallback={<LoadingFallback />}>
-          <AuthContextProvider>
+    <QueryClientProvider client={queryClient}>
+      {/* Use Suspense to handle async data loading */}
+      <Suspense fallback={<LoadingFallback />}>
+        <AuthContextProvider>
+          <ThemeProvider storageKey="vite-ui-theme">
             <Outlet />
-          </AuthContextProvider>
-        </Suspense>
-        <TanStackRouterDevtools />
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
+          </ThemeProvider>
+        </AuthContextProvider>
+      </Suspense>
+      <TanStackRouterDevtools />
+      <ReactQueryDevtools initialIsOpen={false} />
       <Toaster closeButton />
-    </ThemeProvider>
+    </QueryClientProvider>
   ),
 });
