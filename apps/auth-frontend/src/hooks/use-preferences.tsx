@@ -18,11 +18,23 @@ const userPreferencesSchema = z.object({
     .default('en'),
   timezone: z.string().default('UTC'),
 });
+const notificationPreferencesSchema = z.object({
+  email: z.object({
+    enabled: z.boolean().default(true),
+    digest: z.enum(['daily', 'weekly', 'monthly']).default('daily'),
+    marketing: z.boolean().default(false),
+  }),
+  push: z.object({
+    enabled: z.boolean().default(true),
+    alerts: z.boolean().default(true),
+  }),
+});
 
 /**
  * Type for user preferences form data.
  */
 type UserPreferences = z.infer<typeof userPreferencesSchema>;
+type NotificationPreferences = z.infer<typeof notificationPreferencesSchema>;
 
 export function usePreferences() {
   const { user } = useAuthContext();
@@ -41,6 +53,29 @@ export function usePreferences() {
       language: user?.settings?.language as UserPreferences['language']
         ?? 'en',
       timezone: user?.settings?.timezone ?? 'UTC',
+    },
+  });
+  const {
+    handleSubmit: handleNotificationSubmit,
+    formState: {
+      errors: notificationErrors,
+      isSubmitting: notificationIsSubmitting,
+      isDirty: notificationIsDirty,
+    },
+    control: notificationControl,
+  } = useForm<NotificationPreferences>({
+    resolver: zodResolver(notificationPreferencesSchema),
+    defaultValues: {
+      email: {
+        enabled: user?.notificationPreferences?.email?.enabled ?? true,
+        digest: user?.notificationPreferences?.email?.digest as NotificationPreferences['email']['digest']
+          ?? 'daily',
+        marketing: user?.notificationPreferences?.email?.marketing ?? false,
+      },
+      push: {
+        enabled: user?.notificationPreferences?.push?.enabled ?? true,
+        alerts: user?.notificationPreferences?.push?.alerts ?? true,
+      },
     },
   });
   const queryClient = useQueryClient();
@@ -71,13 +106,6 @@ export function usePreferences() {
         || data.language !== originalSettings.language
         || data.timezone !== originalSettings.timezone;
 
-    // // Check if notification preferences changed from original or if original
-    // // was null/undefined
-    // if (notificationPreferences !== (user.notificationPreferences ?? {})) {
-    //   updatePayload.notificationPreferences
-    //   = notificationPreferences || null; // Send null if empty string
-    // }
-
     // Only include settings in the payload if there are changes
     if (hasSettingsChanged) {
       updatePayload.settings = {
@@ -103,15 +131,77 @@ export function usePreferences() {
     }
   };
 
+  /**
+   * Handles the form submission.
+   * @param data - The form submission data.
+   */
+  const onNotificationSubmit = async (data: NotificationPreferences) => {
+    // Ensure the user is authenticated
+    if (!user?.id) {
+      throw new Error('User ID is required');
+    }
+
+    // Build the payload with only changed fields
+    // Send the full settings object if any setting has changed.
+    const updatePayload: Partial<Pick<UpdateUserDto, 'notificationPreferences'>> = {};
+
+    const originalNotificationPreferences = {
+      email: {
+        enabled: user?.notificationPreferences?.email?.enabled ?? true,
+        digest: user?.notificationPreferences?.email?.digest as NotificationPreferences['email']['digest']
+          ?? 'daily',
+        marketing: user?.notificationPreferences?.email?.marketing ?? false,
+      },
+      push: {
+        enabled: user?.notificationPreferences?.push?.enabled ?? true,
+        alerts: user?.notificationPreferences?.push?.alerts ?? true,
+      },
+    };
+
+    // Use data from the validated form submission
+    const hasNotificationPreferencesChanged
+      = data.email !== originalNotificationPreferences.email
+        || data.push !== originalNotificationPreferences.push;
+
+    // Only include settings in the payload if there are changes
+    if (hasNotificationPreferencesChanged) {
+      updatePayload.notificationPreferences = {
+        email: data.email,
+        push: data.push,
+      };
+    }
+
+    try {
+      // Update the user via the API with only changed fields
+      // Ensure we only call updateUser if there are actual changes
+      if (Object.keys(updatePayload).length > 0) {
+        // We cast here because we know if settings is present, it matches
+        // UserSettings
+        await updateUser(user.id, updatePayload as UpdateUserDto);
+
+        // Invalidate the user query to refresh the data on successful update
+        queryClient.invalidateQueries({ queryKey: ['user'] });
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+    }
+  };
+
   return {
     // Form state
     settingsControl,
     settingsErrors,
     settingsIsSubmitting,
     settingsIsDirty,
+    notificationControl,
+    notificationErrors,
+    notificationIsSubmitting,
+    notificationIsDirty,
 
     // Form actions
     handleSettingsSubmit,
     onSettingsSubmit,
+    handleNotificationSubmit,
+    onNotificationSubmit,
   };
 }
