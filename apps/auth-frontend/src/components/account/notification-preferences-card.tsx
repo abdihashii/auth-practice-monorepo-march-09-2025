@@ -38,7 +38,7 @@ export function NotificationPreferencesCard() {
       <CardHeader>
         <CardTitle>Notification Preferences</CardTitle>
         <CardDescription>
-          Manage your account preferences
+          Manage your email and push notification preferences.
         </CardDescription>
       </CardHeader>
       <CardContent>
