@@ -24,7 +24,7 @@ const userPreferencesSchema = z.object({
  */
 type UserPreferences = z.infer<typeof userPreferencesSchema>;
 
-export function usePreferencesCard() {
+export function usePreferences() {
   const { user } = useAuthContext();
   const {
     handleSubmit,
