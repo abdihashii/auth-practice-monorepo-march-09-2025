@@ -59,7 +59,9 @@ Bonus
   - [ ] 2FA page
   - [ ] Connected accounts page (social logins)
     - [ ] Link/unlink social accounts
-  - [ ] User preferences page
+  - [x] User preferences page
+    - [x] User settings
+    - [x] User notification preferences
   - [x] Delete account page
 
 ## Testing
