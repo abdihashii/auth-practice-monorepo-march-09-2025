@@ -56,7 +56,7 @@ export function NotificationPreferencesCard() {
                   htmlFor="email.enabled"
                   className="w-fit"
                 >
-                  Email
+                  Enable email notifications
                 </Label>
                 <Switch
                   id="email.enabled"
