@@ -27,9 +27,13 @@ type UserPreferences = z.infer<typeof userPreferencesSchema>;
 export function usePreferences() {
   const { user } = useAuthContext();
   const {
-    handleSubmit,
-    formState: { errors, isSubmitting, isDirty },
-    control,
+    handleSubmit: handleSettingsSubmit,
+    formState: {
+      errors: settingsErrors,
+      isSubmitting: settingsIsSubmitting,
+      isDirty: settingsIsDirty,
+    },
+    control: settingsControl,
   } = useForm<UserPreferences>({
     resolver: zodResolver(userPreferencesSchema),
     defaultValues: {
@@ -45,7 +49,7 @@ export function usePreferences() {
    * Handles the form submission.
    * @param data - The form submission data.
    */
-  const onSubmit = async (data: UserPreferences) => {
+  const onSettingsSubmit = async (data: UserPreferences) => {
     // Ensure the user is authenticated
     if (!user?.id) {
       throw new Error('User ID is required');
@@ -101,13 +105,13 @@ export function usePreferences() {
 
   return {
     // Form state
-    control,
-    errors,
-    isSubmitting,
-    isDirty,
+    settingsControl,
+    settingsErrors,
+    settingsIsSubmitting,
+    settingsIsDirty,
 
     // Form actions
-    handleSubmit,
-    onSubmit,
+    handleSettingsSubmit,
+    onSettingsSubmit,
   };
 }

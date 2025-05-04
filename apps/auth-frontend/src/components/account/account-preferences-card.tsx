@@ -24,14 +24,14 @@ import { Button } from '../ui/button';
 export function AccountPreferencesCard() {
   const {
     // Form state
-    control,
-    errors,
-    isSubmitting,
-    isDirty,
+    settingsControl: control,
+    settingsErrors: errors,
+    settingsIsSubmitting: isSubmitting,
+    settingsIsDirty: isDirty,
 
     // Form actions
-    handleSubmit,
-    onSubmit,
+    handleSettingsSubmit: handleSubmit,
+    onSettingsSubmit: onSubmit,
   } = usePreferences();
 
   return (
