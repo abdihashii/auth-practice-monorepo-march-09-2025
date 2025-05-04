@@ -18,23 +18,22 @@ const userPreferencesSchema = z.object({
     .default('en'),
   timezone: z.string().default('UTC'),
 });
-const notificationPreferencesSchema = z.object({
-  email: z.object({
-    enabled: z.boolean().default(true),
-    digest: z.enum(['daily', 'weekly', 'monthly']).default('daily'),
-    marketing: z.boolean().default(false),
-  }),
-  push: z.object({
-    enabled: z.boolean().default(true),
-    alerts: z.boolean().default(true),
-  }),
+const emailNotificationPreferencesSchema = z.object({
+  enabled: z.boolean().default(true),
+  digest: z.enum(['daily', 'weekly', 'monthly']).default('daily'),
+  marketing: z.boolean().default(false),
+});
+const pushNotificationPreferencesSchema = z.object({
+  enabled: z.boolean().default(true),
+  alerts: z.boolean().default(true),
 });
 
 /**
- * Type for user preferences form data.
+ * Types for user preferences form data.
  */
 type UserPreferences = z.infer<typeof userPreferencesSchema>;
-type NotificationPreferences = z.infer<typeof notificationPreferencesSchema>;
+type EmailNotificationPreferences = z.infer<typeof emailNotificationPreferencesSchema>;
+type PushNotificationPreferences = z.infer<typeof pushNotificationPreferencesSchema>;
 
 export function usePreferences() {
   const { user } = useAuthContext();
@@ -56,26 +55,35 @@ export function usePreferences() {
     },
   });
   const {
-    handleSubmit: handleNotificationSubmit,
+    handleSubmit: handleEmailNotificationSubmit,
     formState: {
-      errors: notificationErrors,
-      isSubmitting: notificationIsSubmitting,
-      isDirty: notificationIsDirty,
+      errors: emailNotificationErrors,
+      isSubmitting: emailNotificationIsSubmitting,
+      isDirty: emailNotificationIsDirty,
     },
-    control: notificationControl,
-  } = useForm<NotificationPreferences>({
-    resolver: zodResolver(notificationPreferencesSchema),
+    control: emailNotificationControl,
+  } = useForm<EmailNotificationPreferences>({
+    resolver: zodResolver(emailNotificationPreferencesSchema),
     defaultValues: {
-      email: {
-        enabled: user?.notificationPreferences?.email?.enabled ?? true,
-        digest: user?.notificationPreferences?.email?.digest as NotificationPreferences['email']['digest']
-          ?? 'daily',
-        marketing: user?.notificationPreferences?.email?.marketing ?? false,
-      },
-      push: {
-        enabled: user?.notificationPreferences?.push?.enabled ?? true,
-        alerts: user?.notificationPreferences?.push?.alerts ?? true,
-      },
+      enabled: user?.notificationPreferences?.email?.enabled ?? true,
+      digest: user?.notificationPreferences?.email?.digest as EmailNotificationPreferences['digest']
+        ?? 'daily',
+      marketing: user?.notificationPreferences?.email?.marketing ?? false,
+    },
+  });
+  const {
+    handleSubmit: handlePushNotificationSubmit,
+    formState: {
+      errors: pushNotificationErrors,
+      isSubmitting: pushNotificationIsSubmitting,
+      isDirty: pushNotificationIsDirty,
+    },
+    control: pushNotificationControl,
+  } = useForm<PushNotificationPreferences>({
+    resolver: zodResolver(pushNotificationPreferencesSchema),
+    defaultValues: {
+      enabled: user?.notificationPreferences?.push?.enabled ?? true,
+      alerts: user?.notificationPreferences?.push?.alerts ?? true,
     },
   });
   const queryClient = useQueryClient();
@@ -132,58 +140,115 @@ export function usePreferences() {
   };
 
   /**
-   * Handles the form submission.
+   * Handles the form submission for email notification preferences.
    * @param data - The form submission data.
    */
-  const onNotificationSubmit = async (data: NotificationPreferences) => {
+  const onEmailNotificationSubmit = async (
+    data: EmailNotificationPreferences,
+  ) => {
     // Ensure the user is authenticated
     if (!user?.id) {
       throw new Error('User ID is required');
     }
 
-    // Build the payload with only changed fields
-    // Send the full settings object if any setting has changed.
-    const updatePayload: Partial<Pick<UpdateUserDto, 'notificationPreferences'>> = {};
+    // Define the type for the specific part of the DTO we're updating
+    type UpdatePayload = Partial<Pick<UpdateUserDto, 'notificationPreferences'>>;
 
-    const originalNotificationPreferences = {
-      email: {
-        enabled: user?.notificationPreferences?.email?.enabled ?? true,
-        digest: user?.notificationPreferences?.email?.digest as NotificationPreferences['email']['digest']
-          ?? 'daily',
-        marketing: user?.notificationPreferences?.email?.marketing ?? false,
-      },
-      push: {
-        enabled: user?.notificationPreferences?.push?.enabled ?? true,
-        alerts: user?.notificationPreferences?.push?.alerts ?? true,
-      },
+    const updatePayload: UpdatePayload = {};
+
+    const originalEmailPreferences = {
+      enabled: user.notificationPreferences?.email?.enabled ?? true,
+      digest: user.notificationPreferences?.email?.digest ?? 'daily',
+      marketing: user.notificationPreferences?.email?.marketing ?? false,
     };
 
-    // Use data from the validated form submission
-    const hasNotificationPreferencesChanged
-      = data.email !== originalNotificationPreferences.email
-        || data.push !== originalNotificationPreferences.push;
+    // Correctly compare fields instead of object reference
+    const hasEmailNotificationPreferencesChanged
+      = data.enabled !== originalEmailPreferences.enabled
+        || data.digest !== originalEmailPreferences.digest
+        || data.marketing !== originalEmailPreferences.marketing;
 
     // Only include settings in the payload if there are changes
-    if (hasNotificationPreferencesChanged) {
+    if (hasEmailNotificationPreferencesChanged) {
+      // Fetch current push preferences to send the complete object
+      const currentPushPreferences = user.notificationPreferences?.push ?? {
+        enabled: true, // Default values if push prefs don't exist
+        alerts: true,
+      };
+
       updatePayload.notificationPreferences = {
-        email: data.email,
-        push: data.push,
+        email: data,
+        push: currentPushPreferences,
       };
     }
 
     try {
-      // Update the user via the API with only changed fields
-      // Ensure we only call updateUser if there are actual changes
+      // Update the user via the API only if there are actual changes
       if (Object.keys(updatePayload).length > 0) {
-        // We cast here because we know if settings is present, it matches
-        // UserSettings
-        await updateUser(user.id, updatePayload as UpdateUserDto);
+        // No need for complex casting if the payload structure is correct
+        await updateUser(user.id, updatePayload);
 
         // Invalidate the user query to refresh the data on successful update
         queryClient.invalidateQueries({ queryKey: ['user'] });
       }
     } catch (error) {
-      console.error('Error updating user:', error);
+      console.error('Error updating email notification preferences:', error);
+    }
+  };
+
+  /**
+   * Placeholder for push notification form submission.
+   * @param data - The form submission data.
+   */
+  const onPushNotificationSubmit = async (
+    data: PushNotificationPreferences,
+  ) => {
+    // Ensure the user is authenticated
+    if (!user?.id) {
+      throw new Error('User ID is required');
+    }
+
+    // Define the type for the specific part of the DTO we're updating
+    type UpdatePayload = Partial<Pick<UpdateUserDto, 'notificationPreferences'>>;
+
+    const updatePayload: UpdatePayload = {};
+
+    const originalPushPreferences = {
+      enabled: user.notificationPreferences?.push?.enabled ?? true,
+      alerts: user.notificationPreferences?.push?.alerts ?? true,
+    };
+
+    // Correctly compare fields instead of object reference
+    const hasPushNotificationPreferencesChanged
+      = data.enabled !== originalPushPreferences.enabled
+        || data.alerts !== originalPushPreferences.alerts;
+
+    // Only include settings in the payload if there are changes
+    if (hasPushNotificationPreferencesChanged) {
+      // Fetch current push preferences to send the complete object
+      const currentEmailPreferences = user.notificationPreferences?.email ?? {
+        enabled: true, // Default values if push prefs don't exist
+        digest: 'daily',
+        marketing: false,
+      };
+
+      updatePayload.notificationPreferences = {
+        email: currentEmailPreferences,
+        push: data,
+      };
+    }
+
+    try {
+      // Update the user via the API only if there are actual changes
+      if (Object.keys(updatePayload).length > 0) {
+        // No need for complex casting if the payload structure is correct
+        await updateUser(user.id, updatePayload);
+
+        // Invalidate the user query to refresh the data on successful update
+        queryClient.invalidateQueries({ queryKey: ['user'] });
+      }
+    } catch (error) {
+      console.error('Error updating push notification preferences:', error);
     }
   };
 
@@ -193,15 +258,21 @@ export function usePreferences() {
     settingsErrors,
     settingsIsSubmitting,
     settingsIsDirty,
-    notificationControl,
-    notificationErrors,
-    notificationIsSubmitting,
-    notificationIsDirty,
+    emailNotificationControl,
+    emailNotificationErrors,
+    emailNotificationIsSubmitting,
+    emailNotificationIsDirty,
+    pushNotificationControl,
+    pushNotificationErrors,
+    pushNotificationIsSubmitting,
+    pushNotificationIsDirty,
 
     // Form actions
     handleSettingsSubmit,
     onSettingsSubmit,
-    handleNotificationSubmit,
-    onNotificationSubmit,
+    handleEmailNotificationSubmit,
+    onEmailNotificationSubmit,
+    handlePushNotificationSubmit,
+    onPushNotificationSubmit,
   };
 }
